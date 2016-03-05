@@ -48,22 +48,7 @@ proc.time() - ptm
 data.frame <- as.data.frame(data.match)
 ```
 
-```{r}
-data.frame %>% 
-  select(contains = "tenToTwenty")
-```
-
-
-
-
-
-
-
-```{r}
-names(data.frame) %>% write(file = "names")
-```
-
-Merge all 10 files.
+Load all 10 files.
 ```{r}
 for (i in 1:10) {
   json_file <- paste("data/matches", i, ".json", sep = "")
@@ -72,5 +57,10 @@ for (i in 1:10) {
 ```
 
 ```{r}
+# names(data.frame) %>% write(file = "names")
+```
+
+```{r}
 data.frame %>% 
+  select(contains = "tenToTwenty")
 ```
