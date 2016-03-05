@@ -1,36 +1,20 @@
 ```{r}
-
 # http://stackoverflow.com/questions/27430042/parse-nested-json-to-data-frame-in-r
 # install.packages("rjson")
 library("rjson")
 
 json_file <- paste("data/matches", 1, ".json", sep = "")
 json_data <- fromJSON(file=json_file)
-json_data_list <- lapply(json_data$matches, function(x){ unlist(x)})
+json_data <- lapply(json_data$matches, function(x){ unlist(x)})
 
 library(plyr)
 matchData <- rbind.fill(lapply(matchData.i, 
     function(x) do.call("data.frame", as.list(x))
 ))
 
-
+# library(jsonlite)
 # https://cran.r-project.org/web/packages/tidyjson/vignettes/introduction-to-tidyjson.html
-library(tidyjson)   # this library
-library(dplyr)      # for %>% and other dplyr function
-
-
-
-
-
-for (i in 1:10) {
-  json_file <- paste("data/matches", i, ".json", sep = "")
-	json_data <- fromJSON(file=json_file)
-}
-
-library(jsonlite)
-
-json_file <- paste("data/matches", 1, ".json", sep = "")
-json_data <- fromJSON(txt=json_file, simplifyDataFrame = TRUE)
+# library(tidyjson)   # this library
 
 for (i in 1:10) {
   json_file <- paste("data/matches", i, ".json", sep = "")
