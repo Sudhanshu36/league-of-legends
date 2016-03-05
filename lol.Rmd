@@ -15,8 +15,10 @@ funct <- function(x){
 }
 
 ptm <- proc.time()
-data.match <- lapply(data.unlist, funct)
+data.match <- rbind.fill(lapply(data.unlist, funct))
 proc.time() - ptm
+
+data.frame <- as.data.frame(data.match)
 ```
 
 Load one match file.
@@ -30,9 +32,14 @@ funct <- function(x){
 }
 
 ptm <- proc.time()
-data.match <- lapply(data.unlist, funct)
+data.match <- rbind.fill(lapply(data.unlist, funct))
 proc.time() - ptm
+
+data.frame <- as.data.frame(data.match)
 ```
+
+
+
 
 Load one match file.
 ```{r}
