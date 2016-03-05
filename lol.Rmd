@@ -49,6 +49,17 @@ data.frame <- as.data.frame(data.match)
 ```
 
 ```{r}
+data.frame %>% 
+  select(contains = "tenToTwenty")
+```
+
+
+
+
+
+
+
+```{r}
 names(data.frame) %>% write(file = "names")
 ```
 
