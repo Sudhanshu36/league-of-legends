@@ -1,10 +1,19 @@
-Test opening of data.
 ```{r}
-# http://stackoverflow.com/questions/27430042/parse-nested-json-to-data-frame-in-r
 # install.packages("rjson")
 
 library("rjson")
 library(plyr)
+
+library(tidyr)
+library(dplyr)
+
+# https://cran.r-project.org/web/packages/tidyjson/vignettes/introduction-to-tidyjson.html
+# library(tidyjson)
+```
+
+Test opening of data.
+```{r}
+# http://stackoverflow.com/questions/27430042/parse-nested-json-to-data-frame-in-r
 
 data.file <- "data/HQDf2ase.txt"
 data.json <- fromJSON(file = data.file)
@@ -38,34 +47,18 @@ proc.time() - ptm
 data.frame <- as.data.frame(data.match)
 ```
 
-
-
-
-Load one match file.
 ```{r}
-library(jsonlite)
-
-data.file <- paste("data/matches", 1, ".json", sep = "")
-data.json <- fromJSON(txt = data.file)
-data.unlist <- lapply(data.json$matches, unlist)
-
-funct <- function(x){
-  do.call("data.frame", as.list(x))
-}
-
-ptm <- proc.time()
-data.match <- lapply(data.unlist, funct)
-proc.time() - ptm
+names(data.frame) %>% write(file = "names")
 ```
 
-```{r}
-# https://cran.r-project.org/web/packages/tidyjson/vignettes/introduction-to-tidyjson.html
-# library(tidyjson)
-```
-
+Merge all 10 files.
 ```{r}
 for (i in 1:10) {
   json_file <- paste("data/matches", i, ".json", sep = "")
 	json_data <- fromJSON(file=json_file)
 }
+```
+
+```{r}
+data.frame %>% 
 ```
