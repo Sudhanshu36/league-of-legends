@@ -2,6 +2,7 @@ Test opening of data.
 ```{r}
 # http://stackoverflow.com/questions/27430042/parse-nested-json-to-data-frame-in-r
 # install.packages("rjson")
+
 library("rjson")
 library(plyr)
 
@@ -33,11 +34,29 @@ data.match <- lapply(data.unlist, funct)
 proc.time() - ptm
 ```
 
+Load one match file.
 ```{r}
-# library(jsonlite)
+library(jsonlite)
+
+data.file <- paste("data/matches", 1, ".json", sep = "")
+data.json <- fromJSON(txt = data.file)
+data.unlist <- lapply(data.json$matches, unlist)
+
+funct <- function(x){
+  do.call("data.frame", as.list(x))
+}
+
+ptm <- proc.time()
+data.match <- lapply(data.unlist, funct)
+proc.time() - ptm
+```
+
+```{r}
 # https://cran.r-project.org/web/packages/tidyjson/vignettes/introduction-to-tidyjson.html
 # library(tidyjson)
+```
 
+```{r}
 for (i in 1:10) {
   json_file <- paste("data/matches", i, ".json", sep = "")
 	json_data <- fromJSON(file=json_file)
