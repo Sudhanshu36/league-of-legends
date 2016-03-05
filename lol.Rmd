@@ -7,12 +7,13 @@ library(plyr)
 
 library(tidyr)
 library(dplyr)
+library(stringr)
 
 # https://cran.r-project.org/web/packages/tidyjson/vignettes/introduction-to-tidyjson.html
 # library(tidyjson)
 ```
 
-Test opening of data.
+Test opening of similar data.
 ```{r}
 # http://stackoverflow.com/questions/27430042/parse-nested-json-to-data-frame-in-r
 
@@ -50,17 +51,30 @@ data.frame <- as.data.frame(data.match)
 
 Load all 10 files.
 ```{r}
-for (i in 1:10) {
-  json_file <- paste("data/matches", i, ".json", sep = "")
-	json_data <- fromJSON(file=json_file)
-}
+# for (i in 1:10) {
+#   json_file <- paste("data/matches", i, ".json", sep = "")
+# 	json_data <- fromJSON(file=json_file)
+# }
 ```
 
 ```{r}
-# names(data.frame) %>% write(file = "names")
+# Save column names
+names(data.frame) %>% write(file = "names")
 ```
 
 ```{r}
 data.frame %>% 
-  select(contains = "tenToTwenty")
+  select(starts_with("timeline.frames.events.position.")) %>%
+  gather(key = timeline.frames.events.position, value = coordinate) %>%
+  str_replace("timeline.frames.events.position.", "") %>%
+  separate("timeline.frames.events.position", c("axis", "ID"))
+
+
+  gather(key = key, value = value, "^participants.") %>%
+  head()
+  gather(key = timeline.frames.events)
+  separate(col = timeline.frames.)
+  filter(timeline.frames.events.eventType == "CHAMPION_KILL") %>%
+  select(contains = "tenToTwenty") %>%
+  colSums()
 ```
