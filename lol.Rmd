@@ -186,7 +186,23 @@ ggsave("figures/events.png", dpi = 51.2, width = 10, height = 10, units = "in")
 ```
 
 ```{r}
-timeline.frames.events.eventType
+convert.char <- function(x) {
+  data.frame(lapply(x, as.character), stringsAsFactors=FALSE) 
+}
+
+# regular expression to match numbers
+regexp <- "[[:digit:]]+"
+
+# Extract event type for each event
+events <- data.frame %>% 
+  filter(matchId == 2054994244) %>%
+  select(starts_with("timeline.frames.events.eventType")) %>%
+  convert.char() %>%
+  gather(key = ID, value = eventType) %>%
+  mutate(ID = str_extract(ID, regexp)) %>% 
+  mutate(ID = fill.na(ID)) %>%  # Fill IDs
+  mutate(ID = as.numeric(ID)) %>%
+  complete.remove()   # Remove incompletes
 ```
 
 ```{r}
