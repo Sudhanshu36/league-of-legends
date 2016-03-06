@@ -22,6 +22,12 @@ library(grid)
 library(ggplot2)
 ```
 
+```{r}
+# Read RIOT API key
+# riot.key <- readLines("riot.key")
+# options("riot.key" = riot.key)
+```
+
 Test opening of similar data.
 ```{r}
 # http://stackoverflow.com/questions/27430042/parse-nested-json-to-data-frame-in-r
@@ -57,6 +63,8 @@ data.match <- rbind.fill(lapply(data.unlist, funct))
 proc.time() - ptm
 
 data.frame <- as.data.frame(data.match)
+
+# data.frame <- as.data.frame(lapply(data.frame, as.character), stringsAsFactors=FALSE)
 ```
 
 Load all 10 files.
@@ -78,10 +86,18 @@ convert.numeric <- function(x) {
   as.numeric(as.character(x))
 }
 
+# Remove incomplete cases
 complete.remove <- function(x) {
   x <- x[complete.cases(x),]  
 }
 
+# Fill missing values with 0
+fill.na <- function(x) {
+  x[is.na(x)] <- 0
+  return(x)
+}
+
+# Extract the positions of all events in a given match
 coord <- data.frame %>% 
   filter(matchId == 2054994244) %>%
   select(starts_with("timeline.frames.events.position.")) %>%
@@ -91,16 +107,9 @@ coord <- data.frame %>%
   mutate(timeline.frames.events.position = 
            str_replace_all(timeline.frames.events.position, 
                            "timeline.frames.events.position.", "")) %>%
-  separate("timeline.frames.events.position", c("axis", "ID"))
-
-# Fill IDs
-coord$ID[is.na(coord$ID)] <- 0
-# Remove incompletes
-coord <- coord[complete.cases(coord),]
-
-tail(coord)
-
-coord <- coord %>%
+  separate("timeline.frames.events.position", c("axis", "ID")) %>%
+  mutate(ID = fill.na(ID)) %>%  # Fill IDs
+  complete.remove() %>%   # Remove incompletes
   spread(axis, coordinate) %>%
   select(-ID)
 
@@ -174,6 +183,10 @@ p <- p +
 # Show and save plot
 print(p)
 ggsave("figures/events.png", dpi = 51.2, width = 10, height = 10, units = "in")
+```
+
+```{r}
+timeline.frames.events.eventType
 ```
 
 ```{r}
