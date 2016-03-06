@@ -1,10 +1,12 @@
+
+
 Loading packages.
 ```{r}
-# install.packages("rjson")
-
 library("rjson")
-library(plyr)
+# library("jsonlite")
+# library("tidyjson")
 
+library(plyr)
 library(tidyr)
 library(dplyr)
 library(stringr)
@@ -21,12 +23,12 @@ data.file <- "data/HQDf2ase.txt"
 data.json <- fromJSON(file = data.file)
 data.unlist <- lapply(data.json$matches, unlist)
 
-funct <- function(x){
+convert.list <- function(x){
   do.call("data.frame", as.list(x))
 }
 
 ptm <- proc.time()
-data.match <- rbind.fill(lapply(data.unlist, funct))
+data.match <- rbind.fill(lapply(data.unlist, convert.list))
 proc.time() - ptm
 
 data.frame <- as.data.frame(data.match)
@@ -35,7 +37,8 @@ data.frame <- as.data.frame(data.match)
 Load one match file.
 ```{r}
 data.file <- paste("data/matches", 1, ".json", sep = "")
-data.json <- fromJSON(file = data.file)
+# data.json <- fromJSON(file = data.file)
+data.json <- fromJSON(txt = data.file)  # jsonlite
 data.unlist <- lapply(data.json$matches, unlist)
 
 funct <- function(x){
@@ -63,18 +66,25 @@ names(data.frame) %>% write(file = "names")
 ```
 
 ```{r}
-data.frame %>% 
+convert.numeric <- function(x) {
+  as.numeric(as.character(x))
+}
+coord <- data.frame %>% 
   select(starts_with("timeline.frames.events.position.")) %>%
+  lapply(convert.numeric) %>%
+  as.data.frame() %>%
   gather(key = timeline.frames.events.position, value = coordinate) %>%
-  str_replace("timeline.frames.events.position.", "") %>%
+  mutate(timeline.frames.events.position = 
+           str_replace_all(timeline.frames.events.position, 
+                           "timeline.frames.events.position.", "")) %>%
   separate("timeline.frames.events.position", c("axis", "ID"))
 
+# Fill IDs
+coord$ID[is.na(coord$ID)] <- 0
+# Remove incompletes
+coord <- coord[complete.cases(coord),]
 
-  gather(key = key, value = value, "^participants.") %>%
-  head()
-  gather(key = timeline.frames.events)
-  separate(col = timeline.frames.)
-  filter(timeline.frames.events.eventType == "CHAMPION_KILL") %>%
-  select(contains = "tenToTwenty") %>%
-  colSums()
+#   filter(timeline.frames.events.eventType == "CHAMPION_KILL") %>%
+#   select(contains = "tenToTwenty") %>%
+#   colSums()
 ```
