@@ -92,9 +92,68 @@ coord <- coord[complete.cases(coord),]
 
 tail(coord)
 
-coord %>%
+coord <- coord %>%
   spread(axis, coordinate) %>%
   select(-ID)
+
+f.x <- function(x) {
+  # Input:
+  # min: {x: -570, y: -420}
+  # max: {x: 15220, y: 14980}
+  # Output:
+  # min: {x: 0, y: 0}
+  # max: {x: 512, y: 512}
+  
+  i.xmin = -570
+  i.xmax = 15220
+  o.xmin = 0
+  o.xmax = 512
+  
+  x <- o.xmin + (o.xmax - o.xmin) * (x - i.xmin) / (i.xmax - i.xmin)
+
+  return(x)
+}
+
+f.y <- function(y) {
+  # Input:
+  # min: {x: -570, y: -420}
+  # max: {x: 15220, y: 14980}
+  # Output:
+  # min: {x: 0, y: 0}
+  # max: {x: 512, y: 512}
+  
+  i.ymin = -420
+  i.ymax = 14980
+  o.ymin = 0
+  o.ymax = 512
+  
+  y <- o.ymin + (o.ymax - o.ymin) * (y - i.ymin) / (i.ymax - i.ymin)
+  
+  return(y)
+}
+
+library(png)
+library(grid)
+library(ggplot2)
+
+img <- readPNG("data/minimap-mh.png")
+g <- rasterGrob(img, interpolate=TRUE, width=unit(1,"npc"), height=unit(1,"npc"))
+
+ggplot(coord, aes(f.x(x), f.y(y))) + 
+  annotation_custom(g, xmin=0, xmax=512, ymin=0, ymax=512) +
+  geom_point(alpha = 0.5) +
+  expand_limits(x = c(0,512), y = c(0,512))
+  # expand_limits(x = c(0,14720), y = c(0,14881)) 
+  # aes(ymin=0) + aes(xmin=0) + aes(ymax=14881) + aes(xmax=14820)
+  # expand_limits(x = c(0,14720), y = c(0,14881)) 
+  # scale_x_continuous(limits = c(0, 14881)) +
+  # scale_y_continuous(limits = c(0, 14720)) 
+
+# ggplot(coord, aes(x, y)) + geom_rect(aes(fill = density))
+
+# Map dimensions
+# min: {x: 0, y: 0}
+# max: {x: 14820, y: 14881}
   
 #   filter(timeline.frames.events.eventType == "CHAMPION_KILL") %>%
 #   select(contains = "tenToTwenty") %>%
