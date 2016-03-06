@@ -5,6 +5,10 @@ require(rjson)
 require(stringr)
 require(rgexf)
 
+# Read RIOT API key
+riot.key <- readLines("riot.key")
+options("riot.key"= riot.key)
+
 getRiotKey <- function() {
   key <- getOption("riot.key")
   if (is.null(key))
