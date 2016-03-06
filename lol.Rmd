@@ -69,6 +69,7 @@ names(data.frame) %>% write(file = "names")
 convert.numeric <- function(x) {
   as.numeric(as.character(x))
 }
+
 coord <- data.frame %>% 
   select(starts_with("timeline.frames.events.position.")) %>%
   lapply(convert.numeric) %>%
@@ -77,13 +78,17 @@ coord <- data.frame %>%
   mutate(timeline.frames.events.position = 
            str_replace_all(timeline.frames.events.position, 
                            "timeline.frames.events.position.", "")) %>%
-  separate("timeline.frames.events.position", c("axis", "ID"))
+  separate("timeline.frames.events.position", c("axis", "ID")) %>%
+  spread(axis, coordinate) %>%
+  tail()
 
 # Fill IDs
 coord$ID[is.na(coord$ID)] <- 0
 # Remove incompletes
 coord <- coord[complete.cases(coord),]
 
+head(coord)
+tail(coord)
 #   filter(timeline.frames.events.eventType == "CHAMPION_KILL") %>%
 #   select(contains = "tenToTwenty") %>%
 #   colSums()
