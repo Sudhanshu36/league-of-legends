@@ -82,6 +82,7 @@ names(data.frame) %>% write(file = "names")
 
 We plot the events of a match.
 ```{r}
+# Convert to numeric
 convert.numeric <- function(x) {
   as.numeric(as.character(x))
 }
@@ -97,7 +98,45 @@ fill.na <- function(x) {
   return(x)
 }
 
+# We need to apply a linear transformation 
+# mapping the given coordinates to the corresponding pixels on the image
+
+# Coordinate range in data frame
+# min: {x: 0, y: 0}
+# max: {x: 14820, y: 14881}
+# Coordinate range on map
+# min: {x: -570, y: -420}
+# max: {x: 15220, y: 14980}
+# Image pixel coordinates
+# min: {x: 0, y: 0}
+# max: {x: 512, y: 512}
+
+f.x <- function(x) {
+  # Input range -570 to 15220
+  # Output range 0 to 512
+  
+  i.xmin = -570
+  i.xmax = 15220
+  o.xmin = 0
+  o.xmax = 512
+  
+  o.xmin + (o.xmax - o.xmin) * (x - i.xmin) / (i.xmax - i.xmin)
+}
+
+f.y <- function(y) {
+  # Input range -420 to 14980
+  # Output range 0 to 512
+  
+  i.ymin = -420
+  i.ymax = 14980
+  o.ymin = 0
+  o.ymax = 512
+  
+  o.ymin + (o.ymax - o.ymin) * (y - i.ymin) / (i.ymax - i.ymin)
+}
+
 # Extract the positions of all events in a given match
+# ... and apply transformation to find corresponding pixel on image
 coord <- data.frame %>% 
   filter(matchId == 2054994244) %>%
   select(starts_with("timeline.frames.events.position.")) %>%
@@ -111,55 +150,16 @@ coord <- data.frame %>%
   mutate(ID = fill.na(ID)) %>%  # Fill IDs
   complete.remove() %>%   # Remove incompletes
   spread(axis, coordinate) %>%
-  select(-ID)
-
-# Map dimensions
-# min: {x: 0, y: 0}
-# max: {x: 14820, y: 14881}
-
-f.x <- function(x) {
-  # Input:
-  # min: {x: -570, y: -420}
-  # max: {x: 15220, y: 14980}
-  # Output:
-  # min: {x: 0, y: 0}
-  # max: {x: 512, y: 512}
-  
-  i.xmin = -570
-  i.xmax = 15220
-  o.xmin = 0
-  o.xmax = 512
-  
-  x <- o.xmin + (o.xmax - o.xmin) * (x - i.xmin) / (i.xmax - i.xmin)
-
-  return(x)
-}
-
-f.y <- function(y) {
-  # Input:
-  # min: {x: -570, y: -420}
-  # max: {x: 15220, y: 14980}
-  # Output:
-  # min: {x: 0, y: 0}
-  # max: {x: 512, y: 512}
-  
-  i.ymin = -420
-  i.ymax = 14980
-  o.ymin = 0
-  o.ymax = 512
-  
-  y <- o.ymin + (o.ymax - o.ymin) * (y - i.ymin) / (i.ymax - i.ymin)
-  
-  return(y)
-}
+  select(-ID) %>%
+  mutate(x = f.x(x), y = f.y(y))  # Apply linear transformation
 
 # Get background image
 img <- readPNG("data/minimap-mh.png")
 g <- rasterGrob(img, interpolate=TRUE, width=unit(1,"npc"), height=unit(1,"npc"))
 
 # Scatter plot with background
-p <- ggplot(coord, aes(f.x(x), f.y(y))) + 
-  annotation_custom(g, xmin=0, xmax=512, ymin=0, ymax=512) +
+p <- ggplot(coord, aes(x, y)) + 
+  annotation_custom(g, xmin = 0, xmax = 512, ymin = 0, ymax = 512) +
   geom_point(alpha = 0.5, size = 3) +
   expand_limits(x = c(0,512), y = c(0,512))
 
