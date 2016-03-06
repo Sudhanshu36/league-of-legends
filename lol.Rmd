@@ -72,6 +72,7 @@ Load all 10 files.
 names(data.frame) %>% write(file = "names")
 ```
 
+We plot the events of a match.
 ```{r}
 convert.numeric <- function(x) {
   as.numeric(as.character(x))
@@ -150,7 +151,7 @@ g <- rasterGrob(img, interpolate=TRUE, width=unit(1,"npc"), height=unit(1,"npc")
 # Scatter plot with background
 p <- ggplot(coord, aes(f.x(x), f.y(y))) + 
   annotation_custom(g, xmin=0, xmax=512, ymin=0, ymax=512) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 3) +
   expand_limits(x = c(0,512), y = c(0,512))
 
 # Remove padding and decorations
@@ -170,9 +171,12 @@ p <- p +
           panel.grid.minor=element_blank(),
           plot.background=element_blank())
 
-# Show plot
+# Show and save plot
 print(p)
-  
+ggsave("figures/events.png", dpi = 51.2, width = 10, height = 10, units = "in")
+```
+
+```{r}
 #   filter(timeline.frames.events.eventType == "CHAMPION_KILL") %>%
 #   select(contains = "tenToTwenty") %>%
 #   colSums()
