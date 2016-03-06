@@ -1,9 +1,15 @@
-
+---
+title: "League of Legends Data Analysis"
+author: "Vincent Quenneville-Bélair"
+date: "March, 2016"
+output: html_document
+---
 
 Loading packages.
 ```{r}
 library("rjson")
 # library("jsonlite")
+# https://cran.r-project.org/web/packages/tidyjson/vignettes/introduction-to-tidyjson.html
 # library("tidyjson")
 
 library(plyr)
@@ -11,8 +17,9 @@ library(tidyr)
 library(dplyr)
 library(stringr)
 
-# https://cran.r-project.org/web/packages/tidyjson/vignettes/introduction-to-tidyjson.html
-# library(tidyjson)
+library(png)
+library(grid)
+library(ggplot2)
 ```
 
 Test opening of similar data.
@@ -135,10 +142,6 @@ f.y <- function(y) {
   
   return(y)
 }
-
-library(png)
-library(grid)
-library(ggplot2)
 
 # Get background image
 img <- readPNG("data/minimap-mh.png")
