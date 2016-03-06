@@ -96,6 +96,10 @@ coord <- coord %>%
   spread(axis, coordinate) %>%
   select(-ID)
 
+# Map dimensions
+# min: {x: 0, y: 0}
+# max: {x: 14820, y: 14881}
+
 f.x <- function(x) {
   # Input:
   # min: {x: -570, y: -420}
@@ -136,24 +140,35 @@ library(png)
 library(grid)
 library(ggplot2)
 
+# Get background image
 img <- readPNG("data/minimap-mh.png")
 g <- rasterGrob(img, interpolate=TRUE, width=unit(1,"npc"), height=unit(1,"npc"))
 
-ggplot(coord, aes(f.x(x), f.y(y))) + 
+# Scatter plot with background
+p <- ggplot(coord, aes(f.x(x), f.y(y))) + 
   annotation_custom(g, xmin=0, xmax=512, ymin=0, ymax=512) +
   geom_point(alpha = 0.5) +
   expand_limits(x = c(0,512), y = c(0,512))
-  # expand_limits(x = c(0,14720), y = c(0,14881)) 
-  # aes(ymin=0) + aes(xmin=0) + aes(ymax=14881) + aes(xmax=14820)
-  # expand_limits(x = c(0,14720), y = c(0,14881)) 
-  # scale_x_continuous(limits = c(0, 14881)) +
-  # scale_y_continuous(limits = c(0, 14720)) 
 
-# ggplot(coord, aes(x, y)) + geom_rect(aes(fill = density))
+# Remove padding and decorations
+p <- p +
+  scale_y_continuous(expand = c(0,0)) + 
+  scale_x_continuous(expand = c(0,0)) +
+  theme(axis.line=element_blank(),
+          axis.text.x=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank(),
+          legend.position="none",
+          panel.background=element_blank(),
+          panel.border=element_blank(),
+          panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),
+          plot.background=element_blank())
 
-# Map dimensions
-# min: {x: 0, y: 0}
-# max: {x: 14820, y: 14881}
+# Show plot
+print(p)
   
 #   filter(timeline.frames.events.eventType == "CHAMPION_KILL") %>%
 #   select(contains = "tenToTwenty") %>%
