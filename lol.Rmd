@@ -211,6 +211,27 @@ events <- data.frame %>%
 
 # Find how many of each event type
 summary(as.factor(events$eventType))
+
+# BUILDING_KILL      CHAMPION_KILL ELITE_MONSTER_KILL     ITEM_DESTROYED     ITEM_PURCHASED
+#            17                110                  6                215                289
+#     ITEM_SOLD          ITEM_UNDO     SKILL_LEVEL_UP          WARD_KILL        WARD_PLACED
+#            11                  5                180                  5                447 
+```
+
+```{r}
+# Extract event type for each event
+timeline <- data.frame %>% 
+  filter(matchId == 2054994244) %>%
+  select(matches("tenToTwenty|zeroToTen")) %>%
+  convert.char() %>%
+  gather(key = TypeMomentID, value = Number) %>%
+  mutate(TypeMomentID = 
+         str_replace_all(TypeMomentID, "participants.timeline.", "")) %>%
+  separate("TypeMomentID", c("Type", "Moment", "ID")) %>%
+  mutate(ID = as.numeric(ID)) %>%
+  mutate(Number = as.numeric(Number)) %>%
+  mutate(ID = fill.na(ID)) %>%  # Fill IDs
+  na.omit()
 ```
 
 ```{r}
