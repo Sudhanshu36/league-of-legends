@@ -80,7 +80,7 @@ Load all 10 files.
 names(data.frame) %>% write(file = "names")
 ```
 
-We plot the events of a match.
+Helper functions for manipulating columns.
 ```{r}
 # Convert to numeric
 convert.numeric <- function(x) {
@@ -98,6 +98,14 @@ fill.na <- function(x) {
   return(x)
 }
 
+# Convert to string without factors
+convert.char <- function(x) {
+  data.frame(lapply(x, as.character), stringsAsFactors=FALSE) 
+}
+```
+
+We plot the events of a match.
+```{r}
 # We need to apply a linear transformation 
 # mapping the given coordinates to the corresponding pixels on the image
 
@@ -186,11 +194,8 @@ ggsave("figures/events.png", dpi = 51.2, width = 10, height = 10, units = "in")
 ```
 
 ```{r}
-convert.char <- function(x) {
-  data.frame(lapply(x, as.character), stringsAsFactors=FALSE) 
-}
-
-# regular expression to match numbers
+# Regular expression to match numbers
+# http://stackoverflow.com/questions/15451251/extract-numeric-part-of-strings-of-mixed-numbers-and-characters-in-r
 regexp <- "[[:digit:]]+"
 
 # Extract event type for each event
@@ -203,6 +208,9 @@ events <- data.frame %>%
   mutate(ID = fill.na(ID)) %>%  # Fill IDs
   mutate(ID = as.numeric(ID)) %>%
   complete.remove()   # Remove incompletes
+
+# Find how many of each event type
+summary(as.factor(events$eventType))
 ```
 
 ```{r}
