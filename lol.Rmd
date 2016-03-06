@@ -156,7 +156,7 @@ coord <- data.frame %>%
                            "timeline.frames.events.position.", "")) %>%
   separate("timeline.frames.events.position", c("axis", "ID")) %>%
   mutate(ID = fill.na(ID)) %>%  # Fill IDs
-  complete.remove() %>%   # Remove incompletes
+  na.omit() %>%
   spread(axis, coordinate) %>%
   select(-ID) %>%
   mutate(x = f.x(x), y = f.y(y))  # Apply linear transformation
@@ -207,7 +207,7 @@ events <- data.frame %>%
   mutate(ID = str_extract(ID, regexp)) %>% 
   mutate(ID = fill.na(ID)) %>%  # Fill IDs
   mutate(ID = as.numeric(ID)) %>%
-  complete.remove()   # Remove incompletes
+  na.omit()
 
 # Find how many of each event type
 summary(as.factor(events$eventType))
