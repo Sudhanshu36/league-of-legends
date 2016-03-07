@@ -47,16 +47,22 @@ Make data frame for first objectives.
 first <- data.json %>% 
   enter_object("matches") %>%
   gather_array("matches.index") %>% 
-  spread_values(matchId = jstring("matchId")) %>%
+  spread_values(matchId = jnumber("matchId")) %>%
   enter_object("teams") %>%
   gather_array("teams.index") %>% 
   spread_values(
-    winner = jstring("winner"),
-    firstBaron = jstring("firstBaron"),
-    firstBlood = jstring("firstBlood"),
-    firstDragon = jstring("firstDragon"),
-    firstInhibitor = jstring("firstInhibitor"),
-    firstRiftHerald = jstring("firstRiftHerald"))
+    teamId = jnumber("teamId"),
+    winner = jlogical("winner"),
+    towerKills = jnumber("towerKills"), 
+    riftHeraldKills = jnumber("riftHeraldKills"), 
+    inhibitorKills jnumber("inhibitorKills"), 
+    dragonKills = jnumber("dragonKills"), 
+    baronKills = jnumber("baronKills"), 
+    firstBaron = jlogical("firstBaron"),
+    firstBlood = jlogical("firstBlood"),
+    firstDragon = jlogical("firstDragon"),
+    firstInhibitor = jlogical("firstInhibitor"),
+    firstRiftHerald = jlogical("firstRiftHerald"))
 ```
 
 ```{r}
@@ -67,7 +73,7 @@ contract <- function(x) {
 events <- data.json %>%
   enter_object("matches") %>%
   gather_array("matches.index") %>%
-  spread_values(matchId = jstring("matchId")) %>%
+  spread_values(matchId = jnumber("matchId")) %>%
   enter_object("timeline") %>%
   enter_object("frames") %>%
   gather_array("frames.index") %>%
@@ -75,16 +81,15 @@ events <- data.json %>%
   gather_array("events.index") %>%
   spread_values(eventType = jstring("eventType"),
                 position = jstring("position"), 
-                teamId = jstring("teamId"),
-                participantId = jstring("participantId"), 
-                timestamp = jstring("timestamp")) %>%
+                teamId = jnumber("teamId"),
+                participantId = jnumber("participantId"), 
+                timestamp = jnumber("timestamp")) %>%
   mutate(position = sapply(str_extract_all(position, "[[:digit:]]+"), contract)) %>%
   # mutate(teamId = ifelse(is.na(teamId), ifelse(participantId < 5, 100, 200), teamId)) %>%
   as.data.frame() %>%
   separate(position, c("X", "Y")) %>%
   mutate(eventType = as.factor(eventType),
          teamId = as.factor(teamId),
-         timestamp = as.numeric(timestamp), 
          X = as.numeric(X),
          Y = as.numeric(Y)) 
 
@@ -181,18 +186,18 @@ p <- ggplot(coord, aes(X, Y, color = teamId)) +
 p <- p +
   scale_y_continuous(expand = c(0,0)) + 
   scale_x_continuous(expand = c(0,0)) +
-  theme(axis.line=element_blank(),
-          axis.text.x=element_blank(),
-          axis.text.y=element_blank(),
-          axis.ticks=element_blank(),
-          axis.title.x=element_blank(),
-          axis.title.y=element_blank(),
-          legend.position="none",
-          panel.background=element_blank(),
-          panel.border=element_blank(),
-          panel.grid.major=element_blank(),
-          panel.grid.minor=element_blank(),
-          plot.background=element_blank())
+  theme(axis.line = element_blank(),
+          axis.text.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          legend.position = "none",
+          panel.background = element_blank(),
+          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          plot.background = element_blank())
 
 # Show and save plot
 print(p)
