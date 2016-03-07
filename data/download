@@ -2,3 +2,8 @@
 
 # Download the 10 files given as seed data
 for i in $(seq 1 10); do wget https://s3-us-west-1.amazonaws.com/riot-api/seed_data/matches$i.json; done
+
+# Third file has an invalid character
+cp matches3.json{,.original}
+# iconv -c -f us-ascii -t utf-8 matches3.json.original -o matches3.json
+iconv -c -f us-ascii -t us-ascii matches3.json.original -o matches3.json
