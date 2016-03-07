@@ -7,10 +7,8 @@ output: html_document
 
 Loading packages.
 ```{r}
-library("rjson")
-# library("jsonlite")
 # https://cran.r-project.org/web/packages/tidyjson/vignettes/introduction-to-tidyjson.html
-# library("tidyjson")
+library("tidyjson")
 
 library(plyr)
 library(tidyr)
@@ -28,43 +26,26 @@ library(ggplot2)
 # options("riot.key" = riot.key)
 ```
 
-Test opening of similar data.
-```{r}
-# http://stackoverflow.com/questions/27430042/parse-nested-json-to-data-frame-in-r
-
-data.file <- "data/HQDf2ase.txt"
-data.json <- fromJSON(file = data.file)
-data.unlist <- lapply(data.json$matches, unlist)
-
-convert.list <- function(x){
-  do.call("data.frame", as.list(x))
-}
-
-ptm <- proc.time()
-data.match <- rbind.fill(lapply(data.unlist, convert.list))
-proc.time() - ptm
-
-data.frame <- as.data.frame(data.match)
-```
-
 Load one match file.
 ```{r}
-data.file <- paste("data/matches", 1, ".json", sep = "")
-# data.json <- fromJSON(file = data.file)
-data.json <- fromJSON(txt = data.file)  # jsonlite
-data.unlist <- lapply(data.json$matches, unlist)
+# TidyJSON
+data.file <- paste("data/matches", 1, ".json", sep = "") 
+data.json <- read_json(data.file)
 
-funct <- function(x){
-  do.call("data.frame", as.list(x))
-}
+data.json %>% 
+  enter_object("matches") %>%
+  gather_array %>% 
+  spread_values(matchId = jstring("matchId"))
+  
+  
+  spread_values(customer = jstring("name")) %>%
+  enter_object("shopping cart") %>%
+  gather_array %>%
+  spread_values(date = jstring("date")) %>%
+  enter_object("basket") %>%
+  gather_keys("product") %>%
+  append_values_number("quantity")         
 
-ptm <- proc.time()
-data.match <- rbind.fill(lapply(data.unlist, funct))
-proc.time() - ptm
-
-data.frame <- as.data.frame(data.match)
-
-# data.frame <- as.data.frame(lapply(data.frame, as.character), stringsAsFactors=FALSE)
 ```
 
 Load all 10 files.
@@ -206,9 +187,9 @@ events.type <- data.frame %>%
   filter(matchId == 2054994244) %>%
   select(starts_with("timeline.frames.events.")) %>%
   convert.char() %>%
-  gather(key = eventType, value = eventType, 
+  gather(key = ID, value = eventType, 
          starts_with("timeline.frames.events.eventType")) %>%
-  mutate(eventType = str_extract(eventType, regexp)) %>% 
+  mutate(ID = str_extract(eventType, regexp)) %>% 
   mutate(ID = fill.na(ID)) %>%  # Fill IDs
   mutate(ID = as.numeric(ID)) %>%
   na.omit()
@@ -220,6 +201,30 @@ summary(as.factor(events.type$eventType))
 #            17                110                  6                215                289
 #     ITEM_SOLD          ITEM_UNDO     SKILL_LEVEL_UP          WARD_KILL        WARD_PLACED
 #            11                  5                180                  5                447 
+```
+
+```{r}
+# Extract event participant for each event
+events.partipant <- data.frame %>% 
+  filter(matchId == 2054994244) %>%
+  select(starts_with("timeline.frames.events.participantId")) %>%
+  convert.char() %>%
+  gather(key = ID, value = participant) %>%
+  mutate(ID = str_extract(ID, regexp)) %>% 
+  mutate(ID = fill.na(ID)) %>%  # Fill IDs
+  mutate(ID = as.numeric(ID)) %>%
+  na.omit()
+
+# Extract event time for each event
+events.partipant <- data.frame %>% 
+  filter(matchId == 2054994244) %>%
+  select(starts_with("timeline.frames.events.timestamp")) %>%
+  convert.char() %>%
+  gather(key = ID, value = timestamp) %>%
+  mutate(ID = str_extract(ID, regexp)) %>% 
+  mutate(ID = fill.na(ID)) %>%  # Fill IDs
+  mutate(ID = as.numeric(ID)) %>%
+  na.omit()
 ```
 
 ```{r}
