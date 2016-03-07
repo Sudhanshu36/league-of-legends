@@ -10,7 +10,7 @@ cp matches3.json{,.original}
 iconv -c -f us-ascii -t us-ascii matches3.json.original -o matches3.json
 # rm matches3.json.original
 
-# Merge all json
+# Merge all json together
 jq -s '.' matches*.json > matches_all.json
 
 # Clean
