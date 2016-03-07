@@ -19,6 +19,10 @@ library(stringr)
 library(png)
 library(grid)
 library(ggplot2)
+library(rattle)
+
+library(caret)
+library(pROC)
 ```
 
 ```{r}
@@ -30,15 +34,15 @@ library(ggplot2)
 Load match file.
 ```{r}
 # TidyJSON
-# data.file <- "data/matches1.json"
-data.file <- "data/matches_all.json"
+data.file <- "data/matches1.json"
+# data.file <- "data/matches_all.json"
 data.json <- read_json(data.file)
 ```
 
-Match information.
+Load information from each match.
 ```{r}
 data.match <- data.json %>% 
-  gather_array("file.index") %>%
+  # gather_array("file.index") %>%
   enter_object("matches") %>%
   gather_array("matches.index") %>% 
   spread_values(matchId = jnumber("matchId")) %>%
@@ -78,7 +82,7 @@ team %>%
   filter(matchId == 2054994244) %>%
   summary()
 
-first <- team %>%
+data <- team %>%
   select(matchId, 
          teamId,
          winner,
@@ -112,6 +116,124 @@ first <- team %>%
 # 10 2054995158    200        100        200         200            200               0
 # ..        ...    ...        ...        ...         ...            ...             ...
 ```
+
+We divide the dataset into train and test.
+```{r}
+data <- data %>% select(-matchId)
+set.seed(1)
+
+training.index <- createDataPartition(data$winner, p = .8, list = FALSE)
+training <- data[ training.index,]
+testing  <- data[-training.index,]
+
+# Enough features?
+nrow(training)/ncol(training)
+```
+
+We create dummy variables for categorical variables.
+```{r}
+# dummies <- dummyVars(~ ., data = training, sep = "__", drop2nd = TRUE)
+# training <- data.frame(predict(dummies, training))
+# testing <- data.frame(predict(dummies, testing))
+# 
+# # Enough features?
+# nrow(training)/ncol(training)
+```
+
+```{r}
+# Cross-Validation
+ctrl <- trainControl(method = "cv", number = 10, verboseIter = T)
+
+# Select method
+# method <- "rf"
+method <- "rpart"
+# method <- "glmnet"
+# method <- "svmLinear"
+# method <- "svmRadial"
+
+if (method == "rf") {
+  modelGrid <- expand.grid(mtry = seq(0, 5, by = 1))
+} else if (method == "rpart") {
+  modelGrid <- expand.grid(cp = seq(0.01, 0.1, by = 0.01))
+} else if (method == "glmnet") {
+  # alpha between 0 (ridge) and 1 (lasso)
+  modelGrid <- expand.grid(.alpha = c(0, 0.1, 0.5, 0.7, 1), .lambda = seq(0, 10, by = 0.1))
+} else if (method == "svmLinear") {
+  modelGrid <- expand.grid(C = seq(0.5, 5, by = 0.5))
+} else if (method == "svmRadial") {
+  modelGrid <- expand.grid(C = seq(0.5, 5, by = 0.5), sigma = seq(0.1, 0.5, by = 0.1))
+}
+
+# We can try different methods: svmLinear glmnet rpart svmRadial
+modelTune <- train(winner ~ .,
+                   data = training,
+                   tuneGrid = modelGrid,
+                   trControl = ctrl,
+                   method = method,
+                   # summaryFunction = twoClassSummary,
+                   # metric = "ROC",
+                   # classProbs = TRUE,
+                   # importance = TRUE,
+                   # scale = FALSE,
+                   na.action = na.pass)
+
+modelTune
+varImp(modelTune)
+plot(modelTune)
+
+modelTune$bestTune
+plot(modelTune$results)
+
+par(mfrow = c(1,1))
+plot(modelTune$finalModel)
+
+# fancyRpartPlot(modelTune$finalModel)
+```
+
+We evaluate using the ROC curve.
+```{r}
+probsTrain <- predict(modelTune,
+                      training,
+                      type = "prob",
+                      na.action = na.pass)
+
+rocCurve   <- roc(response = training$winner,
+                      predictor = probsTrain$"200",
+                      levels = rev(levels(training$winner)))
+
+plot(rocCurve, print.thres = "best")
+
+names(rocCurve)
+rocCurve$thresholds
+rocCurve$sensitivity
+
+# choose threshold
+qplot(x = rocCurve$thresholds, y = rocCurve$sensit)
+qplot(x = rocCurve$thresholds, y = rocCurve$spec)
+```
+
+We now predict on the test set.
+```{r}
+modelPredict <- predict(modelTune,
+                        newdata = testing,
+                        # type = "prob",
+                        na.action = na.pass)
+
+# thresold <- 0.7
+# modelPredict <- modelPredict %>%
+#   mutate(class = ifelse("200" > thresold, "200", "100")) %>%
+#   mutate(class = as.factor(class))
+
+par(mfrow = c(1,1))
+plot(modelPredict)
+
+table(predict = modelPredict, true = testing$winner)
+
+rtCM <- confusionMatrix(modelPredict, testing$winner, positive = "200")
+rtCM
+```
+
+# Map overlay
 
 Make data frame for events in matches.
 ```{r}
