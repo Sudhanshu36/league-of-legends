@@ -10,6 +10,10 @@ runtime: shiny
 
 ![eSport is BIG](figures/world_championship_2015_small.jpg)
 
+## Gameplay
+
+![Summoner's Rift](figures/events.png)
+
 ## Shiny Presentation
 
 This R Markdown presentation is made interactive using Shiny. The viewers of the presentation can change the assumptions underlying what's presented and see the results immediately. 
