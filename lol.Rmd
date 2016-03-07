@@ -60,6 +60,10 @@ first <- data.json %>%
 ```
 
 ```{r}
+contract <- function(x) {
+  paste(x, collapse = ' ')
+} 
+
 events <- data.json %>%
   enter_object("matches") %>%
   gather_array("matches.index") %>%
@@ -72,7 +76,14 @@ events <- data.json %>%
                 position = jstring("position"), 
                 teamId = jstring("teamId"),
                 participantId = jstring("participantId"), 
-                timestamp = jstring("timestamp")) 
+                timestamp = jstring("timestamp")) %>%
+  mutate(position = sapply(str_extract_all(position, "[[:digit:]]+"), contract)) %>%
+  as.data.frame() %>%
+  separate(position, c("X", "Y")) %>%
+  mutate(X = as.numeric(X),
+         Y = as.numeric(Y))
+
+summary(as.factor(events$eventType))
 ```
 
 ```{r}
