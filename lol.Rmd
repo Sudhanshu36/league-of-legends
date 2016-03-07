@@ -8,6 +8,7 @@ output: html_document
 Loading packages.
 ```{r}
 # https://cran.r-project.org/web/packages/tidyjson/vignettes/introduction-to-tidyjson.html
+# https://github.com/sailthru/tidyjson
 library("tidyjson")
 
 library(plyr)
@@ -26,32 +27,52 @@ library(ggplot2)
 # options("riot.key" = riot.key)
 ```
 
+Load all 10 files.
+```{r}
+for (i in 1:10) {
+  json.file <- paste("data/matches", i, ".json", sep = "")
+  json.data <- read_json(json_file)
+}
+```
+
 Load one match file.
 ```{r}
 # TidyJSON
 data.file <- paste("data/matches", 1, ".json", sep = "") 
 data.json <- read_json(data.file)
+```
 
+Make data frame for first objectives.
+```{r}
 first <- data.json %>% 
   enter_object("matches") %>%
   gather_array("matches.index") %>% 
   # spread_values(matchId = jstring("matchId")) %>%
   enter_object("teams") %>%
   gather_array("teams.index") %>% 
-  spread_values(winner = jstring("winner")) %>%
-  spread_values(firstBaron = jstring("firstBaron")) %>%
-  spread_values(firstBlood = jstring("firstBlood")) %>%
-  spread_values(firstDragon = jstring("firstDragon")) %>%
-  spread_values(firstInhibitor = jstring("firstInhibitor")) %>%
-  spread_values(firstRiftHerald = jstring("firstRiftHerald"))
+  spread_values(
+    winner = jstring("winner"),
+    firstBaron = jstring("firstBaron"),
+    firstBlood = jstring("firstBlood"),
+    firstDragon = jstring("firstDragon"),
+    firstInhibitor = jstring("firstInhibitor"),
+    firstRiftHerald = jstring("firstRiftHerald"))
 ```
 
-Load all 10 files.
 ```{r}
-# for (i in 1:10) {
-#   json_file <- paste("data/matches", i, ".json", sep = "")
-# 	json_data <- fromJSON(file=json_file)
-# }
+events <- data.json %>%
+  enter_object("matches") %>%
+  gather_array("matches.index") %>%
+  enter_object("timeline") %>%
+  enter_object("frames") %>%
+  gather_array("frames.index") %>%
+  enter_object("events") %>%
+  gather_array("events.index") %>%
+  spread_values(eventType = jstring("eventType"),
+                position = jstring("position"), 
+                teamId = jstring("teamId"),
+                participantId = jstring("participantId"), 
+                timestamp = jstring("timestamp")) 
 ```
 
 ```{r}
