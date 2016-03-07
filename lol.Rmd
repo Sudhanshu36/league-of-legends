@@ -79,15 +79,18 @@ events <- data.json %>%
                 participantId = jstring("participantId"), 
                 timestamp = jstring("timestamp")) %>%
   mutate(position = sapply(str_extract_all(position, "[[:digit:]]+"), contract)) %>%
+  # mutate(teamId = ifelse(is.na(teamId), ifelse(participantId < 5, 100, 200), teamId)) %>%
   as.data.frame() %>%
   separate(position, c("X", "Y")) %>%
-  mutate(X = as.numeric(X),
+  mutate(eventType = as.factor(eventType),
+         teamId = as.factor(teamId),
+         timestamp = as.numeric(timestamp), 
+         X = as.numeric(X),
          Y = as.numeric(Y)) 
 
 events %>%
   filter(matchId == 2054994244) %>%
   select(eventType) %>%
-  mutate(eventType = as.factor(eventType)) %>%
   summary()
 
 #           eventType  
@@ -161,9 +164,6 @@ f.y <- function(y) {
 # ... and apply transformation to find corresponding pixel on image
 coord <- events %>% 
   filter(matchId == 2054994244) %>%
-  select(X, Y) %>%
-  na.omit() %>%
-  select(X, Y) %>%
   mutate(X = f.x(X), Y = f.y(Y))  # Apply linear transformation
 
 # Get background image
@@ -171,7 +171,8 @@ img <- readPNG("data/minimap-mh.png")
 g <- rasterGrob(img, interpolate=TRUE, width=unit(1,"npc"), height=unit(1,"npc"))
 
 # Scatter plot with background
-p <- ggplot(coord, aes(X, Y)) + 
+p <- ggplot(coord, aes(X, Y, color = teamId)) + 
+  scale_color_manual(na.value = "black", values = c("blue","red")) +
   annotation_custom(g, xmin = 0, xmax = 512, ymin = 0, ymax = 512) +
   geom_point(alpha = 0.5, size = 3) +
   expand_limits(x = c(0,512), y = c(0,512))
