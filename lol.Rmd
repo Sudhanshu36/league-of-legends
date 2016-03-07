@@ -47,7 +47,7 @@ Make data frame for first objectives.
 first <- data.json %>% 
   enter_object("matches") %>%
   gather_array("matches.index") %>% 
-  # spread_values(matchId = jstring("matchId")) %>%
+  spread_values(matchId = jstring("matchId")) %>%
   enter_object("teams") %>%
   gather_array("teams.index") %>% 
   spread_values(
@@ -67,6 +67,7 @@ contract <- function(x) {
 events <- data.json %>%
   enter_object("matches") %>%
   gather_array("matches.index") %>%
+  spread_values(matchId = jstring("matchId")) %>%
   enter_object("timeline") %>%
   enter_object("frames") %>%
   gather_array("frames.index") %>%
@@ -86,11 +87,6 @@ events <- data.json %>%
 summary(as.factor(events$eventType))
 ```
 
-```{r}
-# Save column names
-names(data.frame) %>% write(file = "names")
-```
-
 Helper functions for manipulating columns.
 ```{r}
 # Convert to numeric
@@ -101,12 +97,6 @@ convert.numeric <- function(x) {
 # Remove incomplete cases
 complete.remove <- function(x) {
   x <- x[complete.cases(x),]  
-}
-
-# Fill missing values with 0
-fill.na <- function(x) {
-  x[is.na(x)] <- 0
-  return(x)
 }
 
 # Convert to string without factors
@@ -156,31 +146,19 @@ f.y <- function(y) {
 
 # Extract the positions of all events in a given match
 # ... and apply transformation to find corresponding pixel on image
-events.coord <- data.frame %>% 
+coord <- events %>% 
   filter(matchId == 2054994244) %>%
-  select(starts_with("timeline.frames.events.position.")) %>%
-  lapply(convert.numeric) %>%
-  as.data.frame() %>%
-  gather(key = timeline.frames.events.position, value = coordinate) %>%
-  mutate(timeline.frames.events.position = 
-           str_replace_all(timeline.frames.events.position, 
-                           "timeline.frames.events.position.", "")) %>%
-  separate("timeline.frames.events.position", c("axis", "ID")) %>%
-  mutate(ID = fill.na(ID)) %>%  # Fill IDs
+  select(X, Y) %>%
   na.omit() %>%
-  spread(axis, coordinate) 
-
-# Format for plotting
-coord <- events.coord %>%
-  select(-ID) %>%
-  mutate(x = f.x(x), y = f.y(y))  # Apply linear transformation
+  select(X, Y) %>%
+  mutate(X = f.x(X), Y = f.y(Y))  # Apply linear transformation
 
 # Get background image
 img <- readPNG("data/minimap-mh.png")
 g <- rasterGrob(img, interpolate=TRUE, width=unit(1,"npc"), height=unit(1,"npc"))
 
 # Scatter plot with background
-p <- ggplot(coord, aes(x, y)) + 
+p <- ggplot(coord, aes(X, Y)) + 
   annotation_custom(g, xmin = 0, xmax = 512, ymin = 0, ymax = 512) +
   geom_point(alpha = 0.5, size = 3) +
   expand_limits(x = c(0,512), y = c(0,512))
