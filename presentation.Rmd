@@ -8,7 +8,7 @@ runtime: shiny
 
 ## League of Legends
 
-![eSport is BIG](figures/world_championship_2015.jpg)
+![eSport is BIG](figures/world_championship_2015_small.jpg)
 
 ## Shiny Presentation
 
