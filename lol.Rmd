@@ -42,6 +42,24 @@ data.file <- paste("data/matches", 1, ".json", sep = "")
 data.json <- read_json(data.file)
 ```
 
+Match information.
+```{r}
+match <- data.json %>% 
+  enter_object("matches") %>%
+  gather_array("matches.index") %>% 
+  spread_values(matchId = jnumber("matchId"),
+                mapId = jnumber("mapId"),
+                matchDuration = jnumber("matchDuration"),
+                matchMode = jstring("matchMode"),
+                matchType = jstring("matchType"),
+                queueType = jstring("queueType"),
+                region = jstring("region"))
+
+match %>%
+  filter(matchId == 2054994244) %>%
+  head()
+```
+
 Make data frame for first objectives.
 ```{r}
 first <- data.json %>% 
@@ -63,6 +81,10 @@ first <- data.json %>%
     firstDragon = jlogical("firstDragon"),
     firstInhibitor = jlogical("firstInhibitor"),
     firstRiftHerald = jlogical("firstRiftHerald"))
+
+first %>%
+  filter(matchId == 2054994244) %>%
+  summary()
 ```
 
 ```{r}
