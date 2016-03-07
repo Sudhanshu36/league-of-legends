@@ -55,7 +55,7 @@ first <- data.json %>%
     winner = jlogical("winner"),
     towerKills = jnumber("towerKills"), 
     riftHeraldKills = jnumber("riftHeraldKills"), 
-    inhibitorKills jnumber("inhibitorKills"), 
+    inhibitorKills = jnumber("inhibitorKills"), 
     dragonKills = jnumber("dragonKills"), 
     baronKills = jnumber("baronKills"), 
     firstBaron = jlogical("firstBaron"),
