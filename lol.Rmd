@@ -62,7 +62,7 @@ match %>%
 
 Make data frame for first objectives.
 ```{r}
-first <- data.json %>% 
+team <- data.json %>% 
   enter_object("matches") %>%
   gather_array("matches.index") %>% 
   spread_values(matchId = jnumber("matchId")) %>%
@@ -82,11 +82,31 @@ first <- data.json %>%
     firstInhibitor = jlogical("firstInhibitor"),
     firstRiftHerald = jlogical("firstRiftHerald"))
 
-first %>%
+team %>%
   filter(matchId == 2054994244) %>%
   summary()
+
+first <- team %>%
+  select(matchId, 
+         teamId,
+         winner,
+         firstBaron,
+         firstBlood,
+         firstDragon,
+         firstInhibitor,
+         firstRiftHerald) %>%
+  mutate(winner = winner * teamId,
+         firstBaron = firstBaron * teamId,
+         firstBlood = firstBlood * teamId,
+         firstDragon = firstDragon * teamId,
+         firstInhibitor = firstInhibitor * teamId,
+         firstRiftHerald = firstRiftHerald * teamId) %>%
+  group_by(matchId) %>%
+  summarise_each(funs(sum)) %>%
+  select(-teamId)
 ```
 
+Make data frame for events in matches.
 ```{r}
 contract <- function(x) {
   paste(x, collapse = ' ')
@@ -128,24 +148,6 @@ events %>%
 #  CHAMPION_KILL :110  
 #  BUILDING_KILL : 17  
 #  (Other)       : 27  
-```
-
-Helper functions for manipulating columns.
-```{r}
-# Convert to numeric
-convert.numeric <- function(x) {
-  as.numeric(as.character(x))
-}
-
-# Remove incomplete cases
-complete.remove <- function(x) {
-  x <- x[complete.cases(x),]  
-}
-
-# Convert to string without factors
-convert.char <- function(x) {
-  data.frame(lapply(x, as.character), stringsAsFactors=FALSE) 
-}
 ```
 
 We plot the events of a match.
@@ -224,4 +226,22 @@ p <- p +
 # Show and save plot
 print(p)
 ggsave("figures/events.png", dpi = 51.2, width = 10, height = 10, units = "in")
+```
+
+Helper functions for manipulating columns.
+```{r}
+# Convert to numeric
+convert.numeric <- function(x) {
+  as.numeric(as.character(x))
+}
+
+# Remove incomplete cases
+complete.remove <- function(x) {
+  x <- x[complete.cases(x),]  
+}
+
+# Convert to string without factors
+convert.char <- function(x) {
+  data.frame(lapply(x, as.character), stringsAsFactors=FALSE) 
+}
 ```
