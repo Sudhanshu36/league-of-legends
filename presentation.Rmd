@@ -1,14 +1,16 @@
 ---
 title: "League of Legends"
-author: "Vincent Quenneville-Bélair"
+author: "Vincent Quenneville-Bélair, Columbia University"
 date: "Data Science Bootcamp 2016"
 output: ioslides_presentation
 runtime: shiny
 ---
 
-## League of Legends
+## eSport is BIG
 
-![eSport is BIG](figures/world_championship_2015_small.jpg)
+![League of Legends](figures/world_championship_2015_small.jpg)
+Championship watched by 36 millions people in 2015.
+# http://www.lazygamer.net/genre/moba/viewership-2015-league-legends-world-championship-toppled-riots-expectations/
 
 ## Gameplay
 
