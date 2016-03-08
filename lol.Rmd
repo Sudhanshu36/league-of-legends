@@ -67,6 +67,7 @@ team <- data.match %>%
     winner = jlogical("winner"),
     towerKills = jnumber("towerKills"), 
     riftHeraldKills = jnumber("riftHeraldKills"), 
+    firstTower = jnumber("firstTower"),
     inhibitorKills = jnumber("inhibitorKills"), 
     dragonKills = jnumber("dragonKills"), 
     baronKills = jnumber("baronKills"), 
@@ -80,7 +81,7 @@ team %>%
   filter(matchId == 2054994244) %>%
   summary()
 
-data <- team %>%
+team <- team %>%
   select(matchId, 
          teamId,
          winner,
@@ -119,13 +120,13 @@ data <- team %>%
 
 Is there an advantage being on the blue/red side?
 ```{r}
-data %>% 
+team %>% 
   select(winner) %>%
   summary()
 ```
 
 ```{r}
-data <- data %>%
+team <- team %>%
   select(winner,
          # firstBaron,
          firstBlood,
@@ -139,6 +140,8 @@ data <- data %>%
 
 We divide the dataset into train and test.
 ```{r}
+data <- team
+
 data <- data %>% select(-matchId)
 set.seed(1)
 
@@ -305,4 +308,6 @@ participants_xp <- timeline %>%
 participants <- cbind(participants_creeps, participants_gold$goldPerMinDeltas, participants_xp$xpPerMinDeltas)
 names(participants)[11] <- "goldPerMinDeltas"
 names(participants)[12] <- "xpPerMinDeltas"
+
+participants <- merge(x = participants, y = team, by = "matchId")
 ```
