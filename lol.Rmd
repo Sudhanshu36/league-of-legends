@@ -283,6 +283,7 @@ convert.char <- function(x) {
 timeline <- data.match %>%
   enter_object("participants") %>%
   gather_array("participants.index") %>%
+  spread_values(teamId = jnumber("teamId")) %>%
   enter_object("timeline")
 
 participants_creeps <- timeline %>% 
@@ -306,8 +307,11 @@ participants_xp <- timeline %>%
   append_values_number("xpPerMinDeltas")
 
 participants <- cbind(participants_creeps, participants_gold$goldPerMinDeltas, participants_xp$xpPerMinDeltas)
-names(participants)[11] <- "goldPerMinDeltas"
-names(participants)[12] <- "xpPerMinDeltas"
+names(participants)[12] <- "goldPerMinDeltas"
+names(participants)[13] <- "xpPerMinDeltas"
 
-participants <- merge(x = participants, y = team, by = "matchId")
+participants <- merge(participants, team, by = "matchId") %>%
+  group_by(matchId, teamId, ParticipantTimelineData) %>%
+  summarise_each(funs(mean), matchId, teamId,
+                 ParticipantTimelineData, creepsPerMinDeltas, goldPerMinDeltas, xpPerMinDeltas)
 ```
