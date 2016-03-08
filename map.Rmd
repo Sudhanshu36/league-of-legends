@@ -1,0 +1,151 @@
+---
+title: "Map"
+author: "Vincent Quenneville-Bélair"
+date: "March, 2016"
+output: html_document
+---
+
+Loading packages.
+```{r}
+# https://cran.r-project.org/web/packages/tidyjson/vignettes/introduction-to-tidyjson.html
+# https://github.com/sailthru/tidyjson
+library("tidyjson")
+
+library(plyr)
+library(tidyr)
+library(dplyr)
+library(stringr)
+
+library(png)
+library(grid)
+library(ggplot2)
+```
+
+Load match file.
+```{r}
+# TidyJSON
+# data.file <- "data/matches1.json"
+data.file <- "data/matches_all.json"
+data.json <- read_json(data.file)
+```
+
+Load information from each match.
+```{r}
+data.match <- data.json %>% 
+  gather_array("file.index") %>%
+  enter_object("matches") %>%
+  gather_array("matches.index") %>% 
+  spread_values(matchId = jnumber("matchId")) %>%
+  select(matchId) %>%
+  spread_values(mapId = jnumber("mapId"),
+                matchDuration = jnumber("matchDuration"),
+                matchMode = jstring("matchMode"),
+                matchType = jstring("matchType"),
+                queueType = jstring("queueType"),
+                region = jstring("region"))
+```
+
+Make data frame for events in matches.
+```{r}
+contract <- function(x) {
+  paste(x, collapse = ' ')
+} 
+
+events <- data.match %>%
+  enter_object("timeline") %>%
+  enter_object("frames") %>%
+  gather_array("frames.index") %>%
+  enter_object("events") %>%
+  gather_array("events.index") %>%
+  spread_values(eventType = jstring("eventType"),
+                position = jstring("position"), 
+                teamId = jnumber("teamId"),
+                participantId = jnumber("participantId"), 
+                timestamp = jnumber("timestamp")) %>%
+  mutate(eventType = as.factor(eventType),
+         teamId = as.factor(teamId)) %>%
+  mutate(position = sapply(str_extract_all(position, "[[:digit:]]+"), contract)) %>%
+  # mutate(teamId = ifelse(is.na(teamId), ifelse(participantId < 5, 100, 200), teamId)) %>%
+  as.data.frame() %>%
+  separate(position, c("X", "Y")) %>%
+  mutate(X = as.numeric(X),
+         Y = as.numeric(Y)) 
+```
+
+We plot the events of a match.
+```{r}
+# We need to apply a linear transformation 
+# mapping the given coordinates to the corresponding pixels on the image
+
+# Coordinate range in data frame
+# min: {x: 0, y: 0}
+# max: {x: 14820, y: 14881}
+# Coordinate range on map
+# min: {x: -570, y: -420}
+# max: {x: 15220, y: 14980}
+# Image pixel coordinates
+# min: {x: 0, y: 0}
+# max: {x: 512, y: 512}
+
+f.x <- function(x) {
+  # Input range -570 to 15220
+  # Output range 0 to 512
+  
+  i.xmin = -570
+  i.xmax = 15220
+  o.xmin = 0
+  o.xmax = 512
+  
+  o.xmin + (o.xmax - o.xmin) * (x - i.xmin) / (i.xmax - i.xmin)
+}
+
+f.y <- function(y) {
+  # Input range -420 to 14980
+  # Output range 0 to 512
+  
+  i.ymin = -420
+  i.ymax = 14980
+  o.ymin = 0
+  o.ymax = 512
+  
+  o.ymin + (o.ymax - o.ymin) * (y - i.ymin) / (i.ymax - i.ymin)
+}
+
+# Extract the positions of all events in a given match
+# ... and apply transformation to find corresponding pixel on image
+coord <- events %>% 
+  filter(matchId == 2054994244) %>%
+  mutate(X = f.x(X), Y = f.y(Y))  # Apply linear transformation
+
+# Get background image
+img <- readPNG("data/minimap-mh.png")
+g <- rasterGrob(img, interpolate=TRUE, width=unit(1,"npc"), height=unit(1,"npc"))
+
+# Scatter plot with background
+p <- ggplot(coord, aes(X, Y, color = teamId)) + 
+  scale_color_manual(na.value = "black", values = c("blue","red")) +
+  annotation_custom(g, xmin = 0, xmax = 512, ymin = 0, ymax = 512) +
+  geom_point(alpha = 0.5, size = 3) +
+  expand_limits(x = c(0,512), y = c(0,512))
+
+# Remove padding and decorations
+p <- p +
+  scale_y_continuous(expand = c(0,0)) + 
+  scale_x_continuous(expand = c(0,0)) +
+  theme(axis.line = element_blank(),
+          axis.text.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          legend.position = "none",
+          panel.background = element_blank(),
+          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          plot.background = element_blank())
+
+# Show and save plot
+print(p)
+ggsave("figures/events.png", dpi = 51.2, width = 10, height = 10, units = "in")
+```
