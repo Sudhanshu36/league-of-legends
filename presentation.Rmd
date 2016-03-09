@@ -6,20 +6,16 @@ output: ioslides_presentation
 runtime: shiny
 ---
 
-## eSport is BIG
+## eSport is BIG {.flexbox .vcenter}
 
-<div class="centered">
 ![League of Legends](figures/world_championship_2015_small.jpg)
-</div>
-Championship watched by 36 millions people in 2015.
+<br>Championship watched by 36 millions people in 2015.
 
 <!-- http://www.lazygamer.net/genre/moba/viewership-2015-league-legends-world-championship-toppled-riots-expectations/ -->
 
-## Defend and Destroy
+## Defend and Destroy {.flexbox .vcenter}
 
-<div class="centered">
 ![Summoner's Rift](figures/events.png)
-</div>
 
 ## Heavily Nested JSON
 
