@@ -47,10 +47,7 @@ data.match <- data.json %>%
 
 Make data frame for events in matches.
 ```{r}
-contract <- function(x) {
-  paste(x, collapse = ' ')
-} 
-
+# Get events information
 match.events <- data.match %>%
   enter_object("timeline") %>%
   enter_object("frames") %>%
@@ -71,17 +68,19 @@ match.events <- data.match %>%
          victimId = ifelse(victimId <= 5, 100, 200),
          killerId = ifelse(killerId <= 5, 100, 200)) 
 
-# Fill in color
+# Fill in team association
 match.events <- match.events %>%
-  mutate(victimId = ifelse(is.na(victimId), killerId, victimId)) %>%
-  mutate(creatorId = ifelse(is.na(creatorId), victimId, creatorId)) %>%
+  mutate(victimId      = ifelse(is.na(victimId), killerId, victimId)) %>%
+  mutate(creatorId     = ifelse(is.na(creatorId), victimId, creatorId)) %>%
   mutate(participantId = ifelse(is.na(participantId), creatorId, participantId)) %>%
-  mutate(teamId = ifelse(is.na(teamId), participantId, teamId)) %>%
-  select(-participantId,-creatorId,-victimId, -killerId) %>%
-  mutate(teamId = ifelse(eventType == "BUILDING_KILL", NA, teamId)) %>%
-  mutate(eventType = as.factor(eventType),
-        teamId = as.factor(teamId))
-  
+  mutate(teamId        = ifelse(is.na(teamId), participantId, teamId)) %>%
+  select(-participantId,-creatorId,-victimId, -killerId) 
+
+# Function to merge a list  
+contract <- function(x) {
+  paste(x, collapse = ' ')
+} 
+
 # Extract position (x,y)
 match.events <- match.events %>%
   mutate(position = sapply(str_extract_all(position, "[[:digit:]]+"), contract)) %>%
@@ -89,6 +88,32 @@ match.events <- match.events %>%
   separate(position, c("X", "Y")) %>%
   mutate(X = as.numeric(X),
          Y = as.numeric(Y)) 
+
+# Turn into factors
+match.events <- match.events %>%
+  mutate(eventType = as.factor(eventType),
+         teamId = as.factor(teamId))
+
+# Convert timestamps in ms to min
+match.events <- match.events %>%
+  mutate(timestamp = timestamp/1000/60)
+
+# Select one match
+match.events <- match.events %>%
+  filter(matchId == 2054994244)
+```
+
+Plot events versus time.
+```{r}
+events <- match.events %>%
+  filter(eventType %in% 
+           c("BUILDING_KILL", "CHAMPION_KILL", "ELITE_MONSTER_KILL", 
+             "SKILL_LEVEL_UP", "WARD_PLACED"))
+  
+p <- ggplot(events, aes(timestamp, color = eventType, group = eventType)) + 
+  geom_density(adjust = 0.5)
+
+plot(p)
 ```
 
 We transform the coordinate given in data frame to coordinate on the image.
@@ -133,8 +158,11 @@ f.y <- function(y) {
 # Extract the positions of all events in a given match
 # ... and apply transformation to find corresponding pixel on image
 coord <- match.events %>% 
-  filter(matchId == 2054994244) %>%
   mutate(X = f.x(X), Y = f.y(Y))  # Apply linear transformation
+
+# Leave buildings as a separate color
+coord <- coord %>%
+  mutate(teamId = ifelse(eventType == "BUILDING_KILL", NA, teamId)) 
 ```
 
 We plot the events of a match over the map.
