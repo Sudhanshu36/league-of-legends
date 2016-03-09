@@ -32,15 +32,15 @@ library(pROC)
 Load match file.
 ```{r}
 # TidyJSON
-# data.file <- "data/matches1.json"
-data.file <- "data/matches_all.json"
+data.file <- "data/matches1.json"
+# data.file <- "data/matches_all.json"
 data.json <- read_json(data.file)
 ```
 
 Load information from each match.
 ```{r}
 data.match <- data.json %>% 
-  gather_array("file.index") %>%
+  # gather_array("file.index") %>%
   enter_object("matches") %>%
   gather_array("matches.index") %>% 
   spread_values(matchId = jnumber("matchId")) %>%
@@ -55,6 +55,61 @@ data.match <- data.json %>%
 data.match %>%
   filter(matchId == 2054994244) %>%
   head()
+```
+
+```{r}
+contract <- function(x) {
+  paste(x, collapse = ' ')
+} 
+
+match.events <- data.match %>%
+  enter_object("timeline") %>%
+  enter_object("frames") %>%
+  gather_array("frames.index") %>%
+  enter_object("events") %>%
+  gather_array("events.index") %>%
+  select(matchId) %>%
+  spread_values(eventType = jstring("eventType"),
+                position = jstring("position"), 
+                teamId = jnumber("teamId"),
+                participantId = jnumber("participantId"), 
+                timestamp = jnumber("timestamp"),
+                creatorId = jnumber("creatorId"),
+                towerType = jstring("towerType")
+                ) %>%
+  mutate(eventType = as.factor(eventType),
+         teamId = as.factor(teamId))
+
+match.winner <- data.match %>%
+  select(matchId) %>%
+  enter_object("teams") %>%
+  gather_array("teams.index") %>% 
+  spread_values(teamId = jnumber("teamId"),
+                winner = jlogical("winner")) %>%
+  select(-teams.index) %>%
+  mutate(winner = winner * teamId) %>%
+  group_by(matchId) %>%
+  summarise_each(funs(sum)) %>%
+  select(-teamId) %>%
+  mutate_each(funs(factor))
+
+match.events <- merge(match.events, match.winner, by = "matchId")
+
+math.surrender <- match.events %>%
+  filter(towerType == "NEXUS_TURRET") %>%
+  select(matchId, teamId, winner, towerType) %>%
+  mutate(NEXUS_TURRET = 1) %>%
+  select(-towerType) %>%
+  group_by(matchId, teamId, winner) %>%
+  summarise_each(funs(sum)) %>%
+  mutate(surrender = ifelse(teamId == winner, FALSE, ifelse(NEXUS_TURRET < 2, TRUE, FALSE))) %>%
+  select(-winner, -NEXUS_TURRET)
+
+# How many matches ended in surrender?
+x <- math.surrender$surrender
+sum(x)
+# Percent of matches that ended in surrender?
+sum(x) / length(x) * 100
 ```
 
 Helper functions for manipulating columns.
