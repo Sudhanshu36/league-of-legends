@@ -24,15 +24,15 @@ library(ggplot2)
 Load match file.
 ```{r}
 # TidyJSON
-# data.file <- "data/matches1.json"
-data.file <- "data/matches_all.json"
+data.file <- "data/matches1.json"
+# data.file <- "data/matches_all.json"
 data.json <- read_json(data.file)
 ```
 
 Load information from each match.
 ```{r}
 data.match <- data.json %>% 
-  gather_array("file.index") %>%
+  # gather_array("file.index") %>%
   enter_object("matches") %>%
   gather_array("matches.index") %>% 
   spread_values(matchId = jnumber("matchId")) %>%
@@ -51,28 +51,47 @@ contract <- function(x) {
   paste(x, collapse = ' ')
 } 
 
-events <- data.match %>%
+match.events <- data.match %>%
   enter_object("timeline") %>%
   enter_object("frames") %>%
   gather_array("frames.index") %>%
   enter_object("events") %>%
   gather_array("events.index") %>%
+  select(matchId) %>%
   spread_values(eventType = jstring("eventType"),
-                position = jstring("position"), 
-                teamId = jnumber("teamId"),
+                timestamp = jnumber("timestamp"),
                 participantId = jnumber("participantId"), 
-                timestamp = jnumber("timestamp")) %>%
+                creatorId = jnumber("creatorId"),
+                victimId = jnumber("victimId"),
+                killerId = jnumber("killerId"),
+                teamId = jnumber("teamId"),
+                position = jstring("position")) %>%
+  mutate(participantId = ifelse(participantId <= 5, 100, 200),
+         creatorId = ifelse(creatorId <= 5, 100, 200),
+         victimId = ifelse(victimId <= 5, 100, 200),
+         killerId = ifelse(killerId <= 5, 100, 200)) 
+
+# Fill in color
+match.events <- match.events %>%
+  mutate(victimId = ifelse(is.na(victimId), killerId, victimId)) %>%
+  mutate(creatorId = ifelse(is.na(creatorId), victimId, creatorId)) %>%
+  mutate(participantId = ifelse(is.na(participantId), creatorId, participantId)) %>%
+  mutate(teamId = ifelse(is.na(teamId), participantId, teamId)) %>%
+  select(-participantId,-creatorId,-victimId, -killerId) %>%
+  mutate(teamId = ifelse(eventType == "BUILDING_KILL", NA, teamId)) %>%
   mutate(eventType = as.factor(eventType),
-         teamId = as.factor(teamId)) %>%
+        teamId = as.factor(teamId))
+  
+# Extract position (x,y)
+match.events <- match.events %>%
   mutate(position = sapply(str_extract_all(position, "[[:digit:]]+"), contract)) %>%
-  # mutate(teamId = ifelse(is.na(teamId), ifelse(participantId < 5, 100, 200), teamId)) %>%
   as.data.frame() %>%
   separate(position, c("X", "Y")) %>%
   mutate(X = as.numeric(X),
          Y = as.numeric(Y)) 
 ```
 
-We plot the events of a match.
+We transform the coordinate given in data frame to coordinate on the image.
 ```{r}
 # We need to apply a linear transformation 
 # mapping the given coordinates to the corresponding pixels on the image
@@ -113,10 +132,13 @@ f.y <- function(y) {
 
 # Extract the positions of all events in a given match
 # ... and apply transformation to find corresponding pixel on image
-coord <- events %>% 
+coord <- match.events %>% 
   filter(matchId == 2054994244) %>%
   mutate(X = f.x(X), Y = f.y(Y))  # Apply linear transformation
+```
 
+We plot the events of a match over the map.
+```{r}
 # Get background image
 img <- readPNG("data/minimap-mh.png")
 g <- rasterGrob(img, interpolate=TRUE, width=unit(1,"npc"), height=unit(1,"npc"))
