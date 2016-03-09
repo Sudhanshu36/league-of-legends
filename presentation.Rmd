@@ -8,14 +8,18 @@ runtime: shiny
 
 ## eSport is BIG
 
+<div class="centered">
 ![League of Legends](figures/world_championship_2015_small.jpg)
-<br>Championship watched by 36 millions people in 2015.
+</div>
+Championship watched by 36 millions people in 2015.
 
 <!-- http://www.lazygamer.net/genre/moba/viewership-2015-league-legends-world-championship-toppled-riots-expectations/ -->
 
 ## Defend and Destroy
 
+<div class="centered">
 ![Summoner's Rift](figures/events.png)
+</div>
 
 ## Heavily Nested JSON
 
