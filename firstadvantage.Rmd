@@ -118,13 +118,6 @@ team <- team %>%
 # ..        ...    ...        ...        ...         ...            ...             ...
 ```
 
-Is there an advantage being on the blue/red side?
-```{r}
-team %>% 
-  select(winner) %>%
-  summary()
-```
-
 ```{r}
 team <- team %>%
   select(winner,

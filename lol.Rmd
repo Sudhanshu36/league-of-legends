@@ -57,6 +57,27 @@ data.match %>%
   head()
 ```
 
+We make the table of winner per match.
+```{r}
+match.winner <- data.match %>%
+  select(matchId) %>%
+  enter_object("teams") %>%
+  gather_array("teams.index") %>% 
+  spread_values(teamId = jnumber("teamId"),
+                winner = jlogical("winner")) %>%
+  select(-teams.index) %>%
+  mutate(winner = winner * teamId) %>%
+  group_by(matchId) %>%
+  summarise_each(funs(sum)) %>%
+  select(-teamId) %>%
+  mutate_each(funs(factor))
+
+# Is there an advantage being on the blue/red side?
+match.winner %>% 
+  select(winner) %>%
+  summary()
+```
+
 ```{r}
 contract <- function(x) {
   paste(x, collapse = ' ')
@@ -79,19 +100,6 @@ match.events <- data.match %>%
                 ) %>%
   mutate(eventType = as.factor(eventType),
          teamId = as.factor(teamId))
-
-match.winner <- data.match %>%
-  select(matchId) %>%
-  enter_object("teams") %>%
-  gather_array("teams.index") %>% 
-  spread_values(teamId = jnumber("teamId"),
-                winner = jlogical("winner")) %>%
-  select(-teams.index) %>%
-  mutate(winner = winner * teamId) %>%
-  group_by(matchId) %>%
-  summarise_each(funs(sum)) %>%
-  select(-teamId) %>%
-  mutate_each(funs(factor))
 
 match.events <- merge(match.events, match.winner, by = "matchId")
 
