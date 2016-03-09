@@ -79,10 +79,6 @@ match.winner %>%
 ```
 
 ```{r}
-contract <- function(x) {
-  paste(x, collapse = ' ')
-} 
-
 match.events <- data.match %>%
   enter_object("timeline") %>%
   enter_object("frames") %>%
@@ -91,15 +87,14 @@ match.events <- data.match %>%
   gather_array("events.index") %>%
   select(matchId) %>%
   spread_values(eventType = jstring("eventType"),
-                position = jstring("position"), 
-                teamId = jnumber("teamId"),
                 participantId = jnumber("participantId"), 
                 timestamp = jnumber("timestamp"),
                 creatorId = jnumber("creatorId"),
-                towerType = jstring("towerType")
-                ) %>%
-  mutate(eventType = as.factor(eventType),
-         teamId = as.factor(teamId))
+                teamId = jnumber("teamId"))
+                
+# Extract tower information to infer whether losing team surrendered
+match.events <- match.events %>%
+  spread_values(towerType = jstring("towerType"))
 
 match.events <- merge(match.events, match.winner, by = "matchId")
 
