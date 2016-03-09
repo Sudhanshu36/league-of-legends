@@ -111,7 +111,8 @@ events <- match.events %>%
              "SKILL_LEVEL_UP", "WARD_PLACED"))
   
 p <- ggplot(events, aes(timestamp, color = eventType, group = eventType)) + 
-  geom_density(adjust = 0.5)
+  geom_density(adjust = 0.5) +
+  xlab("time (min)")
 
 plot(p)
 ```
