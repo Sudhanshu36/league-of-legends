@@ -183,6 +183,12 @@ renderPlot({
 
 # Map overlay
 
+Pick one match to map.
+```{r}
+events <- match.events %>%
+  filter(matchId == 2054994244)
+```
+
 We transform the coordinate given in data frame to coordinate on the image.
 ```{r}
 # We need to apply a linear transformation 
@@ -224,7 +230,7 @@ f.y <- function(y) {
 
 # Extract the positions of all events in a given match
 # ... and apply transformation to find corresponding pixel on image
-coord <- match.events %>% 
+coord <- events %>% 
   mutate(X = f.x(X), Y = f.y(Y))  # Apply linear transformation
 
 # Leave buildings as a separate color
