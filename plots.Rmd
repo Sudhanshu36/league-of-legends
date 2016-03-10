@@ -129,15 +129,21 @@ events <- match.events %>%
   #            "SKILL_LEVEL_UP", "WARD_PLACED")) %>%
   filter(eventType == "BUILDING_KILL")
   
+# Density plot
 # p <- ggplot(events, aes(x = timestamp, color = eventType, group = eventType)) + 
-p <- ggplot(events, aes(timestamp, color = winner, group = winner)) + 
+#   xlab("time (min)") +
+#   geom_density(adjust = 0.25)
+
+# Counting line
+# p <- ggplot(events, aes(timestamp, y = ..count.., group = winner, color = winner)) + 
+#   xlab("time (min)") +
+#   geom_freqpoly(binwidth = 2, alpha = 0.5)
+
+# Counting bins
+p <- ggplot(events, aes(timestamp, y = ..count.., group = winner, fill = winner)) + 
   xlab("time (min)") +
-  geom_line()
-  # geom_density(adjust = 0.5)
-
-# p <- qplot(timestamp, ..count.., data = events, geom = "density", color = winner)
-p <- qplot(timestamp, ..count.., data = events, geom = "density", color = winner)
-
+  stat_bin(binwidth = 2, alpha = 0.5, col = I("white"))
+  
 plot(p)
 ```
 
