@@ -150,18 +150,16 @@ plot(p)
 
 Interactive version.
 ```{r}
-low <- min(match.events$matchId)
-high <- max(match.events$matchId)
-
 shinyUI(fluidPage(
 fluidRow(
 column(4, selectInput("eventType", "Type:", 
-                      c(unique(as.character(match.events$eventType))), selected = "BUILDING_KILL")),
+                      c(unique(as.character(match.events$eventType))), selected = "CHAMPION_KILL")),
 column(4, selectInput("matchId", "Match ID:", 
-                      c(unique(as.character(match.events$matchId)))))
+                      c(unique(as.character(match.events$matchId))))),
 ),
 fluidRow(
 renderPlot({
+  
     data <- match.events %>%
       filter(eventType == input$eventType & matchId == input$matchId)
     
