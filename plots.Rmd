@@ -128,7 +128,7 @@ events <- match.events %>%
   # filter(eventType %in% 
   #          c("BUILDING_KILL", "CHAMPION_KILL", "ELITE_MONSTER_KILL", 
   #            "SKILL_LEVEL_UP", "WARD_PLACED")) %>%
-  filter(eventType == "BUILDING_KILL")
+  filter(eventType == "CHAMPION_KILL")
   
 # Density plot
 # p <- ggplot(events, aes(x = timestamp, color = eventType, group = eventType)) + 
@@ -139,6 +139,11 @@ events <- match.events %>%
 # p <- ggplot(events, aes(timestamp, y = ..count.., group = winner, color = winner)) + 
 #   xlab("time (min)") +
 #   geom_freqpoly(binwidth = 2, alpha = 0.5)
+
+# Counting line
+# p <- ggplot(events, aes(timestamp, y = ..count.., group = winner, color = winner)) + 
+#   xlab("time (min)") +
+#   stat_bin(binwidth = 2, alpha = 0.5, geom="line", position = "identity")
 
 # Counting bins
 p <- ggplot(events, aes(timestamp, y = ..count.., group = winner, fill = winner)) + 
@@ -155,7 +160,7 @@ fluidRow(
 column(4, selectInput("eventType", "Type:", 
                       c(unique(as.character(match.events$eventType))), selected = "CHAMPION_KILL")),
 column(4, selectInput("matchId", "Match ID:", 
-                      c(unique(as.character(match.events$matchId))))),
+                      c(unique(as.character(match.events$matchId)))))
 ),
 fluidRow(
 renderPlot({
