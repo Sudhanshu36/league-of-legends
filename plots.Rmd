@@ -81,7 +81,7 @@ match.events <- data.match %>%
          creatorId = ifelse(creatorId <= 5, 100, 200),
          victimId = ifelse(victimId <= 5, 200, 100),   # associate non-victim team!
          killerId = ifelse(killerId <= 5, 100, 200),
-         teamId = ifelse(teamId == 100, 200, 100)) # associate to non-victim! 
+         teamId = ifelse(teamId == 100, 200, 100)) # associate to non-victim team! 
 
 # Fill in team association
 match.events <- match.events %>%
@@ -157,14 +157,13 @@ shinyUI(fluidPage(
 fluidRow(
 column(4, selectInput("eventType", "Type:", 
                       c(unique(as.character(match.events$eventType))), selected = "BUILDING_KILL")),
-column(4, sliderInput("matchId", "Match ID:", 
-                      min = low, max = high, value = low, ticks = FALSE))
+column(4, selectInput("matchId", "Match ID:", 
+                      c(unique(as.character(match.events$matchId)))))
 ),
 fluidRow(
 renderPlot({
     data <- match.events %>%
-      filter(eventType == input$eventType,
-             matchId == input$matchId)
+      filter(eventType == input$eventType & matchId == input$matchId)
     
     binwidth <- 2
 
