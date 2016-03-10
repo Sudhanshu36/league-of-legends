@@ -91,7 +91,7 @@ match.events <- data.match %>%
                 timestamp = jnumber("timestamp"),
                 creatorId = jnumber("creatorId"),
                 teamId = jnumber("teamId"))
-                
+
 # Extract tower information to infer whether losing team surrendered
 match.events <- match.events %>%
   spread_values(towerType = jstring("towerType"))
