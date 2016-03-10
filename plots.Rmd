@@ -2,6 +2,7 @@
 title: "Map"
 author: "Vincent Quenneville-Bélair"
 date: "March, 2016"
+runtime: shiny
 output: html_document
 ---
 
@@ -19,6 +20,8 @@ library(stringr)
 library(png)
 library(grid)
 library(ggplot2)
+
+library(shiny)
 ```
 
 Load match file.
@@ -80,10 +83,6 @@ match.events <- data.match %>%
          killerId = ifelse(killerId <= 5, 100, 200),
          teamId = ifelse(teamId == 100, 200, 100)) # associate to non-victim! 
 
-# Attach winning status
-match.events <- merge(match.events, match.winner, 
-                      by = intersect(names(match.events), names(match.winner)), all.x = TRUE)
-
 # Fill in team association
 match.events <- match.events %>%
   mutate(victimId      = ifelse(is.na(victimId), killerId, victimId)) %>%
@@ -91,6 +90,10 @@ match.events <- match.events %>%
   mutate(participantId = ifelse(is.na(participantId), creatorId, participantId)) %>%
   mutate(teamId        = ifelse(is.na(teamId), participantId, teamId)) %>%
   select(-participantId,-creatorId,-victimId, -killerId) 
+
+# Attach winning status
+match.events <- merge(match.events, match.winner, 
+                      by = intersect(names(match.events), names(match.winner)), all.x = TRUE)
 
 # Function to merge a list  
 contract <- function(x) {
@@ -113,17 +116,15 @@ match.events <- match.events %>%
 # Convert timestamps in ms to min
 match.events <- match.events %>%
   mutate(timestamp = timestamp/1000/60)
-
-# Select one match
-match.events <- match.events %>%
-  filter(matchId == 2054994244)
 ```
 
 # Event versus time
 
 Plot events versus time.
 ```{r}
+# Select one match
 events <- match.events %>%
+  filter(matchId == 2054994244) %>%
   # filter(eventType %in% 
   #          c("BUILDING_KILL", "CHAMPION_KILL", "ELITE_MONSTER_KILL", 
   #            "SKILL_LEVEL_UP", "WARD_PLACED")) %>%
@@ -145,6 +146,37 @@ p <- ggplot(events, aes(timestamp, y = ..count.., group = winner, fill = winner)
   stat_bin(binwidth = 2, alpha = 0.5, col = I("white"))
   
 plot(p)
+```
+
+Interactive version.
+```{r}
+low <- min(match.events$matchId)
+high <- max(match.events$matchId)
+
+shinyUI(fluidPage(
+fluidRow(
+column(4, selectInput("eventType", "Type:", 
+                      c(unique(as.character(match.events$eventType))), selected = "BUILDING_KILL")),
+column(4, sliderInput("matchId", "Match ID:", 
+                      min = low, max = high, value = low, ticks = FALSE))
+),
+fluidRow(
+renderPlot({
+    data <- match.events %>%
+      filter(eventType == input$eventType,
+             matchId == input$matchId)
+    
+    binwidth <- 2
+
+    # draw the histogram with the specified number of bins
+    p <- ggplot(data, aes(timestamp, y = ..count.., group = winner, fill = winner)) + 
+      xlab("time (min)") +
+      stat_bin(binwidth = binwidth, alpha = 0.5, col = I("white"))
+    plot(p)
+
+  })
+)
+))
 ```
 
 # Map overlay
