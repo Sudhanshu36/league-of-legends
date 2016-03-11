@@ -20,6 +20,7 @@ library(stringr)
 library(png)
 library(grid)
 library(ggplot2)
+# library("ggthemes")
 
 library(shiny)
 ```
@@ -131,21 +132,22 @@ data <- match.events %>%
   filter(eventType == "CHAMPION_KILL")
 
 # Line plot  
-# p <- ggplot(events, aes(x = timestamp, y = ..count.., color = winner, group = winner)) + xlab("time (min)")
+# p <- ggplot(data, aes(x = timestamp, y = ..count.., color = winner, group = winner)) + xlab("time (min)")
 # Density plot
 # p <- p + geom_density(adjust = 0.25)
 # Counting line
-# p <- p + geom_freqpoly(binwidth = 2, alpha = 0.5)
+# p <- p + geom_freqpoly(binwidth = 5)
 # Counting line
-# p <- p + stat_bin(binwidth = 2, alpha = 0.5, geom="line", position = "identity")
+# p <- p + stat_bin(binwidth = 5, geom="line", position = "identity")
 
 # Counting bins
 p <- ggplot(data, aes(timestamp, y = ..count.., 
-                        group = winner, fill = winner)) + 
- xlab("time (min)") +
- stat_bin(binwidth = 5, alpha = 0.3, 
-          col = I("white"), position = "identity")
-  
+                       group = winner, fill = winner)) + 
+  # theme_pander() + scale_colour_pander() + scale_fill_pander() +
+  xlab("time (min)") +
+  stat_bin(binwidth = 5, alpha = 0.7, 
+           col = I("white"), position = "identity")
+
 plot(p)
 ```
 
