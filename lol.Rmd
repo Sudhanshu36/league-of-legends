@@ -146,7 +146,7 @@ match.monster <- match.events %>%
   as.data.frame() %>%
   select(timestamp, monsterType) %>%
   group_by(monsterType) %>%
-  summarise_each(funs(mean))
+  summarise_each(funs(median))
 
 # Draw timeline
 # http://stackoverflow.com/questions/7492274/draw-a-chronological-timeline-with-ggplot2
