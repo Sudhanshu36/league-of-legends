@@ -12,6 +12,7 @@ Loading packages.
 library("tidyjson")
 
 library(plyr)
+library(magrittr)
 library(tidyr)
 library(dplyr)
 library(stringr)
@@ -72,6 +73,13 @@ data.match %>%
 #  Mean   :35.99  
 #  3rd Qu.:38.62  
 #  Max.   :52.15  
+
+duration.median <- data.match %>%
+  spread_values(matchDuration = jnumber("matchDuration")) %>%
+  mutate(matchDuration = matchDuration/60) %>%
+  select(matchDuration) %>%
+  use_series(matchDuration) %>%
+  median()
 ```
 
 We make the table of winner per match.
@@ -113,7 +121,50 @@ match.events <- data.match %>%
                 participantId = jnumber("participantId"), 
                 timestamp = jnumber("timestamp"),
                 creatorId = jnumber("creatorId"),
-                teamId = jnumber("teamId"))
+                teamId = jnumber("teamId"),
+                monsterType = jstring("monsterType"))
+```
+
+```{r}
+# BARON_NASHOR, BLUE_GOLEM, DRAGON, RED_LIZARD, RIFTHERALD, VILEMAW
+match.events %>%
+  filter(monsterType == "DRAGON") %>%
+  select(matchId, timestamp) %>%
+  group_by(matchId) %>%
+  mutate(timestamp = timestamp/1000/60) %>%
+  mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
+  filter(rank == 1) %>%
+  select(-rank)
+
+match.monster <- match.events %>%
+  filter(eventType == "ELITE_MONSTER_KILL") %>%
+  select(matchId, timestamp, monsterType) %>%
+  group_by(matchId, monsterType) %>%
+  mutate(timestamp = timestamp/1000/60) %>%
+  mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
+  filter(rank == 1) %>%
+  as.data.frame() %>%
+  select(timestamp, monsterType) %>%
+  group_by(monsterType) %>%
+  summarise_each(funs(mean))
+
+# Draw timeline
+# http://stackoverflow.com/questions/7492274/draw-a-chronological-timeline-with-ggplot2
+dislocations <- c(-1,1,-.5)
+nudges <- 0.1 * sign(dislocations)
+ggplot(match.monster) + 
+  geom_text(aes(x = timestamp, y = dislocations, label = monsterType), 
+            position = position_nudge(y = nudges)) +
+  geom_hline(yintercept = 0, color = "purple") +
+  geom_segment(aes(x = timestamp, y = dislocations, xend = timestamp, yend = 0)) +
+  expand_limits(x = match.duration) +
+  scale_x_continuous(expand = c(.1, .1)) +
+  theme(axis.line = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "none")
 ```
 
 Proportion of matches that ends in surrender.
