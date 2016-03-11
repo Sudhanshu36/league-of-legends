@@ -44,17 +44,34 @@ data.match <- data.json %>%
   enter_object("matches") %>%
   gather_array("matches.index") %>% 
   spread_values(matchId = jnumber("matchId")) %>%
-  select(matchId) %>%
+  select(matchId) 
+```
+
+Match duration
+```{r}
+data.match %>%
   spread_values(mapId = jnumber("mapId"),
                 matchDuration = jnumber("matchDuration"),
                 matchMode = jstring("matchMode"),
                 matchType = jstring("matchType"),
                 queueType = jstring("queueType"),
-                region = jstring("region"))
+                region = jstring("region"),
+                season = jstring("season")) %>%
+  head()
 
 data.match %>%
-  filter(matchId == 2054994244) %>%
-  head()
+  spread_values(matchDuration = jnumber("matchDuration")) %>%
+  mutate(matchDuration = matchDuration/60) %>%
+  select(matchDuration) %>%
+  summary
+
+#  matchDuration  
+#  Min.   :27.33  
+#  1st Qu.:31.83  
+#  Median :35.01  
+#  Mean   :35.99  
+#  3rd Qu.:38.62  
+#  Max.   :52.15  
 ```
 
 We make the table of winner per match.
@@ -62,20 +79,26 @@ We make the table of winner per match.
 match.winner <- data.match %>%
   select(matchId) %>%
   enter_object("teams") %>%
-  gather_array("teams.index") %>% 
+  gather_array("teams.index") %>%
+  select(-teams.index) %>%
   spread_values(teamId = jnumber("teamId"),
                 winner = jlogical("winner")) %>%
-  select(-teams.index) %>%
   mutate(winner = winner * teamId) %>%
   group_by(matchId) %>%
   summarise_each(funs(sum)) %>%
   select(-teamId) %>%
   mutate_each(funs(factor))
+```
 
-# Is there an advantage being on the blue/red side?
+Is there an advantage being on the blue/red side?
+```{r}
 match.winner %>% 
   select(winner) %>%
   summary()
+
+#  winner  
+#  100:53  
+#  200:47  
 ```
 
 ```{r}
@@ -91,7 +114,10 @@ match.events <- data.match %>%
                 timestamp = jnumber("timestamp"),
                 creatorId = jnumber("creatorId"),
                 teamId = jnumber("teamId"))
+```
 
+Proportion of matches that ends in surrender.
+```{r}
 # Extract tower information to infer whether losing team surrendered
 match.events <- match.events %>%
   spread_values(towerType = jstring("towerType"))
@@ -100,75 +126,66 @@ match.events <- merge(match.events, match.winner, by = "matchId")
 
 math.surrender <- match.events %>%
   filter(towerType == "NEXUS_TURRET") %>%
-  select(matchId, teamId, winner, towerType) %>%
   mutate(NEXUS_TURRET = 1) %>%
-  select(-towerType) %>%
+  select(matchId, teamId, winner, NEXUS_TURRET) %>%
   group_by(matchId, teamId, winner) %>%
   summarise_each(funs(sum)) %>%
   mutate(surrender = ifelse(teamId == winner, FALSE, ifelse(NEXUS_TURRET < 2, TRUE, FALSE))) %>%
   select(-winner, -NEXUS_TURRET)
 
-# How many matches ended in surrender?
-x <- math.surrender$surrender
-sum(x)
 # Percent of matches that ended in surrender?
-sum(x) / length(x) * 100
-```
+x <- math.surrender$surrender
+print(sum(x) / length(x) * 100)
 
-Helper functions for manipulating columns.
-```{r}
-# Convert to numeric
-convert.numeric <- function(x) {
-  as.numeric(as.character(x))
-}
-
-# Remove incomplete cases
-complete.remove <- function(x) {
-  x <- x[complete.cases(x),]  
-}
-
-# Convert to string without factors
-convert.char <- function(x) {
-  data.frame(lapply(x, as.character), stringsAsFactors=FALSE) 
-}
+# 2.12766
 ```
 
 ```{r}
 # Delta fields refer to values for the specified period (e.g., the gold per minute over the first 10 minutes of the game versus the second 20 minutes of the game) 
 # Diffs fields refer to the deltas versus the calculated lane opponent(s)
 
-timeline <- data.match %>%
+data.timeline <- data.match %>%
   enter_object("participants") %>%
   gather_array("participants.index") %>%
-  spread_values(teamId = jnumber("teamId")) %>%
+  spread_values(participantId = jnumber("participantId"),
+                teamId = jnumber("teamId")) %>%
+  select(-participants.index) %>%
   enter_object("timeline")
 
-participants_creeps <- timeline %>% 
+participants.creeps <- data.timeline %>% 
   enter_object("creepsPerMinDeltas") %>%
   gather_keys("ParticipantTimelineData") %>%
   append_values_number("creepsPerMinDeltas")
 
-participants_gold <- timeline %>% 
+participants.gold <- data.timeline %>% 
   enter_object("goldPerMinDeltas") %>%
   gather_keys("ParticipantTimelineData") %>%
   append_values_number("goldPerMinDeltas")
 
-# participants_wards <- timeline %>% 
+# participants.wards <- data.timeline %>% 
 #   enter_object("wardsPerMinDeltas") %>%
 #   gather_keys("ParticipantTimelineData") %>%
 #   append_values_number("ParticipantTimelineValue")
 
-participants_xp <- timeline %>% 
+participants.xp <- data.timeline %>% 
   enter_object("xpPerMinDeltas") %>%
   gather_keys("ParticipantTimelineData") %>%
   append_values_number("xpPerMinDeltas")
 
-participants <- cbind(participants_creeps, participants_gold$goldPerMinDeltas, participants_xp$xpPerMinDeltas)
-names(participants)[12] <- "goldPerMinDeltas"
-names(participants)[13] <- "xpPerMinDeltas"
+participants <- merge(participants.creeps, participants.gold)
+participants <- merge(participants, participants.xp)
 
-participants <- merge(participants, team, by = "matchId") %>%
+participants <- merge(participants, team) %>%
   group_by(matchId, teamId, ParticipantTimelineData) %>%
   summarise_each(funs(mean), matchId, teamId,
                  ParticipantTimelineData, creepsPerMinDeltas, goldPerMinDeltas, xpPerMinDeltas)
+
+#      matchId teamId ParticipantTimelineData creepsPerMinDeltas goldPerMinDeltas xpPerMinDeltas
+#        (dbl)  (dbl)                   (chr)              (dbl)            (dbl)          (dbl)
+# 1 2054994244    100             tenToTwenty               3.52           332.18         478.76
+# 2 2054994244    100             thirtyToEnd               3.53           438.55         581.97
+# 3 2054994244    100          twentyToThirty               3.20           349.30         428.22
+# 4 2054994244    100               zeroToTen               3.02           178.06         266.68
+# 5 2054994244    200             tenToTwenty               4.60           385.72         462.62
+# 6 2054994244    200             thirtyToEnd               3.33           428.66         483.97
 ```
