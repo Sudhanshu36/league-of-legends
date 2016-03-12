@@ -158,8 +158,8 @@ match.monster <- match.events %>%
   summarise_each(funs(median)) %>%
   mutate(eventType = monsterType) %>%
   select(-monsterType) %>%
-  mutate(eventType = str_replace("BARON_NASHOR", "BARON"),
-         eventType = str_replace("RIFTHERALD", "HERALD"))
+  mutate(eventType = str_replace(eventType, "BARON_NASHOR", "BARON"),
+         eventType = str_replace(eventType, "RIFTHERALD", "HERALD"))
 
 # Compute the median time to draw first blood
 match.kill <- match.events %>%
@@ -182,7 +182,7 @@ match.maxlvl <- match.events %>%
   filter(rank == 5*18) %>%
   as.data.frame() %>%
   summarise(timestamp = median(timestamp)) %>%
-  mutate(eventType = "MAX LVL")
+  mutate(eventType = "MAX LEVEL")
 
 # Compute the median level reached
 match.events %>%
@@ -213,22 +213,28 @@ match <- match[order(match$timestamp),]
   
 # Draw timeline
 # http://stackoverflow.com/questions/7492274/draw-a-chronological-timeline-with-ggplot2
-# dislocations <- c(1.0, -1.0, 0.5, -0.5, 1.0, -0.5)
+
 dislocations <- sample(c(-1,-.5,.5,1), 6, replace=T)
+dislocations <- c(1.0, -1.0, 0.5, -0.5, 1.0, -0.5)
 nudges <- 0.1 * sign(dislocations)
-ggplot(match) + 
+
+p <- ggplot(match) + 
   geom_text(aes(x = timestamp, y = dislocations, label = eventType), 
             position = position_nudge(y = nudges)) +
   geom_hline(yintercept = 0, color = "purple") +
   geom_segment(aes(x = timestamp, y = dislocations, xend = timestamp, yend = 0)) +
-  # expand_limits(x = match.duration) +
-  scale_x_continuous(expand = c(.1, .1)) +
+  scale_x_continuous(expand = c(.15, .15))
+
+p <- p + 
   theme(axis.line = element_blank(),
         axis.text.y = element_blank(),
         axis.ticks = element_blank(),
         axis.title.x = element_blank(),
         axis.title.y = element_blank(),
         legend.position = "none")
+
+print(p)
+ggsave("figures/timeline.png", dpi = 100, width = 7, height = 4, units = "in")
 ```
 
 Proportion of matches that ends in surrender.
