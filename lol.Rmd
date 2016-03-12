@@ -77,9 +77,14 @@ data.match %>%
 duration.median <- data.match %>%
   spread_values(matchDuration = jnumber("matchDuration")) %>%
   mutate(matchDuration = matchDuration/60) %>%
-  select(matchDuration) %>%
   use_series(matchDuration) %>%
   median()
+
+match.duration <- data.match %>%
+  spread_values(matchDuration = jnumber("matchDuration")) %>%
+  mutate(matchDuration = matchDuration/60) %>%
+  summarise(timestamp = median(matchDuration)) %>%
+  mutate(eventType = "END")
 ```
 
 We make the table of winner per match.
@@ -118,42 +123,86 @@ match.events <- data.match %>%
   gather_array("events.index") %>%
   select(matchId) %>%
   spread_values(eventType = jstring("eventType"),
+                teamId = jnumber("teamId"),
                 participantId = jnumber("participantId"), 
                 timestamp = jnumber("timestamp"),
                 creatorId = jnumber("creatorId"),
-                teamId = jnumber("teamId"),
-                monsterType = jstring("monsterType"))
+                monsterType = jstring("monsterType"),
+                victimId = jnumber("victimId"),
+                killerId = jnumber("killerId"),
+                position = jstring("position")) %>%
+  mutate(timestamp = timestamp/1000/60)
 ```
 
+When are certain objectives achieved for the time in a match?
 ```{r}
 # BARON_NASHOR, BLUE_GOLEM, DRAGON, RED_LIZARD, RIFTHERALD, VILEMAW
 match.events %>%
   filter(monsterType == "DRAGON") %>%
   select(matchId, timestamp) %>%
   group_by(matchId) %>%
-  mutate(timestamp = timestamp/1000/60) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
   filter(rank == 1) %>%
   select(-rank)
 
+# Compute median time when first elite monster is killed
 match.monster <- match.events %>%
   filter(eventType == "ELITE_MONSTER_KILL") %>%
   select(matchId, timestamp, monsterType) %>%
   group_by(matchId, monsterType) %>%
-  mutate(timestamp = timestamp/1000/60) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
   filter(rank == 1) %>%
   as.data.frame() %>%
   select(timestamp, monsterType) %>%
   group_by(monsterType) %>%
-  summarise_each(funs(median))
+  summarise_each(funs(median)) %>%
+  mutate(eventType = monsterType) %>%
+  select(-monsterType) %>%
+  mutate(eventType = str_replace("BARON_NASHOR", "BARON"),
+         eventType = str_replace("RIFTHERALD", "HERALD"))
 
+# Compute the median time to draw first blood
+match.kill <- match.events %>%
+  filter(eventType == "CHAMPION_KILL") %>% 
+  select(matchId, timestamp) %>%
+  group_by(matchId) %>%
+  mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
+  filter(rank == 1) %>%
+  as.data.frame() %>%
+  summarise(timestamp = median(timestamp)) %>%
+  mutate(eventType = "CHAMPION KILL")
+
+# Compute the median time to reach level 18
+match.maxlvl <- match.events %>%
+  filter(eventType == "SKILL_LEVEL_UP") %>%
+  mutate(teamId = ifelse(participantId <= 5, 100, 200)) %>%
+  select(matchId, timestamp, teamId) %>%
+  group_by(matchId, teamId) %>%
+  mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
+  filter(rank == 90) %>%
+  as.data.frame() %>%
+  summarise(timestamp = median(timestamp)) %>%
+  mutate(eventType = "MAX LVL")
+
+match <- rbind(match.monster, match.duration, match.kill, match.maxlvl)
+match <- match[order(match$timestamp),]
+
+#   timestamp     eventType
+#       (dbl)         (chr)
+# 1  3.106833 CHAMPION_KILL
+# 2 12.501317        DRAGON
+# 3 16.841450    RIFTHERALD
+# 4 29.832517  BARON_NASHOR
+# 5 35.008333           END
+# 6 45.787875       MAX_LVL
+  
 # Draw timeline
 # http://stackoverflow.com/questions/7492274/draw-a-chronological-timeline-with-ggplot2
-dislocations <- c(-1,1,-.5)
+# dislocations <- c(1.0, -1.0, 0.5, -0.5, 1.0, -0.5)
+dislocations <- sample(c(-1,-.5,.5,1), 6, replace=T)
 nudges <- 0.1 * sign(dislocations)
-ggplot(match.monster) + 
-  geom_text(aes(x = timestamp, y = dislocations, label = monsterType), 
+ggplot(match) + 
+  geom_text(aes(x = timestamp, y = dislocations, label = eventType), 
             position = position_nudge(y = nudges)) +
   geom_hline(yintercept = 0, color = "purple") +
   geom_segment(aes(x = timestamp, y = dislocations, xend = timestamp, yend = 0)) +
