@@ -48,6 +48,39 @@ data.match <- data.json %>%
   select(matchId) 
 ```
 
+
+Proportion of matches that ends in surrender.
+```{r}
+match.team <- data.match %>%
+  select(matchId) %>%
+  enter_object("teams") %>%
+  gather_array("teams.index") %>%
+  select(-teams.index) %>%
+  spread_values(teamId = jnumber("teamId"),
+                winner = jlogical("winner"))
+
+# Extract tower information to infer whether losing team surrendered
+match.turret <- match.events %>%
+  spread_values(towerType = jstring("towerType")) %>%
+  filter(towerType == "NEXUS_TURRET") %>%
+  mutate(NEXUS_TURRET = 1) %>%
+  select(matchId, teamId, NEXUS_TURRET)
+
+match.surrender <- merge(match.team, match.turret, all.x = TRUE) %>%
+  group_by(matchId, teamId, winner) %>%
+  summarise_each(funs(sum)) %>%
+  mutate(surrender = ifelse(winner, FALSE, 
+                            ifelse(NEXUS_TURRET < 2 | is.na(NEXUS_TURRET), TRUE, FALSE))) %>%
+  group_by(matchId) %>%
+  summarise_each(funs(sum)) %>%
+  select(matchId, surrender) %>%
+  mutate(surrender = as.logical(surrender))
+
+# Percent of matches that ended in surrender?
+x <- match.surrender$surrender
+print(sum(x) / length(x) * 100)
+```
+
 Match duration
 ```{r}
 data.match %>%
@@ -74,17 +107,13 @@ data.match %>%
 #  3rd Qu.:38.62  
 #  Max.   :52.15  
 
-duration.median <- data.match %>%
-  spread_values(matchDuration = jnumber("matchDuration")) %>%
-  mutate(matchDuration = matchDuration/60) %>%
-  use_series(matchDuration) %>%
-  median()
-
 match.duration <- data.match %>%
   spread_values(matchDuration = jnumber("matchDuration")) %>%
-  mutate(matchDuration = matchDuration/60) %>%
+  mutate(matchDuration = matchDuration/60) 
+
+timeline.castle <- match.duration %>%
   summarise(timestamp = median(matchDuration)) %>%
-  mutate(eventType = "END")
+  mutate(eventType = "CASTLE")
 ```
 
 We make the table of winner per match.
@@ -134,6 +163,43 @@ match.events <- data.match %>%
   mutate(timestamp = timestamp/1000/60)
 ```
 
+Proportion of matches that ends in surrender.
+```{r}
+match.team <- data.match %>%
+  select(matchId) %>%
+  enter_object("teams") %>%
+  gather_array("teams.index") %>%
+  select(-teams.index) %>%
+  spread_values(teamId = jnumber("teamId"),
+                winner = jlogical("winner"))
+
+# Extract tower information to infer whether losing team surrendered
+match.turret <- match.events %>%
+  spread_values(towerType = jstring("towerType")) %>%
+  filter(towerType == "NEXUS_TURRET") %>%
+  mutate(NEXUS_TURRET = 1) %>%
+  select(matchId, teamId, NEXUS_TURRET)
+
+match.surrender <- merge(match.team, match.turret, all.x = TRUE) %>%
+  group_by(matchId, teamId, winner) %>%
+  summarise_each(funs(sum)) %>%
+  mutate(surrender = ifelse(winner, FALSE, 
+                            ifelse(NEXUS_TURRET < 2 | is.na(NEXUS_TURRET), TRUE, FALSE))) %>%
+  group_by(matchId) %>%
+  summarise_each(funs(sum)) %>%
+  select(matchId, surrender) %>%
+  mutate(surrender = as.logical(surrender))
+
+merge(match.duration, match.surrender) %>%
+  group_by(surrender) %>%
+  summarise_each(funs(median)) %>%
+  select(-matchId)
+
+# Percent of matches that ended in surrender?
+x <- match.surrender$surrender
+print(sum(x) / length(x) * 100)
+```
+
 When are certain objectives achieved for the time in a match?
 ```{r}
 # BARON_NASHOR, BLUE_GOLEM, DRAGON, RED_LIZARD, RIFTHERALD, VILEMAW
@@ -146,7 +212,7 @@ match.events %>%
   select(-rank)
 
 # Compute median time when first elite monster is killed
-match.monster <- match.events %>%
+timeline.monster <- match.events %>%
   filter(eventType == "ELITE_MONSTER_KILL") %>%
   select(matchId, timestamp, monsterType) %>%
   group_by(matchId, monsterType) %>%
@@ -162,7 +228,7 @@ match.monster <- match.events %>%
          eventType = str_replace(eventType, "RIFTHERALD", "HERALD"))
 
 # Compute the median time to draw first blood
-match.kill <- match.events %>%
+timeline.kill <- match.events %>%
   filter(eventType == "CHAMPION_KILL") %>% 
   select(matchId, timestamp) %>%
   group_by(matchId) %>%
@@ -173,7 +239,7 @@ match.kill <- match.events %>%
   mutate(eventType = "CHAMPION KILL")
 
 # Compute the median time to reach level 18
-match.maxlvl <- match.events %>%
+timeline.maxlvl <- match.events %>%
   filter(eventType == "SKILL_LEVEL_UP") %>%
   mutate(teamId = ifelse(participantId <= 5, 100, 200)) %>%
   select(matchId, timestamp, teamId) %>%
@@ -199,8 +265,8 @@ match.events %>%
 #   rank
 # 1 15.5
 
-match <- rbind(match.monster, match.duration, match.kill, match.maxlvl)
-match <- match[order(match$timestamp),]
+timeline <- rbind(timeline.monster, timeline.castle, timeline.kill, timeline.maxlvl)
+timeline <- match[order(match$timestamp),]
 
 #   timestamp     eventType
 #       (dbl)         (chr)
@@ -218,47 +284,23 @@ dislocations <- sample(c(-1,-.5,.5,1), 6, replace=T)
 dislocations <- c(1.0, -1.0, 0.5, -0.5, 1.0, -0.5)
 nudges <- 0.1 * sign(dislocations)
 
-p <- ggplot(match) + 
+p <- ggplot(timeline) + 
   geom_text(aes(x = timestamp, y = dislocations, label = eventType), 
             position = position_nudge(y = nudges)) +
   geom_hline(yintercept = 0, color = "purple") +
   geom_segment(aes(x = timestamp, y = dislocations, xend = timestamp, yend = 0)) +
+  xlab("minutes") +
   scale_x_continuous(expand = c(.15, .15))
 
 p <- p + 
   theme(axis.line = element_blank(),
         axis.text.y = element_blank(),
         axis.ticks = element_blank(),
-        axis.title.x = element_blank(),
         axis.title.y = element_blank(),
         legend.position = "none")
 
 print(p)
 ggsave("figures/timeline.png", dpi = 100, width = 7, height = 4, units = "in")
-```
-
-Proportion of matches that ends in surrender.
-```{r}
-# Extract tower information to infer whether losing team surrendered
-match.events <- match.events %>%
-  spread_values(towerType = jstring("towerType"))
-
-match.events <- merge(match.events, match.winner, by = "matchId")
-
-math.surrender <- match.events %>%
-  filter(towerType == "NEXUS_TURRET") %>%
-  mutate(NEXUS_TURRET = 1) %>%
-  select(matchId, teamId, winner, NEXUS_TURRET) %>%
-  group_by(matchId, teamId, winner) %>%
-  summarise_each(funs(sum)) %>%
-  mutate(surrender = ifelse(teamId == winner, FALSE, ifelse(NEXUS_TURRET < 2, TRUE, FALSE))) %>%
-  select(-winner, -NEXUS_TURRET)
-
-# Percent of matches that ended in surrender?
-x <- math.surrender$surrender
-print(sum(x) / length(x) * 100)
-
-# 2.12766
 ```
 
 ```{r}
