@@ -179,10 +179,25 @@ match.maxlvl <- match.events %>%
   select(matchId, timestamp, teamId) %>%
   group_by(matchId, teamId) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
-  filter(rank == 90) %>%
+  filter(rank == 5*18) %>%
   as.data.frame() %>%
   summarise(timestamp = median(timestamp)) %>%
   mutate(eventType = "MAX LVL")
+
+# Compute the median level reached
+match.events %>%
+  filter(eventType == "SKILL_LEVEL_UP") %>%
+  mutate(teamId = ifelse(participantId <= 5, 100, 200)) %>%
+  select(matchId, timestamp, teamId) %>%
+  group_by(matchId, teamId) %>%
+  mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
+  select(-timestamp) %>%
+  summarise_each(funs(max(rank))) %>%
+  as.data.frame() %>%
+  summarise(rank = median(rank)/5)
+
+#   rank
+# 1 15.5
 
 match <- rbind(match.monster, match.duration, match.kill, match.maxlvl)
 match <- match[order(match$timestamp),]
@@ -206,7 +221,7 @@ ggplot(match) +
             position = position_nudge(y = nudges)) +
   geom_hline(yintercept = 0, color = "purple") +
   geom_segment(aes(x = timestamp, y = dislocations, xend = timestamp, yend = 0)) +
-  expand_limits(x = match.duration) +
+  # expand_limits(x = match.duration) +
   scale_x_continuous(expand = c(.1, .1)) +
   theme(axis.line = element_blank(),
         axis.text.y = element_blank(),
