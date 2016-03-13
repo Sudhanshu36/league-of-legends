@@ -204,7 +204,7 @@ first <- rbind(first.blood, first.tower, first.dragon, first.herald, first.inhib
 
 ggplot(first, aes(eventType, prob)) +
   expand_limits(y = 50) +
-  geom_point() 
+  geom_bar(stat = "identity") 
 ```
 
 ## Surrender 
