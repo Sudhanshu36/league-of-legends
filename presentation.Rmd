@@ -13,12 +13,12 @@ runtime: shiny
 
 <!-- http://www.lazygamer.net/genre/moba/viewership-2015-league-legends-world-championship-toppled-riots-expectations/ -->
 
-## Teams compete to destroy each other's castle {.flexbox .vcenter}
+## Multiplayer Online Battle Arena {.flexbox .vcenter}
 
 ![League of Legends](figures/game_example.jpg)
-<br>Multiplayer Online Battle Arena
+<br>Teams compete to destroy each other's castle.
 
-## Important events in a typical game {.flexbox .vcenter}
+## Important Events in Typical Game {.flexbox .vcenter}
 
 ![First to Objective](figures/timeline.png)
 
