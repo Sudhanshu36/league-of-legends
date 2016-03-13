@@ -145,53 +145,66 @@ match.winner %>%
 
 Conditiontional probabilities on various objectives
 ```{r}
-data.team %>%
+first.blood <- data.team %>%
   filter(firstBlood == TRUE) %>%
   select(winner) %>%
-  summarise(sum(winner)/n() * 100)
+  summarise(prob = sum(winner)/n() * 100) %>%
+  mutate(eventType = "First Blood")
 
 #   sum(winner)/n() * 100
 # 1                  61.1
 
-data.team %>%
+first.dragon <- data.team %>%
   filter(firstDragon == TRUE) %>%
   select(winner) %>%
-  summarise(sum(winner)/n() * 100)
+  summarise(prob = sum(winner)/n() * 100) %>%
+  mutate(eventType = "First Dragon")
 
 #   sum(winner)/n() * 100
 # 1               69.4864
 
-data.team %>%
+first.tower <- data.team %>%
   filter(firstTower == TRUE) %>%
   select(winner) %>%
-  summarise(sum(winner)/n() * 100)
+  summarise(prob = sum(winner)/n() * 100) %>%
+  mutate(eventType = "First Tower")
 
 #   sum(winner)/n() * 100
 # 1                  68.2
 
-data.team %>%
+first.herald <- data.team %>%
   filter(firstRiftHerald == TRUE) %>%
   select(winner) %>%
-  summarise(sum(winner)/n() * 100)
+  summarise(prob = sum(winner)/n() * 100) %>%
+  mutate(eventType = "First Herald")
 
 #   sum(winner)/n() * 100
 # 1               74.4898
 
-data.team %>%
+first.baron <- data.team %>%
   filter(firstBaron == TRUE) %>%
   select(winner) %>%
-  summarise(sum(winner)/n() * 100)
+  summarise(prob = sum(winner)/n() * 100) %>%
+  mutate(eventType = "First Baron")
 
 #   sum(winner)/n() * 100
 # 1              82.53425
 
-data.team %>%
+first.inhibitor <- data.team %>%
   filter(firstInhibitor == TRUE) %>%
   select(winner) %>%
-  summarise(sum(winner)/n() * 100)
+  summarise(prob = sum(winner)/n() * 100) %>%
+  mutate(eventType = "First Inhibitor")
 
 #   sum(winner)/n() * 100
 # 1              90.59081
+
+first <- rbind(first.blood, first.tower, first.dragon, first.herald, first.inhibitor, first.baron)
+# first <- first[order(first$prob),]
+
+ggplot(first, aes(eventType, prob)) +
+  expand_limits(y = 50) +
+  geom_point() 
 ```
 
 ## Surrender 
