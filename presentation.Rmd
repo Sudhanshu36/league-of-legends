@@ -18,9 +18,13 @@ runtime: shiny
 ![League of Legends](figures/game_example.jpg)
 <br>Teams compete to destroy each other's castle.
 
-## Important Events in Typical Game {.flexbox .vcenter}
+## Event Progression in Typical Game {.flexbox .vcenter}
 
 ![First to Objective](figures/timeline.png)
+
+## Questions?
+
+
 
 ## Map Activity {.flexbox .vcenter}
 
