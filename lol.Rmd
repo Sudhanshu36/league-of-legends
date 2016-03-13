@@ -161,7 +161,7 @@ x <- match.surrender$surrender
 print(sum(x) / length(x) * 100)
 ```
 
-## Objectives
+## Timeline
 
 When are certain objectives achieved for the time in a match?
 ```{r}
@@ -175,9 +175,21 @@ match.events %>%
   select(-rank)
 
 # Length of games
-timeline.castle <- match.duration %>%
+timeline.end <- match.duration %>%
   summarise(timestamp = median(matchDuration)) %>%
   mutate(eventType = "END")
+
+# Compute median time when first tower is destroyed
+timeline.tower <- match.events %>% 
+  filter(eventType == "BUILDING_KILL") %>%
+  select(matchId, timestamp) %>%
+  group_by(matchId) %>%
+  mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
+  filter(rank == 1) %>%
+  as.data.frame() %>%
+  select(timestamp) %>%
+  summarise_each(funs(median)) %>%
+  mutate(eventType = "TOWER DESTRUCTION")
 
 # Compute median time when first elite monster is killed
 timeline.monster <- match.events %>%
@@ -243,8 +255,7 @@ match.events %>%
 #   rank
 # 1 15.5
 
-# timeline <- rbind(timeline.monster, timeline.castle, timeline.kill, timeline.maxlvl)
-timeline <- rbind(timeline.monster, timeline.kill, timeline.maxlvl, timeline.surrender)
+timeline <- rbind(timeline.monster, timeline.kill, timeline.maxlvl, timeline.surrender, timeline.tower)
 timeline <- timeline[order(timeline$timestamp),]
 
 #   timestamp          eventType
@@ -261,7 +272,7 @@ timeline <- timeline[order(timeline$timestamp),]
 # http://stackoverflow.com/questions/7492274/draw-a-chronological-timeline-with-ggplot2
 
 dislocations <- sample(c(-1,-.5,.5,1), 6, replace=T)
-dislocations <- c(1.0, -1.0, 0.5, -0.5, 1.0, -1.0, 0.5)
+dislocations <- c(1.0, -1.0, 0.5, -0.5, 1.0, -1.0, 0.5, -0.5)
 nudges <- 0.1 * sign(dislocations)
 
 p <- ggplot(timeline) + 
@@ -285,7 +296,7 @@ print(p)
 ggsave("figures/timeline.png", dpi = 100, width = 7, height = 4, units = "in")
 ```
 
-## Per minutes
+## Scatter plot
 
 ```{r}
 # Delta fields refer to values for the specified period (e.g., the gold per minute over the first 10 minutes of the game versus the second 20 minutes of the game) 
@@ -352,6 +363,6 @@ ggplot(participants, aes(goldPerMinDeltas, xpPerMinDeltas, color = factor(winner
   # stat_density2d(aes(alpha = ..density..), geom = "raster", contour = FALSE)
   # geom_bin2d(aes(color = ..count..), binwidth = 5, alpha = 0.5) +
   # stat_bin2d(binwidth = 5, alpha = 0.5) +
-  xlab("Gold per min") +
-  ylab("Experience per min")
+  xlab("Gold per min in first 20 min") +
+  ylab("Experience per min in first 20 min")
 ```
