@@ -33,23 +33,21 @@ library(pROC)
 Load match file.
 ```{r}
 # TidyJSON
-data.file <- "data/matches1.json"
-# data.file <- "data/matches_all.json"
+# data.file <- "data/matches1.json"
+data.file <- "data/matches_all.json"
 data.json <- read_json(data.file)
 ```
 
-Load information from each match.
+Load match data.
 ```{r}
 data.match <- data.json %>% 
-  # gather_array("file.index") %>%
+  gather_array("file.index") %>%
   enter_object("matches") %>%
   gather_array("matches.index") %>% 
   spread_values(matchId = jnumber("matchId")) %>%
   select(matchId) 
-```
 
-Match duration
-```{r}
+# Print general match information
 data.match %>%
   spread_values(mapId = jnumber("mapId"),
                 matchDuration = jnumber("matchDuration"),
@@ -59,7 +57,10 @@ data.match %>%
                 region = jstring("region"),
                 season = jstring("season")) %>%
   head()
+```
 
+Match duration
+```{r}
 data.match %>%
   spread_values(matchDuration = jnumber("matchDuration")) %>%
   mutate(matchDuration = matchDuration/60) %>%
@@ -78,9 +79,7 @@ match.duration <- data.match %>%
   spread_values(matchDuration = jnumber("matchDuration")) %>%
   mutate(matchDuration = matchDuration/60) 
 
-timeline.castle <- match.duration %>%
-  summarise(timestamp = median(matchDuration)) %>%
-  mutate(eventType = "CASTLE")
+summary(match.duration$matchDuration/60)
 ```
 
 We make the table of winner per match.
@@ -97,10 +96,8 @@ match.winner <- data.match %>%
   summarise_each(funs(sum)) %>%
   select(-teamId) %>%
   mutate_each(funs(factor))
-```
 
-Is there an advantage being on the blue/red side?
-```{r}
+# Is there an advantage being on the blue/red side?
 match.winner %>% 
   select(winner) %>%
   summary()
@@ -110,6 +107,7 @@ match.winner %>%
 #  200:47  
 ```
 
+We make a data frame for events.
 ```{r}
 match.events <- data.match %>%
   enter_object("timeline") %>%
@@ -131,7 +129,9 @@ match.events <- data.match %>%
   mutate(timestamp = timestamp/1000/60)
 ```
 
-Proportion of matches that ends in surrender.
+## Surrender 
+
+Proportion of matches that ends in surrender. A team who lost and still had at least one Nexus tower surrendered. We assume all surrenders are as such.
 ```{r}
 match.team <- data.match %>%
   select(matchId) %>%
@@ -157,15 +157,19 @@ match.surrender <- merge(match.team, match.turret, all.x = TRUE) %>%
   select(matchId, surrender) %>%
   mutate(surrender = as.logical(surrender))
 
-merge(match.duration, match.surrender) %>%
+timeline.surrender <- merge(match.duration, match.surrender) %>%
   group_by(surrender) %>%
   summarise_each(funs(median)) %>%
-  select(-matchId)
+  mutate(eventType = ifelse(surrender, "SURRENDER", "CASTLE DESTROY"),
+         timestamp = matchDuration) %>%
+  select(timestamp, eventType)
 
 # Percent of matches that ended in surrender?
 x <- match.surrender$surrender
 print(sum(x) / length(x) * 100)
 ```
+
+## Objectives
 
 When are certain objectives achieved for the time in a match?
 ```{r}
@@ -177,6 +181,11 @@ match.events %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
   filter(rank == 1) %>%
   select(-rank)
+
+# Length of games
+timeline.castle <- match.duration %>%
+  summarise(timestamp = median(matchDuration)) %>%
+  mutate(eventType = "END")
 
 # Compute median time when first elite monster is killed
 timeline.monster <- match.events %>%
@@ -191,8 +200,9 @@ timeline.monster <- match.events %>%
   summarise_each(funs(median)) %>%
   mutate(eventType = monsterType) %>%
   select(-monsterType) %>%
-  mutate(eventType = str_replace(eventType, "BARON_NASHOR", "BARON"),
-         eventType = str_replace(eventType, "RIFTHERALD", "HERALD"))
+  mutate(eventType = str_replace(eventType, "DRAGON", "DRAGON KILL"),
+         eventType = str_replace(eventType, "BARON_NASHOR", "BARON KILL"),
+         eventType = str_replace(eventType, "RIFTHERALD", "HERALD KILL"))
 
 # Compute the median time to draw first blood
 timeline.kill <- match.events %>%
@@ -232,23 +242,25 @@ match.events %>%
 #   rank
 # 1 15.5
 
-timeline <- rbind(timeline.monster, timeline.castle, timeline.kill, timeline.maxlvl)
-timeline <- match[order(match$timestamp),]
+# timeline <- rbind(timeline.monster, timeline.castle, timeline.kill, timeline.maxlvl)
+timeline <- rbind(timeline.monster, timeline.kill, timeline.maxlvl, timeline.surrender)
+timeline <- timeline[order(timeline$timestamp),]
 
-#   timestamp     eventType
-#       (dbl)         (chr)
-# 1  3.106833 CHAMPION_KILL
-# 2 12.501317        DRAGON
-# 3 16.841450    RIFTHERALD
-# 4 29.832517  BARON_NASHOR
-# 5 35.008333           END
-# 6 45.787875       MAX_LVL
+#   timestamp      eventType
+#       (dbl)          (chr)
+# 1  3.154658  CHAMPION KILL
+# 2 12.928967    DRAGON KILL
+# 3 16.296100    HERALD KILL
+# 4 25.475000      SURRENDER
+# 5 29.355583     BARON KILL
+# 6 33.416667 CASTLE DESTROY
+# 7 44.567367      MAX LEVEL
   
 # Draw timeline
 # http://stackoverflow.com/questions/7492274/draw-a-chronological-timeline-with-ggplot2
 
 dislocations <- sample(c(-1,-.5,.5,1), 6, replace=T)
-dislocations <- c(1.0, -1.0, 0.5, -0.5, 1.0, -0.5)
+dislocations <- c(1.0, -1.0, 0.5, -0.5, 1.0, -1.0, 0.5)
 nudges <- 0.1 * sign(dislocations)
 
 p <- ggplot(timeline) + 
@@ -269,6 +281,8 @@ p <- p +
 print(p)
 ggsave("figures/timeline.png", dpi = 100, width = 7, height = 4, units = "in")
 ```
+
+## Per minutes
 
 ```{r}
 # Delta fields refer to values for the specified period (e.g., the gold per minute over the first 10 minutes of the game versus the second 20 minutes of the game) 
