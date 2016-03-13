@@ -222,7 +222,16 @@ timeline.maxlvl <- match.events %>%
   select(matchId, timestamp, teamId) %>%
   group_by(matchId, teamId) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
-  filter(rank == 5*18) %>%
+  filter(rank == 5*18)
+
+# Print proporitions of game reaching level 18
+x <- length(unique(timeline.maxlvl$matchId))
+n <- length(data.match$matchId)
+print(x/n * 100)
+# [1] 6.3
+
+# Add to timeline
+timeline.maxlvl <- timeline.maxlvl %>%
   as.data.frame() %>%
   summarise(timestamp = median(timestamp)) %>%
   mutate(eventType = "MAX LEVEL")
