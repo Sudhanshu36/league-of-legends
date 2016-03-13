@@ -148,6 +148,50 @@ data.team %>%
   filter(firstInhibitor == TRUE) %>%
   select(winner) %>%
   summarise(sum(winner)/n() * 100)
+
+#   sum(winner)/n() * 100
+# 1                  61.1
+# 
+#   sum(winner)/n() * 100
+# 1               69.4864
+# 
+#   sum(winner)/n() * 100
+# 1                  68.2
+# 
+#   sum(winner)/n() * 100
+# 1               74.4898
+# 
+#   sum(winner)/n() * 100
+# 1              82.53425
+# 
+#   sum(winner)/n() * 100
+# 1              90.59081
+
+data.team %>%
+  group_by(winner, firstTower, firstBaron, firstBlood, firstDragon, firstInhibitor, firstRiftHerald) %>%
+  summarise(count = n())
+
+data.team %>%
+  mutate(firstTower.won = (firstTower & winner),
+         firstBaron.won = (firstBaron & winner),
+         firstBlood.won = (firstBlood & winner),
+         firstDragon.won = (firstDragon & winner),
+         firstInhibitor.won = (firstInhibitor & winner),
+         firstRiftHerald.won = (firstRiftHerald & winner)) %>%
+  select(-matchId, -teamId, -winner) %>%
+  as.data.frame() %>%
+  sapply(sum) %>%
+  mutate(firstTower = firstTower.won) / firstTower * 100,
+         firstBaron = firstBaron.won / firstBaron * 100,
+         firstBlood = firstBlood.won / firstBlood * 100,
+         firstDragon = firstDragon.won / firstDragon * 100,
+         firstInhibitor = firstInhibitor.won / firstInhibitor * 100,
+         firstRiftHerald = firstRiftHerald.won / firstRiftHerald * 100) %>%
+  select(firstTower, firstBaron, firstBlood, firstDragon, firstInhibitor, firstRiftHerald)
+
+condprob <- function(x, y) {
+  sum(winner == TRUE & y == TRUE)/sum(y == TRUE) * 100
+}
 ```
 
 We make a data frame for events.
