@@ -82,6 +82,32 @@ match.duration <- data.match %>%
 summary(match.duration$matchDuration/60)
 ```
 
+
+We make a data frame for events.
+```{r}
+match.events <- data.match %>%
+  enter_object("timeline") %>%
+  enter_object("frames") %>%
+  gather_array("frames.index") %>%
+  enter_object("events") %>%
+  gather_array("events.index") %>%
+  select(matchId) %>%
+  spread_values(eventType = jstring("eventType"),
+                timestamp = jnumber("timestamp"),
+                teamId = jnumber("teamId"),
+                participantId = jnumber("participantId"), 
+                creatorId = jnumber("creatorId"),
+                victimId = jnumber("victimId"),
+                killerId = jnumber("killerId"),
+                monsterType = jstring("monsterType"),
+                position = jstring("position"),
+                towerType = jstring("towerType"),
+                buildingType = jstring("buildingType")) %>%
+  mutate(timestamp = timestamp/1000/60)
+```
+
+## Conditional Probabilities
+
 We make the table of winner per match.
 ```{r}
 # Extract per team information
@@ -117,32 +143,47 @@ match.winner %>%
 #  200:47  
 ```
 
+Conditiontional probabilities on various objectives
 ```{r}
-# Probability of winning given first blood
 data.team %>%
   filter(firstBlood == TRUE) %>%
   select(winner) %>%
   summarise(sum(winner)/n() * 100)
+
+#   sum(winner)/n() * 100
+# 1                  61.1
 
 data.team %>%
   filter(firstDragon == TRUE) %>%
   select(winner) %>%
   summarise(sum(winner)/n() * 100)
 
+#   sum(winner)/n() * 100
+# 1               69.4864
+
 data.team %>%
   filter(firstTower == TRUE) %>%
   select(winner) %>%
   summarise(sum(winner)/n() * 100)
+
+#   sum(winner)/n() * 100
+# 1                  68.2
 
 data.team %>%
   filter(firstRiftHerald == TRUE) %>%
   select(winner) %>%
   summarise(sum(winner)/n() * 100)
 
+#   sum(winner)/n() * 100
+# 1               74.4898
+
 data.team %>%
   filter(firstBaron == TRUE) %>%
   select(winner) %>%
   summarise(sum(winner)/n() * 100)
+
+#   sum(winner)/n() * 100
+# 1              82.53425
 
 data.team %>%
   filter(firstInhibitor == TRUE) %>%
@@ -150,45 +191,7 @@ data.team %>%
   summarise(sum(winner)/n() * 100)
 
 #   sum(winner)/n() * 100
-# 1                  61.1
-# 
-#   sum(winner)/n() * 100
-# 1               69.4864
-# 
-#   sum(winner)/n() * 100
-# 1                  68.2
-# 
-#   sum(winner)/n() * 100
-# 1               74.4898
-# 
-#   sum(winner)/n() * 100
-# 1              82.53425
-# 
-#   sum(winner)/n() * 100
 # 1              90.59081
-```
-
-We make a data frame for events.
-```{r}
-match.events <- data.match %>%
-  enter_object("timeline") %>%
-  enter_object("frames") %>%
-  gather_array("frames.index") %>%
-  enter_object("events") %>%
-  gather_array("events.index") %>%
-  select(matchId) %>%
-  spread_values(eventType = jstring("eventType"),
-                timestamp = jnumber("timestamp"),
-                teamId = jnumber("teamId"),
-                participantId = jnumber("participantId"), 
-                creatorId = jnumber("creatorId"),
-                victimId = jnumber("victimId"),
-                killerId = jnumber("killerId"),
-                monsterType = jstring("monsterType"),
-                position = jstring("position"),
-                towerType = jstring("towerType"),
-                buildingType = jstring("buildingType")) %>%
-  mutate(timestamp = timestamp/1000/60)
 ```
 
 ## Surrender 
