@@ -22,6 +22,10 @@ runtime: shiny
 
 ![First to Objective](figures/timeline.png)
 
+## Winning given objective?
+
+## Prediction from objectives
+
 ## Questions?
 
 
@@ -29,19 +33,3 @@ runtime: shiny
 ## Map Activity {.flexbox .vcenter}
 
 ![Summoner's Rift](figures/events.png)
-
-## Online API
-
-Graph representation
-
-<!-- Basics stats 
-Median game 35 min
-Surrender 2% 
--->
-
-## First to Objective
-
-Sample data frame
-
-<!-- Important factors? 
--->
