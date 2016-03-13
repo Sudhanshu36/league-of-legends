@@ -87,18 +87,18 @@ We make the table of winner per match.
 match.winner <- data.match %>%
   select(matchId) %>%
   enter_object("teams") %>%
-  gather_array("teams.index") %>%
-  select(-teams.index) %>%
+  gather_array("teams.index") %>% 
   spread_values(teamId = jnumber("teamId"),
                 winner = jlogical("winner")) %>%
+  select(matchId, teamId, winner)
+
+# Is there an advantage being on the blue/red side?
+match.winner %>%
   mutate(winner = winner * teamId) %>%
   group_by(matchId) %>%
   summarise_each(funs(sum)) %>%
   select(-teamId) %>%
-  mutate_each(funs(factor))
-
-# Is there an advantage being on the blue/red side?
-match.winner %>% 
+  mutate_each(funs(factor)) %>% 
   select(winner) %>%
   summary()
 
@@ -133,21 +133,13 @@ match.events <- data.match %>%
 
 Proportion of matches that ends in surrender. A team who lost and still had at least one Nexus tower surrendered. We assume all surrenders are as such.
 ```{r}
-match.team <- data.match %>%
-  select(matchId) %>%
-  enter_object("teams") %>%
-  gather_array("teams.index") %>%
-  select(-teams.index) %>%
-  spread_values(teamId = jnumber("teamId"),
-                winner = jlogical("winner"))
-
 # Extract tower information to infer whether losing team surrendered
 match.turret <- match.events %>%
   filter(towerType == "NEXUS_TURRET") %>%
   mutate(NEXUS_TURRET = 1) %>%
   select(matchId, teamId, NEXUS_TURRET)
 
-match.surrender <- merge(match.team, match.turret, all.x = TRUE) %>%
+match.surrender <- merge(match.winner, match.turret, all.x = TRUE) %>%
   group_by(matchId, teamId, winner) %>%
   summarise_each(funs(sum)) %>%
   mutate(surrender = ifelse(winner, FALSE, 
@@ -281,7 +273,9 @@ p <- ggplot(timeline) +
   scale_x_continuous(expand = c(.15, .15))
 
 p <- p + 
-  theme(axis.line = element_blank(),
+  theme(panel.grid.minor.y = element_blank(),
+        panel.grid.major.y = element_blank(),
+        axis.line = element_blank(),
         axis.text.y = element_blank(),
         axis.ticks = element_blank(),
         axis.title.y = element_blank(),
@@ -302,7 +296,6 @@ participants.timeline <- data.match %>%
   gather_array("participants.index") %>%
   spread_values(participantId = jnumber("participantId"),
                 teamId = jnumber("teamId")) %>%
-  select(-participants.index) %>%
   enter_object("timeline")
 
 participants.creeps <- participants.timeline %>% 
@@ -328,17 +321,37 @@ participants.xp <- participants.timeline %>%
 participants <- merge(participants.creeps, participants.gold)
 participants <- merge(participants, participants.xp)
 
-participants <- merge(participants, team) %>%
-  group_by(matchId, teamId, ParticipantTimelineData) %>%
-  summarise_each(funs(mean), matchId, teamId,
-                 ParticipantTimelineData, creepsPerMinDeltas, goldPerMinDeltas, xpPerMinDeltas)
+participants <- merge(participants, match.winner) %>%
+  select(matchId, teamId, ParticipantTimelineData, creepsPerMinDeltas, goldPerMinDeltas, xpPerMinDeltas, winner) %>%
+  group_by(matchId, teamId, ParticipantTimelineData, winner) %>%
+  summarise_each(funs(mean)) %>%
+  filter(ParticipantTimelineData == "zeroToTen" | ParticipantTimelineData == "tenToTwenty") %>%
+  as.data.frame() %>%
+  select(-ParticipantTimelineData) %>%
+  group_by(matchId, teamId, winner) %>%
+  summarise_each(funs(mean))
 
-#      matchId teamId ParticipantTimelineData creepsPerMinDeltas goldPerMinDeltas xpPerMinDeltas
-#        (dbl)  (dbl)                   (chr)              (dbl)            (dbl)          (dbl)
-# 1 2054994244    100             tenToTwenty               3.52           332.18         478.76
-# 2 2054994244    100             thirtyToEnd               3.53           438.55         581.97
-# 3 2054994244    100          twentyToThirty               3.20           349.30         428.22
-# 4 2054994244    100               zeroToTen               3.02           178.06         266.68
-# 5 2054994244    200             tenToTwenty               4.60           385.72         462.62
-# 6 2054994244    200             thirtyToEnd               3.33           428.66         483.97
+#       matchId teamId winner creepsPerMinDeltas goldPerMinDeltas xpPerMinDeltas
+#         (dbl)  (dbl)  (lgl)              (dbl)            (dbl)          (dbl)
+# 1  2054994176    100  FALSE               3.66           270.78         359.19
+# 2  2054994176    200   TRUE               4.15           320.34         387.32
+# 3  2054994196    100  FALSE               3.55           318.21         402.64
+# 4  2054994196    200   TRUE               4.08           332.82         385.74
+# 5  2054994244    100  FALSE               3.27           255.12         372.72
+# 6  2054994244    200   TRUE               4.10           329.23         424.98
+# 7  2054994283    100  FALSE               3.54           255.87         364.14
+# 8  2054994283    200   TRUE               4.52           336.31         415.82
+# 9  2054994354    100  FALSE               3.78           304.94         358.04
+# 10 2054994354    200   TRUE               3.41           299.32         378.73
+# ..        ...    ...    ...                ...              ...            ...
+
+ggplot(participants, aes(goldPerMinDeltas, xpPerMinDeltas, color = factor(winner), group = factor(winner))) + 
+  geom_point(alpha = 0.2, size = 1) +
+  geom_density2d(alpha = 1) +
+  # stat_density2d() +
+  # stat_density2d(aes(alpha = ..density..), geom = "raster", contour = FALSE)
+  # geom_bin2d(aes(color = ..count..), binwidth = 5, alpha = 0.5) +
+  # stat_bin2d(binwidth = 5, alpha = 0.5) +
+  xlab("Gold per min") +
+  ylab("Experience per min")
 ```
