@@ -160,7 +160,7 @@ match.surrender <- merge(match.team, match.turret, all.x = TRUE) %>%
 timeline.surrender <- merge(match.duration, match.surrender) %>%
   group_by(surrender) %>%
   summarise_each(funs(median)) %>%
-  mutate(eventType = ifelse(surrender, "SURRENDER", "CASTLE DESTROY"),
+  mutate(eventType = ifelse(surrender, "SURRENDER", "CASTLE DESTRUCTION"),
          timestamp = matchDuration) %>%
   select(timestamp, eventType)
 
@@ -246,15 +246,15 @@ match.events %>%
 timeline <- rbind(timeline.monster, timeline.kill, timeline.maxlvl, timeline.surrender)
 timeline <- timeline[order(timeline$timestamp),]
 
-#   timestamp      eventType
-#       (dbl)          (chr)
-# 1  3.154658  CHAMPION KILL
-# 2 12.928967    DRAGON KILL
-# 3 16.296100    HERALD KILL
-# 4 25.475000      SURRENDER
-# 5 29.355583     BARON KILL
-# 6 33.416667 CASTLE DESTROY
-# 7 44.567367      MAX LEVEL
+#   timestamp          eventType
+#       (dbl)              (chr)
+# 1  3.154658      CHAMPION KILL
+# 2 12.928967        DRAGON KILL
+# 3 16.296100        HERALD KILL
+# 4 25.475000          SURRENDER
+# 5 29.355583         BARON KILL
+# 6 33.416667 CASTLE DESTRUCTION
+# 7 44.567367          MAX LEVEL
   
 # Draw timeline
 # http://stackoverflow.com/questions/7492274/draw-a-chronological-timeline-with-ggplot2
