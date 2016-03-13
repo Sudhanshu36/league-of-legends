@@ -13,10 +13,14 @@ runtime: shiny
 
 <!-- http://www.lazygamer.net/genre/moba/viewership-2015-league-legends-world-championship-toppled-riots-expectations/ -->
 
-## Defend and Destroy {.flexbox .vcenter}
+## Teams compete to destroy each other's castle {.flexbox .vcenter}
 
 ![League of Legends](figures/game_example.jpg)
 <br>Multiplayer Online Battle Arena
+
+## Important events in a typical game {.flexbox .vcenter}
+
+![First to Objective](figures/timeline.png)
 
 ## Map Activity {.flexbox .vcenter}
 
