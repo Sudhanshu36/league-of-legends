@@ -119,14 +119,15 @@ match.events <- data.match %>%
   gather_array("events.index") %>%
   select(matchId) %>%
   spread_values(eventType = jstring("eventType"),
+                timestamp = jnumber("timestamp"),
                 teamId = jnumber("teamId"),
                 participantId = jnumber("participantId"), 
-                timestamp = jnumber("timestamp"),
                 creatorId = jnumber("creatorId"),
-                monsterType = jstring("monsterType"),
                 victimId = jnumber("victimId"),
                 killerId = jnumber("killerId"),
-                position = jstring("position")) %>%
+                monsterType = jstring("monsterType"),
+                position = jstring("position"),
+                towerType = jstring("towerType")) %>%
   mutate(timestamp = timestamp/1000/60)
 ```
 
@@ -142,7 +143,6 @@ match.team <- data.match %>%
 
 # Extract tower information to infer whether losing team surrendered
 match.turret <- match.events %>%
-  spread_values(towerType = jstring("towerType")) %>%
   filter(towerType == "NEXUS_TURRET") %>%
   mutate(NEXUS_TURRET = 1) %>%
   select(matchId, teamId, NEXUS_TURRET)
@@ -274,7 +274,7 @@ ggsave("figures/timeline.png", dpi = 100, width = 7, height = 4, units = "in")
 # Delta fields refer to values for the specified period (e.g., the gold per minute over the first 10 minutes of the game versus the second 20 minutes of the game) 
 # Diffs fields refer to the deltas versus the calculated lane opponent(s)
 
-data.timeline <- data.match %>%
+participants.timeline <- data.match %>%
   enter_object("participants") %>%
   gather_array("participants.index") %>%
   spread_values(participantId = jnumber("participantId"),
@@ -282,22 +282,22 @@ data.timeline <- data.match %>%
   select(-participants.index) %>%
   enter_object("timeline")
 
-participants.creeps <- data.timeline %>% 
+participants.creeps <- participants.timeline %>% 
   enter_object("creepsPerMinDeltas") %>%
   gather_keys("ParticipantTimelineData") %>%
   append_values_number("creepsPerMinDeltas")
 
-participants.gold <- data.timeline %>% 
+participants.gold <- participants.timeline %>% 
   enter_object("goldPerMinDeltas") %>%
   gather_keys("ParticipantTimelineData") %>%
   append_values_number("goldPerMinDeltas")
 
-# participants.wards <- data.timeline %>% 
+# participants.wards <- participants.timeline %>% 
 #   enter_object("wardsPerMinDeltas") %>%
 #   gather_keys("ParticipantTimelineData") %>%
 #   append_values_number("ParticipantTimelineValue")
 
-participants.xp <- data.timeline %>% 
+participants.xp <- participants.timeline %>% 
   enter_object("xpPerMinDeltas") %>%
   gather_keys("ParticipantTimelineData") %>%
   append_values_number("xpPerMinDeltas")
