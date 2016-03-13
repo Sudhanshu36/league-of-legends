@@ -84,12 +84,22 @@ summary(match.duration$matchDuration/60)
 
 We make the table of winner per match.
 ```{r}
-match.winner <- data.match %>%
-  select(matchId) %>%
+# Extract per team information
+data.team <- data.match %>%
   enter_object("teams") %>%
   gather_array("teams.index") %>% 
-  spread_values(teamId = jnumber("teamId"),
-                winner = jlogical("winner")) %>%
+  spread_values(
+    teamId = jnumber("teamId"),
+    winner = jlogical("winner"),
+    firstTower = jlogical("firstTower"),
+    firstBaron = jlogical("firstBaron"),
+    firstBlood = jlogical("firstBlood"),
+    firstDragon = jlogical("firstDragon"),
+    firstInhibitor = jlogical("firstInhibitor"),
+    firstRiftHerald = jlogical("firstRiftHerald")) %>%
+  select(-teams.index)
+
+match.winner <- data.team
   select(matchId, teamId, winner)
 
 # Is there an advantage being on the blue/red side?
@@ -105,6 +115,39 @@ match.winner %>%
 #  winner  
 #  100:53  
 #  200:47  
+```
+
+```{r}
+# Probability of winning given first blood
+data.team %>%
+  filter(firstBlood == TRUE) %>%
+  select(winner) %>%
+  summarise(sum(winner)/n() * 100)
+
+data.team %>%
+  filter(firstDragon == TRUE) %>%
+  select(winner) %>%
+  summarise(sum(winner)/n() * 100)
+
+data.team %>%
+  filter(firstTower == TRUE) %>%
+  select(winner) %>%
+  summarise(sum(winner)/n() * 100)
+
+data.team %>%
+  filter(firstRiftHerald == TRUE) %>%
+  select(winner) %>%
+  summarise(sum(winner)/n() * 100)
+
+data.team %>%
+  filter(firstBaron == TRUE) %>%
+  select(winner) %>%
+  summarise(sum(winner)/n() * 100)
+
+data.team %>%
+  filter(firstInhibitor == TRUE) %>%
+  select(winner) %>%
+  summarise(sum(winner)/n() * 100)
 ```
 
 We make a data frame for events.
