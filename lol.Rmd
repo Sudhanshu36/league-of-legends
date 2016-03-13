@@ -199,12 +199,18 @@ first.inhibitor <- data.team %>%
 #   sum(winner)/n() * 100
 # 1              90.59081
 
-first <- rbind(first.blood, first.tower, first.dragon, first.herald, first.inhibitor, first.baron)
-# first <- first[order(first$prob),]
+first <- rbind(first.blood, first.tower, first.dragon, first.herald, first.baron) # , first.inhibitor)
+first <- transform(first, eventType = reorder(eventType, prob))
+first$color <- c(TRUE, TRUE, TRUE, TRUE, FALSE)
 
-ggplot(first, aes(eventType, prob)) +
+ggplot(first, aes(eventType, prob, fill = color)) +
   expand_limits(y = 50) +
-  geom_bar(stat = "identity") 
+  geom_bar(stat = "identity") +
+  scale_fill_discrete(guide = 'none') +
+  geom_vline(xintercept = 4.5) +
+  xlab("") +
+  ylab("Probability of winning given ...")
+  # geom_vline(xintercept = (which(first$eventType == 'First Herald') + which(first$eventType == 'First Baron'))/2)
 ```
 
 ## Surrender 
