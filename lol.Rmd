@@ -125,7 +125,8 @@ match.events <- data.match %>%
                 killerId = jnumber("killerId"),
                 monsterType = jstring("monsterType"),
                 position = jstring("position"),
-                towerType = jstring("towerType")) %>%
+                towerType = jstring("towerType"),
+                buildingType = jstring("buildingType")) %>%
   mutate(timestamp = timestamp/1000/60)
 ```
 
@@ -190,6 +191,18 @@ timeline.tower <- match.events %>%
   select(timestamp) %>%
   summarise_each(funs(median)) %>%
   mutate(eventType = "TOWER DESTRUCTION")
+
+# Compute median time when first tower is destroyed
+timeline.inhibitor <- match.events %>% 
+  filter(buildingType == "INHIBITOR_BUILDING") %>%
+  select(matchId, timestamp) %>%
+  group_by(matchId) %>%
+  mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
+  filter(rank == 1) %>%
+  as.data.frame() %>%
+  select(timestamp) %>%
+  summarise_each(funs(median)) %>%
+  mutate(eventType = "INHIBITOR DESTRUCTION")
 
 # Compute median time when first elite monster is killed
 timeline.monster <- match.events %>%
@@ -256,6 +269,7 @@ match.events %>%
 # 1 15.5
 
 timeline <- rbind(timeline.monster, timeline.kill, timeline.maxlvl, timeline.surrender, timeline.tower)
+            # timeline.inhibitor
 timeline <- timeline[order(timeline$timestamp),]
 
 #   timestamp          eventType
@@ -271,7 +285,7 @@ timeline <- timeline[order(timeline$timestamp),]
 # Draw timeline
 # http://stackoverflow.com/questions/7492274/draw-a-chronological-timeline-with-ggplot2
 
-dislocations <- sample(c(-1,-.5,.5,1), 6, replace=T)
+# dislocations <- sample(c(-1,-.5,.5,1), dim(timeline)[1], replace = T)
 dislocations <- c(1.0, -1.0, 0.5, -0.5, 1.0, -1.0, 0.5, -0.5)
 nudges <- 0.1 * sign(dislocations)
 
@@ -328,6 +342,11 @@ participants.xp <- participants.timeline %>%
   enter_object("xpPerMinDeltas") %>%
   gather_keys("ParticipantTimelineData") %>%
   append_values_number("xpPerMinDeltas")
+
+# participants.kills <- participants.timeline %>% 
+#   enter_object("assistedLaneKillsPerMinDeltas") %>%
+#   gather_keys("ParticipantTimelineData") %>%
+#   append_values_number("assistedLaneKillsPerMinDeltas")
 
 participants <- merge(participants.creeps, participants.gold)
 participants <- merge(participants, participants.xp)
