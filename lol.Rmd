@@ -48,39 +48,6 @@ data.match <- data.json %>%
   select(matchId) 
 ```
 
-
-Proportion of matches that ends in surrender.
-```{r}
-match.team <- data.match %>%
-  select(matchId) %>%
-  enter_object("teams") %>%
-  gather_array("teams.index") %>%
-  select(-teams.index) %>%
-  spread_values(teamId = jnumber("teamId"),
-                winner = jlogical("winner"))
-
-# Extract tower information to infer whether losing team surrendered
-match.turret <- match.events %>%
-  spread_values(towerType = jstring("towerType")) %>%
-  filter(towerType == "NEXUS_TURRET") %>%
-  mutate(NEXUS_TURRET = 1) %>%
-  select(matchId, teamId, NEXUS_TURRET)
-
-match.surrender <- merge(match.team, match.turret, all.x = TRUE) %>%
-  group_by(matchId, teamId, winner) %>%
-  summarise_each(funs(sum)) %>%
-  mutate(surrender = ifelse(winner, FALSE, 
-                            ifelse(NEXUS_TURRET < 2 | is.na(NEXUS_TURRET), TRUE, FALSE))) %>%
-  group_by(matchId) %>%
-  summarise_each(funs(sum)) %>%
-  select(matchId, surrender) %>%
-  mutate(surrender = as.logical(surrender))
-
-# Percent of matches that ended in surrender?
-x <- match.surrender$surrender
-print(sum(x) / length(x) * 100)
-```
-
 Match duration
 ```{r}
 data.match %>%
