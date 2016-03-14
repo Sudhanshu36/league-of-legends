@@ -213,7 +213,7 @@ p <- ggplot(first, aes(eventType, prob, fill = color)) +
   # geom_vline(xintercept = (which(first$eventType == 'First Herald') + which(first$eventType == 'First Baron'))/2)
 
 print(p)
-ggsave("figures/conditional.png", dpi = 100, width = 7, height = 4, units = "in")
+ggsave("figures/conditional.png", width = 8, height = 4.5, units = "in")
 ```
 
 ## Surrender 
@@ -393,7 +393,7 @@ p <- p +
         legend.position = "none")
 
 print(p)
-ggsave("figures/timeline.png", dpi = 100, width = 7, height = 4, units = "in")
+ggsave("figures/timeline.png", width = 8, height = 4.5, units = "in")
 ```
 
 ## Scatter plot

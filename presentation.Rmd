@@ -8,23 +8,23 @@ runtime: shiny
 
 ## eSport is BIG {.flexbox .vcenter}
 
-![League of Legends](figures/world_championship_2015_small.jpg)
+<img src="figures/world_championship_2015.jpg" alt="League of Legends" style="width: 750px;"/>
 <br>Championship watched by 36 millions people in 2015.
 
 <!-- http://www.lazygamer.net/genre/moba/viewership-2015-league-legends-world-championship-toppled-riots-expectations/ -->
 
 ## Multiplayer Online Battle Arena {.flexbox .vcenter}
 
-![League of Legends](figures/game_example.jpg)
+<img src="figures/game_example.jpg" alt="Gameplay" style="width: 750px;"/>
 <br>Teams compete to destroy each other's castle.
 
 ## Event Progression in Typical Game {.flexbox .vcenter}
 
-![First to Objective](figures/timeline.png)
+<img src="figures/timeline.png" alt="Timeline" style="width: 750px;"/>
 
 ## Strategy?
 
-![Conditional](figures/conditional.png)
+<img src="figures/conditional.png" alt="Conditional" style="width: 750px;"/>
 
 ## Prediction from objectives
 
