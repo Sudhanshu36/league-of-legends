@@ -20,6 +20,7 @@ library(stringr)
 library(ggplot2)
 library(rattle)
 
+library(prob)
 library(caret)
 library(pROC)
 ```
@@ -125,85 +126,44 @@ data.team <- data.match %>%
     firstRiftHerald = jlogical("firstRiftHerald")) %>%
   select(-teams.index)
 
-match.winner <- data.team
+match.winner <- data.team %>%
   select(matchId, teamId, winner)
 
-# Is there an advantage being on the blue/red side?
-match.winner %>%
-  mutate(winner = winner * teamId) %>%
-  group_by(matchId) %>%
-  summarise_each(funs(sum)) %>%
-  select(-teamId) %>%
-  mutate_each(funs(factor)) %>% 
-  select(winner) %>%
-  summary()
+team.probspace <- probspace(data.team)
+Prob(team.probspace, event = winner == TRUE, given = teamId == 200)
+Prob(team.probspace, event = winner == TRUE, given = teamId == 100)
 
-#  winner  
-#  100:53  
-#  200:47  
+# [1] 0.492
+# [1] 0.508
 ```
 
 Conditiontional probabilities on various objectives
 ```{r}
-first.blood <- data.team %>%
-  filter(firstBlood == TRUE) %>%
-  select(winner) %>%
-  summarise(prob = sum(winner)/n() * 100) %>%
-  mutate(eventType = "First Blood")
-
-#   sum(winner)/n() * 100
-# 1                  61.1
-
-first.dragon <- data.team %>%
-  filter(firstDragon == TRUE) %>%
-  select(winner) %>%
-  summarise(prob = sum(winner)/n() * 100) %>%
-  mutate(eventType = "First Dragon")
-
-#   sum(winner)/n() * 100
-# 1               69.4864
-
-first.tower <- data.team %>%
-  filter(firstTower == TRUE) %>%
-  select(winner) %>%
-  summarise(prob = sum(winner)/n() * 100) %>%
-  mutate(eventType = "First Tower")
-
-#   sum(winner)/n() * 100
-# 1                  68.2
-
-first.herald <- data.team %>%
-  filter(firstRiftHerald == TRUE) %>%
-  select(winner) %>%
-  summarise(prob = sum(winner)/n() * 100) %>%
-  mutate(eventType = "First Herald")
-
-#   sum(winner)/n() * 100
-# 1               74.4898
-
-first.baron <- data.team %>%
-  filter(firstBaron == TRUE) %>%
-  select(winner) %>%
-  summarise(prob = sum(winner)/n() * 100) %>%
-  mutate(eventType = "First Baron")
-
-#   sum(winner)/n() * 100
-# 1              82.53425
-
-first.inhibitor <- data.team %>%
-  filter(firstInhibitor == TRUE) %>%
-  select(winner) %>%
-  summarise(prob = sum(winner)/n() * 100) %>%
-  mutate(eventType = "First Inhibitor")
-
-#   sum(winner)/n() * 100
-# 1              90.59081
+first.blood <- data.frame(eventType = "First Blood", 
+                          probs = 100 * Prob(team.probspace, event = winner == TRUE, given = firstBlood == TRUE))
+first.dragon <- data.frame(eventType = "First Dragon", 
+                           probs = 100 * Prob(team.probspace, event = winner == TRUE, given = firstDragon == TRUE))
+first.tower <- data.frame(eventType = "First Tower", 
+                          probs = 100 * Prob(team.probspace, event = winner == TRUE, given = firstTower == TRUE))
+first.herald <- data.frame(eventType = "First Herald", 
+                           probs = 100 * Prob(team.probspace, event = winner == TRUE, given = firstRiftHerald == TRUE))
+first.baron <- data.frame(eventType = "First Baron", 
+                          probs = 100 * Prob(team.probspace, event = winner == TRUE, given = firstBaron == TRUE))
+first.inhibitor <- data.frame(eventType = "First Inhibitor", 
+                              probs = 100 * Prob(team.probspace, event = winner == TRUE, given = firstInhibitor == TRUE))
 
 first <- rbind(first.blood, first.tower, first.dragon, first.herald, first.baron) # , first.inhibitor)
-first <- transform(first, eventType = reorder(eventType, prob))
+first <- transform(first, eventType = reorder(eventType, probs))
 first$color <- c(TRUE, TRUE, TRUE, TRUE, FALSE)
 
-p <- ggplot(first, aes(eventType, prob, fill = color)) +
+#      eventType    probs color
+# 1  First Blood 61.10000  TRUE
+# 2  First Tower 68.20000  TRUE
+# 3 First Dragon 69.48640  TRUE
+# 4 First Herald 74.48980  TRUE
+# 5  First Baron 82.53425 FALSE
+
+p <- ggplot(first, aes(eventType, probs, fill = color)) +
   # expand_limits(y = c(50,100)) +
   geom_bar(stat = "identity") +
   scale_fill_discrete(guide = 'none') +
@@ -217,40 +177,22 @@ ggsave("figures/conditional.png", width = 8, height = 4.5, units = "in")
 ```
 
 ```{r}
-library(prob)
-count.winherald <- data.team %>%
-  group_by(winner, firstRiftHerald) %>%
-  summarise(probs = n()) %>%
-  probspace(count.winherald$probs)
+team.probspace <- probspace(data.team)
 
-count.winherald %>%
-  Prob(event = winner == TRUE, given = firstRiftHerald == TRUE)
-
-win <- count.winherald %>%
-  filter(winner == TRUE) %>%
-  as.data.frame() %>%
-  select(count) %>%
-  summarise(count = sum(count))
-
-herald <- count.winherald %>%
-  filter(firstRiftHerald == TRUE) %>%
-  as.data.frame() %>%
-  select(count) %>%
-  summarise(count = sum(count))
-
-winherald <- count.winherald %>%
-  filter(firstRiftHerald == TRUE & winner == TRUE) %>%
-  as.data.frame() %>%
-  select(count) %>%
-  summarise(count = sum(count))
+winGIVENherald <- Prob(team.probspace, event = winner == TRUE, given = firstRiftHerald == TRUE)
+win <- Prob(team.probspace, event = winner == TRUE)
+winANDherald <- Prob(team.probspace, event = winner == TRUE & firstRiftHerald == TRUE)
+herald <- Prob(team.probspace, event = firstRiftHerald == TRUE)
 
 require(venneuler)
 v <- venneuler(c(Win = win$count, Herald = herald$count, "Win&Herald" = winherald$count))
 v <- venneuler(c(A = 1000, B = 294, "A&B" = 219))
+v <- venneuler(c(A = win, B = herald, "A&B" = winANDherald))
 plot(v)
 
 # library(VennDiagram)
 # draw.pairwise.venn(1000,294,219)
+# draw.pairwise.venn(win, herald, winANDherald)
 ```
 
 ## Surrender 
