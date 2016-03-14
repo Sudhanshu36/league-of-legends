@@ -389,7 +389,7 @@ data <- coord %>%
 
 # Get background image
 img <- readPNG("data/minimap-mh.png")
-g <- rasterGrob(img, interpolate=TRUE, width=unit(1,"npc"), height=unit(1,"npc"))
+g <- rasterGrob(img, interpolate = TRUE, width = unit(1,"npc"), height = unit(1,"npc"))
 
 # Scatter plot with background
 p <- data %>%
