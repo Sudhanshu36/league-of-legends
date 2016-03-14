@@ -32,15 +32,15 @@ library(pROC)
 Load match file.
 ```{r}
 # TidyJSON
-# data.file <- "data/matches1.json"
-data.file <- "data/matches_all.json"
+data.file <- "data/matches1.json"
+# data.file <- "data/matches_all.json"
 data.json <- read_json(data.file)
 ```
 
 Load information from each match.
 ```{r}
 data.match <- data.json %>% 
-  gather_array("file.index") %>%
+  # gather_array("file.index") %>%
   enter_object("matches") %>%
   gather_array("matches.index") %>% 
   spread_values(matchId = jnumber("matchId")) %>%
@@ -126,7 +126,8 @@ team <- team %>%
          firstDragon,
          firstTower,
          # firstInhibitor,
-         firstRiftHerald)
+         firstRiftHerald
+         )
 ```
 
 # Prediction
@@ -162,8 +163,8 @@ ctrl <- trainControl(method = "cv", number = 10, verboseIter = T)
 
 # Select method
 # method <- "rf"
-# method <- "rpart"
-method <- "glmnet"
+method <- "rpart"
+# method <- "glmnet"
 # method <- "svmLinear"
 # method <- "svmRadial"
 
@@ -203,7 +204,7 @@ plot(modelTune$results)
 par(mfrow = c(1,1))
 plot(modelTune$finalModel)
 
-# fancyRpartPlot(modelTune$finalModel)
+fancyRpartPlot(modelTune$finalModel)
 ```
 
 We evaluate using the ROC curve.
