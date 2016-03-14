@@ -84,28 +84,107 @@ match.duration <- data.match %>%
 summary(match.duration$matchDuration/60)
 ```
 
+## Look into events
+
+```{r}
+data.match %>%
+  enter_object("timeline") %>%
+  enter_object("frames") %>%
+  gather_array("frames.index") %>% 
+  enter_object("participantFrame") %>% str()
+  gather_array("participantFrames.index") %>% str()
+  spread_values(participantId = jnumber(participantId))
+```
 
 We make a data frame for events.
 ```{r}
 match.events <- data.match %>%
-  enter_object("timeline") %>%
-  enter_object("frames") %>%
-  gather_array("frames.index") %>%
-  enter_object("events") %>%
-  gather_array("events.index") %>%
-  select(matchId) %>%
-  spread_values(eventType = jstring("eventType"),
-                timestamp = jnumber("timestamp"),
-                teamId = jnumber("teamId"),
-                participantId = jnumber("participantId"), 
-                creatorId = jnumber("creatorId"),
-                victimId = jnumber("victimId"),
-                killerId = jnumber("killerId"),
-                monsterType = jstring("monsterType"),
-                position = jstring("position"),
-                towerType = jstring("towerType"),
-                buildingType = jstring("buildingType")) %>%
-  mutate(timestamp = timestamp/1000/60)
+    enter_object("timeline") %>%
+    enter_object("frames") %>%
+    gather_array("frames.index") %>%
+    enter_object("events") %>%
+    gather_array("events.index") %>%
+    select(matchId) %>%
+    spread_values(eventType = jstring("eventType"),
+                  timestamp = jnumber("timestamp"),
+                  teamId = jnumber("teamId"),
+                  participantId = jnumber("participantId"), 
+                  creatorId = jnumber("creatorId"),
+                  victimId = jnumber("victimId"),
+                  killerId = jnumber("killerId"),
+                  monsterType = jstring("monsterType"),
+                  towerType = jstring("towerType"),
+                  buildingType = jstring("buildingType")) %>%
+    mutate(timestamp = timestamp/1000/60) %>%
+    enter_object("position") %>%
+    spread_values(X = jnumber("x"),
+                  Y = jnumber("y"))
+```
+
+Plot activity per few minutes
+```{r}
+p <- match.events %>%
+  filter(eventType == "CHAMPION_KILL") %>%
+  ggplot(data, aes(timestamp, y = ..count.., 
+                      group = winner, fill = winner)) + 
+  xlab("minutes") +
+  stat_bin(binwidth = 5, alpha = 0.7, 
+           col = I("white"), position = "identity")
+
+plot(p)
+```
+
+Interactive version.
+```{r}
+shinyUI(fluidPage(
+fluidRow(
+column(4, selectInput("eventType", "Type:", 
+                      c(unique(as.character(match.events$eventType))), selected = "CHAMPION_KILL")),
+column(4, selectInput("matchId", "Match ID:", 
+                      c(unique(as.character(match.events$matchId)))))
+),
+fluidRow(
+renderPlot({
+    
+    binwidth <- 2
+    data <- filter(match.events, 
+                   eventType == input$eventType & matchId == input$matchId)
+
+    # draw the histogram with the specified number of bins
+    p <- ggplot(data, aes(timestamp, y = ..count.., 
+                          group = winner, fill = winner)) + 
+      xlab("time (min)") +
+      stat_bin(binwidth = 5, alpha = 0.3, 
+               col = I("white"), position = "identity")
+ 
+    plot(p)
+
+  })
+)
+))
+```
+
+## Map
+
+```{r}
+events <- match.events %>%
+  mutate(participantId = ifelse(participantId <= 5, 100, 200),
+         creatorId = ifelse(creatorId <= 5, 100, 200),
+         victimId = ifelse(victimId <= 5, 200, 100),   # associate non-victim team!
+         killerId = ifelse(killerId <= 5, 100, 200),
+         teamId = ifelse(teamId == 100, 200, 100) # associate to non-victim team! 
+         ) %>%
+  mutate(victimId      = ifelse(is.na(victimId), killerId, victimId)) %>%
+  mutate(creatorId     = ifelse(is.na(creatorId), victimId, creatorId)) %>%
+  mutate(participantId = ifelse(is.na(participantId), creatorId, participantId)) %>%
+  mutate(teamId        = ifelse(is.na(teamId), participantId, teamId)) %>%
+  select(-participantId,-creatorId,-victimId, -killerId) %>%
+  merge(match.winner, all.x = TRUE) # Attach winning status
+
+# Turn into factors
+events <- events %>%
+  mutate(eventType = as.factor(eventType),
+         teamId = as.factor(teamId))
 ```
 
 ## Conditional Probabilities
