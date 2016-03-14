@@ -7,6 +7,14 @@ output: html_document
 
 Loading packages.
 ```{r}
+library(ggplot2)
+library(rattle)
+library(gridExtra)
+
+library(prob)
+library(caret)
+library(pROC)
+
 # https://cran.r-project.org/web/packages/tidyjson/vignettes/introduction-to-tidyjson.html
 # https://github.com/sailthru/tidyjson
 library("tidyjson")
@@ -16,14 +24,6 @@ library(magrittr)
 library(tidyr)
 library(dplyr)
 library(stringr)
-
-library(ggplot2)
-library(rattle)
-library(gridExtra)
-
-library(prob)
-library(caret)
-library(pROC)
 ```
 
 ```{r}
@@ -87,13 +87,13 @@ summary(match.duration$matchDuration/60)
 ## Look into events
 
 ```{r}
-data.match %>%
-  enter_object("timeline") %>%
-  enter_object("frames") %>%
-  gather_array("frames.index") %>% 
-  enter_object("participantFrame") %>% str()
-  gather_array("participantFrames.index") %>% str()
-  spread_values(participantId = jnumber(participantId))
+# data.match %>%
+#   enter_object("timeline") %>%
+#   enter_object("frames") %>%
+#   gather_array("frames.index") %>% 
+#   enter_object("participantFrame") %>% str()
+#   gather_array("participantFrames.index") %>% str()
+#   spread_values(participantId = jnumber(participantId))
 ```
 
 We make a data frame for events.
@@ -119,72 +119,6 @@ match.events <- data.match %>%
     enter_object("position") %>%
     spread_values(X = jnumber("x"),
                   Y = jnumber("y"))
-```
-
-Plot activity per few minutes
-```{r}
-p <- match.events %>%
-  filter(eventType == "CHAMPION_KILL") %>%
-  ggplot(data, aes(timestamp, y = ..count.., 
-                      group = winner, fill = winner)) + 
-  xlab("minutes") +
-  stat_bin(binwidth = 5, alpha = 0.7, 
-           col = I("white"), position = "identity")
-
-plot(p)
-```
-
-Interactive version.
-```{r}
-shinyUI(fluidPage(
-fluidRow(
-column(4, selectInput("eventType", "Type:", 
-                      c(unique(as.character(match.events$eventType))), selected = "CHAMPION_KILL")),
-column(4, selectInput("matchId", "Match ID:", 
-                      c(unique(as.character(match.events$matchId)))))
-),
-fluidRow(
-renderPlot({
-    
-    binwidth <- 2
-    data <- filter(match.events, 
-                   eventType == input$eventType & matchId == input$matchId)
-
-    # draw the histogram with the specified number of bins
-    p <- ggplot(data, aes(timestamp, y = ..count.., 
-                          group = winner, fill = winner)) + 
-      xlab("time (min)") +
-      stat_bin(binwidth = 5, alpha = 0.3, 
-               col = I("white"), position = "identity")
- 
-    plot(p)
-
-  })
-)
-))
-```
-
-## Map
-
-```{r}
-events <- match.events %>%
-  mutate(participantId = ifelse(participantId <= 5, 100, 200),
-         creatorId = ifelse(creatorId <= 5, 100, 200),
-         victimId = ifelse(victimId <= 5, 200, 100),   # associate non-victim team!
-         killerId = ifelse(killerId <= 5, 100, 200),
-         teamId = ifelse(teamId == 100, 200, 100) # associate to non-victim team! 
-         ) %>%
-  mutate(victimId      = ifelse(is.na(victimId), killerId, victimId)) %>%
-  mutate(creatorId     = ifelse(is.na(creatorId), victimId, creatorId)) %>%
-  mutate(participantId = ifelse(is.na(participantId), creatorId, participantId)) %>%
-  mutate(teamId        = ifelse(is.na(teamId), participantId, teamId)) %>%
-  select(-participantId,-creatorId,-victimId, -killerId) %>%
-  merge(match.winner, all.x = TRUE) # Attach winning status
-
-# Turn into factors
-events <- events %>%
-  mutate(eventType = as.factor(eventType),
-         teamId = as.factor(teamId))
 ```
 
 ## Conditional Probabilities
@@ -283,7 +217,7 @@ print(p)
 ggsave("figures/conditional.png", width = 8, height = 4.5, units = "in")
 ```
 
-Plotting one of them.
+Plot Venn diagram for winner and first Rift Herald.
 ```{r}
 win <- Prob(team.probspace, event = winner == TRUE)
 winANDherald <- Prob(team.probspace, event = winner == TRUE & firstRiftHerald == TRUE)
@@ -300,7 +234,7 @@ Proportion of matches that ends in surrender. A team who lost and still had at l
 ```{r}
 # Extract tower information to infer whether losing team surrendered
 match.turret <- match.events %>%
-  filter(towerType == "NEXUS_TURRET") %>%
+  dplyr::filter(towerType == "NEXUS_TURRET") %>%
   mutate(NEXUS_TURRET = 1) %>%
   select(matchId, teamId, NEXUS_TURRET)
 
@@ -324,6 +258,69 @@ timeline.surrender <- merge(match.duration, match.surrender) %>%
 # Percent of matches that ended in surrender?
 x <- match.surrender$surrender
 print(sum(x) / length(x) * 100)
+```
+
+## Activity versus time
+
+```{r}
+events <- match.events %>%
+    mutate(participantId = ifelse(participantId <= 5, 100, 200),
+           creatorId = ifelse(creatorId <= 5, 100, 200),
+           victimId = ifelse(victimId <= 5, 200, 100),   # associate non-victim team!
+           killerId = ifelse(killerId <= 5, 100, 200),
+           teamId = ifelse(teamId == 100, 200, 100)  # associate to non-victim team!
+           ) %>%
+    # Fill in team association
+    mutate(victimId      = ifelse(is.na(victimId), killerId, victimId)) %>%
+    mutate(creatorId     = ifelse(is.na(creatorId), victimId, creatorId)) %>%
+    mutate(participantId = ifelse(is.na(participantId), creatorId, participantId)) %>%
+    mutate(teamId        = ifelse(is.na(teamId), participantId, teamId)) %>%
+    select(-participantId, -creatorId, -victimId, -killerId) %>%
+    # Attach winning status
+    merge(match.winner, all.x = TRUE)
+```
+  
+Plot activity per few minutes
+```{r}
+p <- events %>%
+  dplyr::filter(eventType == "CHAMPION_KILL") %>%
+  ggplot(aes(timestamp, y = ..count.., 
+                      group = winner, fill = winner)) + 
+  xlab("minutes") +
+  stat_bin(binwidth = 5, alpha = 0.7, 
+           col = I("white"), position = "identity")
+
+plot(p)
+```
+
+Interactive version.
+```{r}
+shinyUI(fluidPage(
+fluidRow(
+column(4, selectInput("eventType", "Type:", 
+                      c(unique(as.character(match.events$eventType))), selected = "CHAMPION_KILL")),
+column(4, selectInput("matchId", "Match ID:", 
+                      c(unique(as.character(match.events$matchId)))))
+),
+fluidRow(
+renderPlot({
+    
+    binwidth <- 2
+    data <- dplyr::filter(events, 
+                          eventType == input$eventType & matchId == input$matchId)
+
+    # draw the histogram with the specified number of bins
+    p <- ggplot(data, aes(timestamp, y = ..count.., 
+                          group = winner, fill = winner)) + 
+      xlab("time (min)") +
+      stat_bin(binwidth = 5, alpha = 0.3, 
+               col = I("white"), position = "identity")
+ 
+    plot(p)
+
+  })
+)
+))
 ```
 
 ## Timeline
