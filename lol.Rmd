@@ -606,6 +606,8 @@ modelPredict <- predict(modelTune,
 par(mfrow = c(1,1))
 plot(modelPredict)
 
-table(predict = modelPredict, true = testing$winner)
 confusionMatrix(modelPredict, testing$winner, positive = "200")
+
+CM <- table(predict = modelPredict, true = testing$winner)
+ggplot(melt(CM), aes(predict, true, fill = value)) + geom_raster()
 ```
