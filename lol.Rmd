@@ -216,6 +216,43 @@ print(p)
 ggsave("figures/conditional.png", width = 8, height = 4.5, units = "in")
 ```
 
+```{r}
+library(prob)
+count.winherald <- data.team %>%
+  group_by(winner, firstRiftHerald) %>%
+  summarise(probs = n()) %>%
+  probspace(count.winherald$probs)
+
+count.winherald %>%
+  Prob(event = winner == TRUE, given = firstRiftHerald == TRUE)
+
+win <- count.winherald %>%
+  filter(winner == TRUE) %>%
+  as.data.frame() %>%
+  select(count) %>%
+  summarise(count = sum(count))
+
+herald <- count.winherald %>%
+  filter(firstRiftHerald == TRUE) %>%
+  as.data.frame() %>%
+  select(count) %>%
+  summarise(count = sum(count))
+
+winherald <- count.winherald %>%
+  filter(firstRiftHerald == TRUE & winner == TRUE) %>%
+  as.data.frame() %>%
+  select(count) %>%
+  summarise(count = sum(count))
+
+require(venneuler)
+v <- venneuler(c(Win = win$count, Herald = herald$count, "Win&Herald" = winherald$count))
+v <- venneuler(c(A = 1000, B = 294, "A&B" = 219))
+plot(v)
+
+# library(VennDiagram)
+# draw.pairwise.venn(1000,294,219)
+```
+
 ## Surrender 
 
 Proportion of matches that ends in surrender. A team who lost and still had at least one Nexus tower surrendered. We assume all surrenders are as such.
