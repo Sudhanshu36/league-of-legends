@@ -176,6 +176,7 @@ print(p)
 ggsave("figures/conditional.png", width = 8, height = 4.5, units = "in")
 ```
 
+Plotting one of them.
 ```{r}
 team.probspace <- probspace(data.team)
 
@@ -185,14 +186,8 @@ winANDherald <- Prob(team.probspace, event = winner == TRUE & firstRiftHerald ==
 herald <- Prob(team.probspace, event = firstRiftHerald == TRUE)
 
 require(venneuler)
-v <- venneuler(c(Win = win$count, Herald = herald$count, "Win&Herald" = winherald$count))
-v <- venneuler(c(A = 1000, B = 294, "A&B" = 219))
-v <- venneuler(c(A = win, B = herald, "A&B" = winANDherald))
+v <- venneuler(c(Win = win - winANDherald, Herald = herald - winANDherald, "Win&Herald" = winANDherald))
 plot(v)
-
-# library(VennDiagram)
-# draw.pairwise.venn(1000,294,219)
-# draw.pairwise.venn(win, herald, winANDherald)
 ```
 
 ## Surrender 
