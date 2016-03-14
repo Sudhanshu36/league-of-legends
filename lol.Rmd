@@ -130,6 +130,7 @@ match.winner <- data.team %>%
   select(matchId, teamId, winner)
 
 team.probspace <- probspace(data.team)
+
 Prob(team.probspace, event = winner == TRUE, given = teamId == 200)
 Prob(team.probspace, event = winner == TRUE, given = teamId == 100)
 
@@ -137,7 +138,7 @@ Prob(team.probspace, event = winner == TRUE, given = teamId == 100)
 # [1] 0.508
 ```
 
-Conditiontional probabilities on various objectives
+Conditional probabilities on various objectives
 ```{r}
 first.blood <- data.frame(eventType = "First Blood", 
                           probs = 100 * Prob(team.probspace, event = winner == TRUE, given = firstBlood == TRUE))
@@ -178,9 +179,6 @@ ggsave("figures/conditional.png", width = 8, height = 4.5, units = "in")
 
 Plotting one of them.
 ```{r}
-team.probspace <- probspace(data.team)
-
-winGIVENherald <- Prob(team.probspace, event = winner == TRUE, given = firstRiftHerald == TRUE)
 win <- Prob(team.probspace, event = winner == TRUE)
 winANDherald <- Prob(team.probspace, event = winner == TRUE & firstRiftHerald == TRUE)
 herald <- Prob(team.probspace, event = firstRiftHerald == TRUE)
