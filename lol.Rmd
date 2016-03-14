@@ -10,6 +10,8 @@ Loading packages.
 library(ggplot2)
 library(rattle)
 library(gridExtra)
+library(png)
+library(grid)
 
 library(prob)
 library(caret)
@@ -264,20 +266,22 @@ print(sum(x) / length(x) * 100)
 
 ```{r}
 events <- match.events %>%
-    mutate(participantId = ifelse(participantId <= 5, 100, 200),
-           creatorId = ifelse(creatorId <= 5, 100, 200),
-           victimId = ifelse(victimId <= 5, 200, 100),   # associate non-victim team!
-           killerId = ifelse(killerId <= 5, 100, 200),
-           teamId = ifelse(teamId == 100, 200, 100)  # associate to non-victim team!
-           ) %>%
-    # Fill in team association
-    mutate(victimId      = ifelse(is.na(victimId), killerId, victimId)) %>%
-    mutate(creatorId     = ifelse(is.na(creatorId), victimId, creatorId)) %>%
-    mutate(participantId = ifelse(is.na(participantId), creatorId, participantId)) %>%
-    mutate(teamId        = ifelse(is.na(teamId), participantId, teamId)) %>%
-    select(-participantId, -creatorId, -victimId, -killerId) %>%
-    # Attach winning status
-    merge(match.winner, all.x = TRUE)
+  mutate(participantId = ifelse(participantId <= 5, 100, 200),
+         creatorId = ifelse(creatorId <= 5, 100, 200),
+         victimId = ifelse(victimId <= 5, 200, 100),   # associate non-victim team!
+         killerId = ifelse(killerId <= 5, 100, 200),
+         teamId = ifelse(teamId == 100, 200, 100)  # associate to non-victim team!
+         ) %>%
+  # Fill in team association
+  mutate(victimId      = ifelse(is.na(victimId), killerId, victimId)) %>%
+  mutate(creatorId     = ifelse(is.na(creatorId), victimId, creatorId)) %>%
+  mutate(participantId = ifelse(is.na(participantId), creatorId, participantId)) %>%
+  mutate(teamId        = ifelse(is.na(teamId), participantId, teamId)) %>%
+  select(-participantId, -creatorId, -victimId, -killerId) %>%
+  # Attach winning status
+  merge(match.winner, all.x = TRUE) %>%
+  mutate(eventType = as.factor(eventType),
+         teamId = as.factor(teamId))
 ```
   
 Plot activity per few minutes
@@ -321,6 +325,102 @@ renderPlot({
   })
 )
 ))
+```
+
+## Map
+
+We transform the coordinate given in data frame to coordinate on the image.
+```{r}
+# We need to apply a linear transformation 
+# mapping the given coordinates to the corresponding pixels on the image
+
+# Coordinate range in data frame
+# min: {x: 0, y: 0}
+# max: {x: 14820, y: 14881}
+# Coordinate range on map
+# min: {x: -570, y: -420}
+# max: {x: 15220, y: 14980}
+# Image pixel coordinates
+# min: {x: 0, y: 0}
+# max: {x: 512, y: 512}
+
+f.x <- function(x) {
+  # Input range -570 to 15220
+  # Output range 0 to 512
+  
+  i.xmin = -570
+  i.xmax = 15220
+  o.xmin = 0
+  o.xmax = 512
+  
+  o.xmin + (o.xmax - o.xmin) * (x - i.xmin) / (i.xmax - i.xmin)
+}
+
+f.y <- function(y) {
+  # Input range -420 to 14980
+  # Output range 0 to 512
+  
+  i.ymin = -420
+  i.ymax = 14980
+  o.ymin = 0
+  o.ymax = 512
+  
+  o.ymin + (o.ymax - o.ymin) * (y - i.ymin) / (i.ymax - i.ymin)
+}
+
+# Extract the positions of all events in a given match
+# ... and apply transformation to find corresponding pixel on image
+coord <- events %>% 
+  mutate(X = f.x(X), Y = f.y(Y))
+```
+
+We plot the events of a match over the map.
+```{r}
+# Pick matches to map
+data <- coord %>%
+  # dplyr::filter((teamId == 100 & winner == TRUE) | (teamId == 200 & winner == FALSE))
+  dplyr::filter((teamId == 100 & winner == FALSE) | (teamId == 200 & winner == TRUE))
+# data <- coord %>%
+#   dplyr::filter(matchId == 2054994244)
+
+# Leave buildings as a separate color
+# data <- data %>%
+#   mutate(teamId = ifelse(eventType == "BUILDING_KILL", NA, teamId)) 
+
+# Get background image
+img <- readPNG("data/minimap-mh.png")
+g <- rasterGrob(img, interpolate=TRUE, width=unit(1,"npc"), height=unit(1,"npc"))
+
+# Scatter plot with background
+p <- data %>%
+  ggplot(aes(X, Y, color = teamId, group = teamId)) + 
+  scale_color_manual(na.value = "black", values = c("blue","red")) +
+  annotation_custom(g, xmin = 0, xmax = 512, ymin = 0, ymax = 512) +
+  expand_limits(x = c(0,512), y = c(0,512))
+
+# p <- p + geom_point(alpha = 0.1, size = 1)
+p <- p + stat_density2d(aes(fill = ..level..), geom = "polygon", alpha = 0.2)
+
+# Remove padding and decorations
+p <- p +
+  scale_y_continuous(expand = c(0,0)) + 
+  scale_x_continuous(expand = c(0,0)) +
+  theme(axis.line = element_blank(),
+          axis.text.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          legend.position = "none",
+          panel.background = element_blank(),
+          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          plot.background = element_blank())
+
+# Show and save plot
+print(p)
+ggsave("figures/events.png", dpi = 51.2, width = 10, height = 10, units = "in")
 ```
 
 ## Timeline
