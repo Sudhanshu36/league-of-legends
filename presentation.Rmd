@@ -22,7 +22,9 @@ runtime: shiny
 
 ![First to Objective](figures/timeline.png)
 
-## Winning given objective?
+## Strategy?
+
+![Conditional](figures/conditional.png)
 
 ## Prediction from objectives
 
