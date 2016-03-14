@@ -19,6 +19,7 @@ library(stringr)
 
 library(ggplot2)
 library(rattle)
+library(gridExtra)
 
 library(prob)
 library(caret)
@@ -608,6 +609,25 @@ plot(modelPredict)
 
 confusionMatrix(modelPredict, testing$winner, positive = "200")
 
-CM <- table(predict = modelPredict, true = testing$winner)
-ggplot(melt(CM), aes(predict, true, fill = value)) + geom_raster()
+# Show confusion matrix as table
+CM.count <- table(predict = modelPredict, true = testing$winner)
+attr(CM.count, "dimnames")$predict <- attr(CM.count, "dimnames")$predict %>%
+  str_replace("100", "Predict Blue") %>%
+  str_replace("200", "Predict Red")
+attr(CM.count, "dimnames")$true <- attr(CM.count, "dimnames")$true %>%
+  str_replace("100", "Win Blue") %>%
+  str_replace("200", "Win Red")
+
+ggplot(melt(CM.count), aes(predict, true, fill = value)) + geom_raster()
+
+CM.percent <- round(CM.count/length(testing$winner) * 100)
+CM.percent[1,1] <- paste(as.character(CM.percent[1,1]), "%")
+CM.percent[1,2] <- paste(as.character(CM.percent[1,2]), "%")
+CM.percent[2,1] <- paste(as.character(CM.percent[2,1]), "%")
+CM.percent[2,2] <- paste(as.character(CM.percent[2,2]), "%")
+
+png("figures/predict.png", bg = "transparent", res = 300, width = 1600, height = 900)
+grid.newpage()
+grid.table(CM.percent)
+dev.off()
 ```
