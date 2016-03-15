@@ -9,6 +9,7 @@ runtime: shiny
 ## eSport is BIG {.flexbox .vcenter}
 
 <img src="figures/world_championship_2015.jpg" alt="League of Legends" style="width: 750px;"/>
+<br>Championship watched by 36 million people in 2015.
 
 <!-- http://www.lazygamer.net/genre/moba/viewership-2015-league-legends-world-championship-toppled-riots-expectations/ 
 
@@ -26,7 +27,7 @@ http://www.inquisitr.com/1847992/league-of-legends-continues-streak-as-most-play
 <img src="figures/game_example.jpg" alt="Gameplay" style="width: 750px;"/>
 <br>Teams compete to destroy each other's castle.
 
-## Event Progression in Typical Game {.flexbox .vcenter}
+## Event progression in typical game {.flexbox .vcenter}
 
 <img src="figures/timeline.png" alt="Timeline" style="width: 750px;"/>
 
@@ -38,11 +39,11 @@ http://www.inquisitr.com/1847992/league-of-legends-continues-streak-as-most-play
 
 <img src="figures/predict.png" alt="Prediction" style="width: 500px;"/>
 
-## Map Activity {.flexbox .vcenter}
+## Activity on map {.flexbox .vcenter}
 
 <img src="figures/events.png" alt="Summoner's Rift" style="width: 500px;"/>
 
-## Map Activity
+## Activity on map
 
 ```{r, echo = FALSE, message = FALSE}
 library(ggplot2)
