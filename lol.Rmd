@@ -382,7 +382,7 @@ make_map <- function(data) {
   p <- data %>%
     ggplot(aes(X, Y, color = teamId, group = teamId)) + 
     # scale_color_manual(na.value = "black", values = c(gg_blue, gg_red)) +
-    scale_color_manual(na.value = "black", values = c(blue, red)) +
+    scale_color_manual(na.value = "black", values = c("blue", "red")) +
     annotation_custom(g, xmin = 0, xmax = 512, ymin = 0, ymax = 512) +
     expand_limits(x = c(0,512), y = c(0,512))
   
