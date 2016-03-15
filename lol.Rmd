@@ -429,7 +429,6 @@ print(p)
 ggsave("figures/events.png", width = 10, height = 10, units = "in")
 ```
 
-
 Interactive version.
 ```{r}
 # Get background image
