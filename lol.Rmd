@@ -642,7 +642,8 @@ participants <- merge(participants, match.winner) %>%
 # 10 2054994354    200   TRUE               3.41           299.32         378.73
 # ..        ...    ...    ...                ...              ...            ...
 
-ggplot(participants, aes(goldPerMinDeltas, xpPerMinDeltas, color = factor(winner), group = factor(winner))) + 
+p <- ggplot(participants, aes(goldPerMinDeltas, xpPerMinDeltas, 
+                              color = factor(winner), group = factor(winner))) + 
   geom_point(alpha = 0.2, size = 1) +
   geom_density2d(alpha = 1) +
   # stat_density2d() +
@@ -651,6 +652,9 @@ ggplot(participants, aes(goldPerMinDeltas, xpPerMinDeltas, color = factor(winner
   # stat_bin2d(binwidth = 5, alpha = 0.5) +
   xlab("Gold per min in first 20 min") +
   ylab("Experience per min in first 20 min")
+
+print(p)
+ggsave("figures/scatter.png", width = 10, height = 10, units = "in", bg = "transparent")
 ```
 
 ## Prediction
