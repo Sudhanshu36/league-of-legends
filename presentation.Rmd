@@ -39,11 +39,12 @@ http://www.inquisitr.com/1847992/league-of-legends-continues-streak-as-most-play
 
 <img src="figures/predict.png" alt="Prediction" style="width: 500px;"/>
 
-## Activity on map {.flexbox .vcenter}
-
-<img src="figures/events.png" alt="Summoner's Rift" style="width: 500px;"/>
-
 ## Activity on map
+
+<p align="center"><img src="figures/events.png" alt="Summoner's Rift" style="width: 400px;"/></p>
+<p align="right">Questions?</p>
+
+## Activity on map {.flexbox .vcenter}
 
 ```{r, echo = FALSE, message = FALSE}
 library(ggplot2)
