@@ -175,8 +175,6 @@ renderPlot({
 ))
 ```
 
-<!--
 ## Experience and Gold {.flexbox .vcenter}
 
-<img src="figures/scatter.png" alt="Experience vs Gold" style="width: 400px;"/>
--->
+<img src="figures/scatter.png" alt="Experience vs Gold" style="width: 750px;"/>

@@ -654,7 +654,7 @@ p <- ggplot(participants, aes(goldPerMinDeltas, xpPerMinDeltas,
   ylab("Experience per min in first 20 min")
 
 print(p)
-ggsave("figures/scatter.png", width = 10, height = 10, units = "in", bg = "transparent")
+ggsave("figures/scatter.png", width = 10, height = 5, units = "in", bg = "transparent")
 ```
 
 ## Prediction
