@@ -845,13 +845,46 @@ attr(CM.count, "dimnames")$true <- attr(CM.count, "dimnames")$true %>%
   str_replace("100", "Win Blue") %>%
   str_replace("200", "Win Red")
 
-ggplot(melt(CM.count), aes(predict, true, fill = value)) + geom_raster()
+# heat map
+ggplot(melt(CM.count), aes(predict, true, fill = value)) + 
+  # scale_fill_gradient(low = "white", high = "steelblue") +
+  geom_tile() +
+  geom_text(aes(fill = value, label = value))
+# geom_raster()
 
-CM.percent <- round(CM.count/length(testing$winner) * 100)
-CM.percent[1,1] <- paste(as.character(CM.percent[1,1]), "%")
-CM.percent[1,2] <- paste(as.character(CM.percent[1,2]), "%")
-CM.percent[2,1] <- paste(as.character(CM.percent[2,1]), "%")
-CM.percent[2,2] <- paste(as.character(CM.percent[2,2]), "%")
+st <- c(CM.count["Predict Red","Win Red"] / 
+         (CM.count["Predict Red","Win Red"] + CM.count["Predict Blue","Win Red"]),
+       CM.count["Predict Blue","Win Blue"] / 
+         (CM.count["Predict Blue","Win Blue"] + CM.count["Predict Red","Win Blue"]))
+
+# heat map with red and blue
+ggplot(melt(CM.count), aes(predict, true, fill = true)) + 
+  geom_tile(aes(alpha = value)) +
+  geom_text(aes(fill = true, label = value)) +
+  scale_fill_manual(values = c('blue','red')) 
+  
+# facet_grid(st ~ .)
+
+# Remove padding and decorations
+p <- p +
+  theme(axis.line = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "none",
+        panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank())
+
+plot(p)
+
+# CM.percent <- round(CM.count/length(testing$winner) * 100)
+# CM.percent[1,1] <- paste(as.character(CM.percent[1,1]), "%")
+# CM.percent[1,2] <- paste(as.character(CM.percent[1,2]), "%")
+# CM.percent[2,1] <- paste(as.character(CM.percent[2,1]), "%")
+# CM.percent[2,2] <- paste(as.character(CM.percent[2,2]), "%")
 
 png("figures/predict.png", bg = "transparent", res = 300, width = 1600, height = 900)
 grid.newpage()
