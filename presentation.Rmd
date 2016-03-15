@@ -51,6 +51,7 @@ library(ggplot2)
 library(png)
 library(grid)
 library(dplyr)
+library(stringr)
 library(shiny)
 ```
 
@@ -104,31 +105,33 @@ make_map <- function(data, density = TRUE) {
 
 shinyUI(fluidPage(
 fluidRow(
-column(6, selectInput("eventType", NULL, 
-                      c("All", unique(as.character(coord$eventType))), 
-                      selected = "CHAMPION_KILL")),
+column(6, selectInput("eventTypeMap", NULL, 
+                      c("All",
+                        str_replace_all(unique(as.character(coord$eventType)), "_", " ")), 
+                      selected = "CHAMPION KILL")),
 column(4, selectInput("team", NULL, 
-                      c("All", "Blue Wins", "Red Wins"),
-                      selected = "Red Wins"))
+                      c("All", "BLUE WINS", "RED WINS"),
+                      selected = "RED WINS"))
 ),
 fluidRow(
 renderPlot({
 
       data <- coord
       
-      if (input$eventType != "All") {
-        data <- dplyr::filter(data, eventType == input$eventType)
+      if (input$eventTypeMap != "All") {
+                data <- dplyr::filter(data, eventType == 
+                                        str_replace_all(input$eventTypeMap, " ", "_"))
       }
       
-      if (input$team == "Blue Wins") {
+      if (input$team == "BLUE WINS") {
         data <- dplyr::filter(data, (teamId == 100 & winner == TRUE) | 
                                     (teamId == 200 & winner == FALSE))
-      } else if (input$team == "Red Wins") {
+      } else if (input$team == "RED WINS") {
         data <- dplyr::filter(data, (teamId == 100 & winner == FALSE) | 
                                     (teamId == 200 & winner == TRUE))
       }
 
-      p <- make_map(data, !(input$eventType == "ELITE_MONSTER_KILL"))
+      p <- make_map(data, !(input$eventTypeMap == "ELITE MONSTER KILL"))
       print(p)
 
   })
@@ -144,8 +147,9 @@ events <- read.csv("data/events.csv")
 shinyUI(fluidPage(
 fluidRow(
 column(8, selectInput("eventTypeTime", NULL, 
-                      c("All", unique(as.character(events$eventType))), 
-                      selected = "ELITE_MONSTER_KILL"))
+                      c("All", 
+                        str_replace_all(unique(as.character(events$eventType)), "_", " ")), 
+                      selected = "ELITE MONSTER KILL"))
 ),
 fluidRow(
 renderPlot({
@@ -153,7 +157,8 @@ renderPlot({
     data <- events
     
     if (input$eventTypeTime != "All") {
-        data <- dplyr::filter(data, eventType == input$eventTypeTime)
+        data <- dplyr::filter(data, eventType ==
+                                str_replace_all(input$eventTypeTime, " ", "_"))
     }
 
     # draw the histogram with the specified number of bins
