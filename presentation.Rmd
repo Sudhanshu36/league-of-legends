@@ -107,7 +107,7 @@ fluidRow(
 column(6, selectInput("eventType", NULL, 
                       c("All", unique(as.character(coord$eventType))), 
                       selected = "CHAMPION_KILL")),
-column(3, selectInput("team", NULL, 
+column(4, selectInput("team", NULL, 
                       c("All", "Blue Wins", "Red Wins"),
                       selected = "Red Wins"))
 ),
@@ -143,7 +143,7 @@ events <- read.csv("data/events.csv")
 
 shinyUI(fluidPage(
 fluidRow(
-column(7, selectInput("eventTypeTime", NULL, 
+column(8, selectInput("eventTypeTime", NULL, 
                       c("All", unique(as.character(events$eventType))), 
                       selected = "ELITE_MONSTER_KILL"))
 ),
