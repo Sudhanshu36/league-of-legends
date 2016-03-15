@@ -22,16 +22,17 @@ runtime: shiny
 
 <img src="figures/timeline.png" alt="Timeline" style="width: 750px;"/>
 
-## Strategy?
+## Strategy? {.flexbox .vcenter}
 
 <img src="figures/conditional.png" alt="Conditional" style="width: 750px;"/>
 
-## Prediction from objectives
+## Predictions based on objectives {.flexbox .vcenter}
+
+<img src="figures/predict.png" alt="Prediction" style="width: 600px;"/>
 
 ## Questions?
 
 
-
 ## Map Activity {.flexbox .vcenter}
 
-![Summoner's Rift](figures/events.png)
+<img src="figures/events.png" alt="Summoner's Rift" style="width: 500px;"/>
