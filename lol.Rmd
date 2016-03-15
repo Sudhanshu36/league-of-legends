@@ -2,6 +2,7 @@
 title: "League of Legends Data Analysis"
 author: "Vincent Quenneville-Bélair"
 date: "March, 2016"
+runtime: shiny
 output: html_document
 ---
 
@@ -12,6 +13,7 @@ library(rattle)
 library(gridExtra)
 library(png)
 library(grid)
+library(shiny)
 
 library(prob)
 library(caret)
@@ -21,6 +23,7 @@ library(pROC)
 # https://github.com/sailthru/tidyjson
 library("tidyjson")
 
+library(reshape2)
 library(plyr)
 library(magrittr)
 library(tidyr)
@@ -302,16 +305,17 @@ Interactive version.
 shinyUI(fluidPage(
 fluidRow(
 column(4, selectInput("eventType", "Type:", 
-                      c(unique(as.character(match.events$eventType))), selected = "CHAMPION_KILL")),
-column(4, selectInput("matchId", "Match ID:", 
-                      c(unique(as.character(match.events$matchId)))))
+                      c("All", unique(as.character(match.events$eventType))), selected = "CHAMPION_KILL"))
 ),
 fluidRow(
 renderPlot({
     
+    data <- events
     binwidth <- 2
-    data <- dplyr::filter(events, 
-                          eventType == input$eventType & matchId == input$matchId)
+    
+      if (input$eventType != "All") {
+        data <- dplyr::filter(data, eventType == input$eventType)
+      }
 
     # draw the histogram with the specified number of bins
     p <- ggplot(data, aes(timestamp, y = ..count.., 
@@ -446,7 +450,7 @@ renderPlot({
       
       if (input$eventType != "All") {
         data <- data %>%
-          filter(eventType == input$eventType)
+          dplyr::filter(eventType == input$eventType)
       }
   
       if (input$team == "Blue") {
@@ -498,11 +502,11 @@ When are certain objectives achieved for the time in a match?
 ```{r}
 # BARON_NASHOR, BLUE_GOLEM, DRAGON, RED_LIZARD, RIFTHERALD, VILEMAW
 match.events %>%
-  filter(monsterType == "DRAGON") %>%
+  dplyr::filterfilter(monsterType == "DRAGON") %>%
   select(matchId, timestamp) %>%
   group_by(matchId) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
-  filter(rank == 1) %>%
+  dplyr::filterfilter(rank == 1) %>%
   select(-rank)
 
 # Length of games
@@ -512,11 +516,11 @@ timeline.end <- match.duration %>%
 
 # Compute median time when first tower is destroyed
 timeline.tower <- match.events %>% 
-  filter(eventType == "BUILDING_KILL") %>%
+  dplyr::filterfilter(eventType == "BUILDING_KILL") %>%
   select(matchId, timestamp) %>%
   group_by(matchId) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
-  filter(rank == 1) %>%
+  dplyr::filterfilter(rank == 1) %>%
   as.data.frame() %>%
   select(timestamp) %>%
   summarise_each(funs(median)) %>%
@@ -524,11 +528,11 @@ timeline.tower <- match.events %>%
 
 # Compute median time when first tower is destroyed
 timeline.inhibitor <- match.events %>% 
-  filter(buildingType == "INHIBITOR_BUILDING") %>%
+  dplyr::filterfilter(buildingType == "INHIBITOR_BUILDING") %>%
   select(matchId, timestamp) %>%
   group_by(matchId) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
-  filter(rank == 1) %>%
+  dplyr::filterfilter(rank == 1) %>%
   as.data.frame() %>%
   select(timestamp) %>%
   summarise_each(funs(median)) %>%
@@ -536,11 +540,11 @@ timeline.inhibitor <- match.events %>%
 
 # Compute median time when first elite monster is killed
 timeline.monster <- match.events %>%
-  filter(eventType == "ELITE_MONSTER_KILL") %>%
+  dplyr::filterfilter(eventType == "ELITE_MONSTER_KILL") %>%
   select(matchId, timestamp, monsterType) %>%
   group_by(matchId, monsterType) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
-  filter(rank == 1) %>%
+  dplyr::filterfilter(rank == 1) %>%
   as.data.frame() %>%
   select(timestamp, monsterType) %>%
   group_by(monsterType) %>%
@@ -553,23 +557,23 @@ timeline.monster <- match.events %>%
 
 # Compute the median time to draw first blood
 timeline.kill <- match.events %>%
-  filter(eventType == "CHAMPION_KILL") %>% 
+  dplyr::filterfilter(eventType == "CHAMPION_KILL") %>% 
   select(matchId, timestamp) %>%
   group_by(matchId) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
-  filter(rank == 1) %>%
+  dplyr::filterfilter(rank == 1) %>%
   as.data.frame() %>%
   summarise(timestamp = median(timestamp)) %>%
   mutate(eventType = "CHAMPION KILL")
 
 # Compute the median time to reach level 18
 timeline.maxlvl <- match.events %>%
-  filter(eventType == "SKILL_LEVEL_UP") %>%
+  dplyr::filterfilter(eventType == "SKILL_LEVEL_UP") %>%
   mutate(teamId = ifelse(participantId <= 5, 100, 200)) %>%
   select(matchId, timestamp, teamId) %>%
   group_by(matchId, teamId) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
-  filter(rank == 5*18)
+  dplyr::filterfilter(rank == 5*18)
 
 # Print proporitions of game reaching level 18
 x <- length(unique(timeline.maxlvl$matchId))
@@ -585,7 +589,7 @@ timeline.maxlvl <- timeline.maxlvl %>%
 
 # Compute the median level reached
 match.events %>%
-  filter(eventType == "SKILL_LEVEL_UP") %>%
+  dplyr::filterfilter(eventType == "SKILL_LEVEL_UP") %>%
   mutate(teamId = ifelse(participantId <= 5, 100, 200)) %>%
   select(matchId, timestamp, teamId) %>%
   group_by(matchId, teamId) %>%
@@ -685,7 +689,7 @@ participants <- merge(participants, match.winner) %>%
   select(matchId, teamId, ParticipantTimelineData, creepsPerMinDeltas, goldPerMinDeltas, xpPerMinDeltas, winner) %>%
   group_by(matchId, teamId, ParticipantTimelineData, winner) %>%
   summarise_each(funs(mean)) %>%
-  filter(ParticipantTimelineData == "zeroToTen" | ParticipantTimelineData == "tenToTwenty") %>%
+  dplyr::filter(ParticipantTimelineData == "zeroToTen" | ParticipantTimelineData == "tenToTwenty") %>%
   as.data.frame() %>%
   select(-ParticipantTimelineData) %>%
   group_by(matchId, teamId, winner) %>%
