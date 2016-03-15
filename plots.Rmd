@@ -125,7 +125,7 @@ Plot events versus time.
 ```{r}
 # Select one match
 data <- match.events %>%
-  filter(matchId == 2054994244) %>%
+  # filter(matchId == 2054994244) %>%
   # filter(eventType %in% 
   #          c("BUILDING_KILL", "CHAMPION_KILL", "ELITE_MONSTER_KILL", 
   #            "SKILL_LEVEL_UP", "WARD_PLACED")) %>%
@@ -148,7 +148,17 @@ p <- ggplot(data, aes(timestamp, y = ..count..,
   stat_bin(binwidth = 5, alpha = 0.7, 
            col = I("white"), position = "identity")
 
+# TODO take into account game finishing early
 plot(p)
+```
+
+```{r}
+# Try to normalize by binwidth
+binwidth <- 5
+
+data <- match.events %>%
+  mutate(bin = timestamp %/% binwidth) %>%
+  filter(eventType == "CHAMPION_KILL")
 ```
 
 Interactive version.
