@@ -502,11 +502,11 @@ When are certain objectives achieved for the time in a match?
 ```{r}
 # BARON_NASHOR, BLUE_GOLEM, DRAGON, RED_LIZARD, RIFTHERALD, VILEMAW
 match.events %>%
-  dplyr::filterfilter(monsterType == "DRAGON") %>%
+  dplyr::filter(monsterType == "DRAGON") %>%
   select(matchId, timestamp) %>%
   group_by(matchId) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
-  dplyr::filterfilter(rank == 1) %>%
+  dplyr::filter(rank == 1) %>%
   select(-rank)
 
 # Length of games
@@ -516,11 +516,11 @@ timeline.end <- match.duration %>%
 
 # Compute median time when first tower is destroyed
 timeline.tower <- match.events %>% 
-  dplyr::filterfilter(eventType == "BUILDING_KILL") %>%
+  dplyr::filter(eventType == "BUILDING_KILL") %>%
   select(matchId, timestamp) %>%
   group_by(matchId) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
-  dplyr::filterfilter(rank == 1) %>%
+  dplyr::filter(rank == 1) %>%
   as.data.frame() %>%
   select(timestamp) %>%
   summarise_each(funs(median)) %>%
@@ -528,11 +528,11 @@ timeline.tower <- match.events %>%
 
 # Compute median time when first tower is destroyed
 timeline.inhibitor <- match.events %>% 
-  dplyr::filterfilter(buildingType == "INHIBITOR_BUILDING") %>%
+  dplyr::filter(buildingType == "INHIBITOR_BUILDING") %>%
   select(matchId, timestamp) %>%
   group_by(matchId) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
-  dplyr::filterfilter(rank == 1) %>%
+  dplyr::filter(rank == 1) %>%
   as.data.frame() %>%
   select(timestamp) %>%
   summarise_each(funs(median)) %>%
@@ -540,11 +540,11 @@ timeline.inhibitor <- match.events %>%
 
 # Compute median time when first elite monster is killed
 timeline.monster <- match.events %>%
-  dplyr::filterfilter(eventType == "ELITE_MONSTER_KILL") %>%
+  dplyr::filter(eventType == "ELITE_MONSTER_KILL") %>%
   select(matchId, timestamp, monsterType) %>%
   group_by(matchId, monsterType) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
-  dplyr::filterfilter(rank == 1) %>%
+  dplyr::filter(rank == 1) %>%
   as.data.frame() %>%
   select(timestamp, monsterType) %>%
   group_by(monsterType) %>%
@@ -557,23 +557,23 @@ timeline.monster <- match.events %>%
 
 # Compute the median time to draw first blood
 timeline.kill <- match.events %>%
-  dplyr::filterfilter(eventType == "CHAMPION_KILL") %>% 
+  dplyr::filter(eventType == "CHAMPION_KILL") %>% 
   select(matchId, timestamp) %>%
   group_by(matchId) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
-  dplyr::filterfilter(rank == 1) %>%
+  dplyr::filter(rank == 1) %>%
   as.data.frame() %>%
   summarise(timestamp = median(timestamp)) %>%
   mutate(eventType = "CHAMPION KILL")
 
 # Compute the median time to reach level 18
 timeline.maxlvl <- match.events %>%
-  dplyr::filterfilter(eventType == "SKILL_LEVEL_UP") %>%
+  dplyr::filter(eventType == "SKILL_LEVEL_UP") %>%
   mutate(teamId = ifelse(participantId <= 5, 100, 200)) %>%
   select(matchId, timestamp, teamId) %>%
   group_by(matchId, teamId) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
-  dplyr::filterfilter(rank == 5*18)
+  dplyr::filter(rank == 5*18)
 
 # Print proporitions of game reaching level 18
 x <- length(unique(timeline.maxlvl$matchId))
@@ -589,7 +589,7 @@ timeline.maxlvl <- timeline.maxlvl %>%
 
 # Compute the median level reached
 match.events %>%
-  dplyr::filterfilter(eventType == "SKILL_LEVEL_UP") %>%
+  dplyr::filter(eventType == "SKILL_LEVEL_UP") %>%
   mutate(teamId = ifelse(participantId <= 5, 100, 200)) %>%
   select(matchId, timestamp, teamId) %>%
   group_by(matchId, teamId) %>%
