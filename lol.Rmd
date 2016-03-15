@@ -305,17 +305,17 @@ Interactive version.
 shinyUI(fluidPage(
 fluidRow(
 column(4, selectInput("eventType", "Type:", 
-                      c("All", unique(as.character(match.events$eventType))), selected = "CHAMPION_KILL"))
+                      c("All", unique(as.character(match.events$eventType))), 
+                      selected = "CHAMPION_KILL"))
 ),
 fluidRow(
 renderPlot({
     
     data <- events
-    binwidth <- 2
     
-      if (input$eventType != "All") {
+    if (input$eventType != "All") {
         data <- dplyr::filter(data, eventType == input$eventType)
-      }
+    }
 
     # draw the histogram with the specified number of bins
     p <- ggplot(data, aes(timestamp, y = ..count.., 
@@ -439,7 +439,8 @@ g <- rasterGrob(img, interpolate = TRUE, width = unit(1,"npc"), height = unit(1,
 shinyUI(fluidPage(
 fluidRow(
 column(4, selectInput("eventType", "Type:", 
-                      c("All", unique(as.character(match.events$eventType))), selected = "CHAMPION_KILL")),
+                      c("All", unique(as.character(match.events$eventType))), 
+                      selected = "CHAMPION_KILL")),
 column(4, selectInput("team", "Win:", 
                       c("All", "Blue", "Red")))
 ),
