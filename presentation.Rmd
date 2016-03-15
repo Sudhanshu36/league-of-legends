@@ -9,9 +9,17 @@ runtime: shiny
 ## eSport is BIG {.flexbox .vcenter}
 
 <img src="figures/world_championship_2015.jpg" alt="League of Legends" style="width: 750px;"/>
-<br>Championship watched by 36 millions people in 2015.
 
-<!-- http://www.lazygamer.net/genre/moba/viewership-2015-league-legends-world-championship-toppled-riots-expectations/ -->
+<!-- http://www.lazygamer.net/genre/moba/viewership-2015-league-legends-world-championship-toppled-riots-expectations/ 
+
+First place gets $1,000,000.00
+http://www.esportsearnings.com/tournaments/15149-lol-2015-world-championship
+
+27 million people play the game daily
+concurrent players peak at 7.5M.
+67 million players play the game every month.
+http://www.inquisitr.com/1847992/league-of-legends-continues-streak-as-most-played-pc-game/
+-->
 
 ## Multiplayer Online Battle Arena {.flexbox .vcenter}
 
@@ -28,16 +36,13 @@ runtime: shiny
 
 ## Predictions based on objectives {.flexbox .vcenter}
 
-<img src="figures/predict.png" alt="Prediction" style="width: 750px;"/>
-
-## Questions?
-
+<img src="figures/predict.png" alt="Prediction" style="width: 500px;"/>
 
 ## Map Activity {.flexbox .vcenter}
 
 <img src="figures/events.png" alt="Summoner's Rift" style="width: 500px;"/>
 
-## Map
+## Map Activity
 
 ```{r, echo = FALSE, message = FALSE}
 library(ggplot2)
@@ -102,7 +107,7 @@ column(6, selectInput("eventType", NULL,
                       selected = "CHAMPION_KILL")),
 column(3, selectInput("team", NULL, 
                       c("All", "Blue Wins", "Red Wins"),
-                      selected = "Blue Wins"))
+                      selected = "Red Wins"))
 ),
 fluidRow(
 renderPlot({
@@ -123,6 +128,40 @@ renderPlot({
 
       p <- make_map(data, !(input$eventType == "ELITE_MONSTER_KILL"))
       print(p)
+
+  })
+)
+))
+```
+
+## Activity in time
+
+```{r, echo = FALSE}
+events <- read.csv("data/events.csv")
+
+shinyUI(fluidPage(
+fluidRow(
+column(7, selectInput("eventTypeTime", NULL, 
+                      c("All", unique(as.character(events$eventType))), 
+                      selected = "ELITE_MONSTER_KILL"))
+),
+fluidRow(
+renderPlot({
+    
+    data <- events
+    
+    if (input$eventTypeTime != "All") {
+        data <- dplyr::filter(data, eventType == input$eventTypeTime)
+    }
+
+    # draw the histogram with the specified number of bins
+    p <- ggplot(data, aes(timestamp, y = ..count.., 
+                          group = winner, fill = winner)) + 
+      xlab("minutes") +
+      stat_bin(binwidth = 5, alpha = 0.3, 
+               col = I("white"), position = "identity")
+ 
+    plot(p)
 
   })
 )
