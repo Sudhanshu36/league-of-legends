@@ -120,7 +120,10 @@ match.events <- data.match %>%
                   monsterType = jstring("monsterType"),
                   towerType = jstring("towerType"),
                   buildingType = jstring("buildingType")) %>%
-    mutate(timestamp = timestamp/1000/60) %>%
+    mutate(timestamp = timestamp/1000/60) 
+
+# Beware: pick up only the ones with positions available
+match.events <- match.events %>%
     enter_object("position") %>%
     spread_values(X = jnumber("x"),
                   Y = jnumber("y"))
@@ -376,6 +379,9 @@ f.y <- function(y) {
 # ... and apply transformation to find corresponding pixel on image
 coord <- events %>% 
   mutate(X = f.x(X), Y = f.y(Y))
+
+# Save for presentation
+write.csv(as.data.frame(coord), file = "data/map.csv")
 ```
 
 We plot the events of a match over the map.
@@ -395,6 +401,7 @@ make_map <- function(data) {
   
   # p <- p + geom_point(alpha = 0.1, size = 1)
   # p <- p + stat_density2d(aes(fill = ..level..), geom = "polygon", alpha = 0.2)
+  # p <- p + stat_density2d(aes(alpha = ..level..))
   p <- p + stat_density2d()
   
   # Remove padding and decorations
@@ -444,7 +451,7 @@ g <- rasterGrob(img, interpolate = TRUE, width = unit(1,"npc"), height = unit(1,
 shinyUI(fluidPage(
 fluidRow(
 column(4, selectInput("eventType", "Type:", 
-                      c("All", unique(as.character(match.events$eventType))), 
+                      c("All", unique(as.character(coord$eventType))), 
                       selected = "CHAMPION_KILL")),
 column(4, selectInput("team", "Win:", 
                       c("All", "Blue", "Red")))
