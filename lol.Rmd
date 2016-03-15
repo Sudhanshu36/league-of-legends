@@ -358,6 +358,18 @@ coord <- events %>%
 write.csv(as.data.frame(coord), file = "data/map.csv")
 ```
 
+```{r}
+# Extract gg color
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length=n+1)
+  hcl(h=hues, l=65, c=100)[1:n]
+}
+
+gg_blue <- gg_color_hue(4)[3] # blue: #00BFC4
+gg_red  <- gg_color_hue(4)[1] # red: F8766D
+gg_purple <- gg_color_hue(4)[4]
+```
+
 We plot the events of a match over the map.
 ```{r}
 make_map <- function(data) {
@@ -369,7 +381,8 @@ make_map <- function(data) {
   # Scatter plot with background
   p <- data %>%
     ggplot(aes(X, Y, color = teamId, group = teamId)) + 
-    scale_color_manual(na.value = "black", values = c("blue","red")) +
+    # scale_color_manual(na.value = "black", values = c(gg_blue, gg_red)) +
+    scale_color_manual(na.value = "black", values = c(blue, red)) +
     annotation_custom(g, xmin = 0, xmax = 512, ymin = 0, ymax = 512) +
     expand_limits(x = c(0,512), y = c(0,512))
   
@@ -546,7 +559,7 @@ nudges <- 0.1 * sign(dislocations)
 p <- ggplot(timeline) + 
   geom_text(aes(x = timestamp, y = dislocations, label = eventType), 
             position = position_nudge(y = nudges)) +
-  geom_hline(yintercept = 0, color = "purple") +
+  geom_hline(yintercept = 0, color = gg_purple, size = 1) +
   geom_segment(aes(x = timestamp, y = dislocations, xend = timestamp, yend = 0)) +
   xlab("minutes") +
   scale_x_continuous(expand = c(.15, .15))
@@ -787,25 +800,21 @@ attr(CM.count, "dimnames")$true <- attr(CM.count, "dimnames")$true %>%
   str_replace("100", "Win Blue") %>%
   str_replace("200", "Win Red")
 
-# heat map
-ggplot(melt(CM.count), aes(predict, true, fill = value)) + 
-  # scale_fill_gradient(low = "white", high = "steelblue") +
-  geom_tile() +
-  geom_text(aes(fill = value, label = value))
-# geom_raster()
-
-st <- c(CM.count["Predict Red","Win Red"] / 
-         (CM.count["Predict Red","Win Red"] + CM.count["Predict Blue","Win Red"]),
-       CM.count["Predict Blue","Win Blue"] / 
-         (CM.count["Predict Blue","Win Blue"] + CM.count["Predict Red","Win Blue"]))
+# st <- c(CM.count["Predict Red","Win Red"] / 
+#          (CM.count["Predict Red","Win Red"] + CM.count["Predict Blue","Win Red"]),
+#        CM.count["Predict Blue","Win Blue"] / 
+#          (CM.count["Predict Blue","Win Blue"] + CM.count["Predict Red","Win Blue"]))
 
 # heat map with red and blue
 p <- ggplot(melt(CM.count), aes(predict, true, fill = true)) + 
   geom_tile(aes(alpha = value)) +
   scale_y_discrete(labels = c("Win Red" = "Win Red\n65%","Win Blue" = "Win Blue\n75%")) +
   geom_text(aes(fill = true, label = value)) +
-  scale_fill_manual(values = c('blue','red')) 
+  scale_fill_manual(values = c(gg_blue, gg_red)) 
+  # scale_fill_manual(values = c('blue','red')) 
   
+print(p)
+
 # facet_grid(st ~ .)
 
 # Remove padding and decorations
