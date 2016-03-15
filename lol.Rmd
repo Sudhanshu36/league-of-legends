@@ -188,7 +188,7 @@ Prob(team.probspace, event = winner == TRUE, given = teamId == 100)
 
 Conditional probabilities on various objectives
 ```{r}
-first.blood <- data.frame(eventType = "First Blood", 
+first.blood <- data.frame(eventType = "First Champion", 
                           probs = 100 * Prob(team.probspace, event = winner == TRUE, given = firstBlood == TRUE))
 first.dragon <- data.frame(eventType = "First Dragon", 
                            probs = 100 * Prob(team.probspace, event = winner == TRUE, given = firstDragon == TRUE))
