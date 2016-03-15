@@ -222,7 +222,7 @@ p <- ggplot(first, aes(eventType, probs, fill = color)) +
   # geom_vline(xintercept = (which(first$eventType == 'First Herald') + which(first$eventType == 'First Baron'))/2)
 
 print(p)
-ggsave("figures/conditional.png", width = 8, height = 4.5, units = "in")
+ggsave("figures/conditional.png", width = 8, height = 4.5, units = "in", bg = "transparent")
 ```
 
 Plot Venn diagram for winner and first Rift Herald.
@@ -293,7 +293,8 @@ events <- match.events %>%
 Plot activity per few minutes
 ```{r}
 p <- events %>%
-  dplyr::filter(eventType == "CHAMPION_KILL") %>%
+  # dplyr::filter(eventType == "CHAMPION_KILL") %>%
+  dplyr::filter(eventType == "ELITE_MONSTER_KILL") %>%
   ggplot(aes(timestamp, y = ..count.., 
                       group = winner, fill = winner)) + 
   xlab("minutes") +
@@ -301,37 +302,10 @@ p <- events %>%
            col = I("white"), position = "identity")
 
 plot(p)
-```
+ggsave("figures/activity.png", width = 8, height = 4.5, units = "in", bg = "transparent")
 
-Interactive version.
-```{r}
-shinyUI(fluidPage(
-fluidRow(
-column(4, selectInput("eventType", "Type:", 
-                      c("All", unique(as.character(match.events$eventType))), 
-                      selected = "CHAMPION_KILL"))
-),
-fluidRow(
-renderPlot({
-    
-    data <- events
-    
-    if (input$eventType != "All") {
-        data <- dplyr::filter(data, eventType == input$eventType)
-    }
-
-    # draw the histogram with the specified number of bins
-    p <- ggplot(data, aes(timestamp, y = ..count.., 
-                          group = winner, fill = winner)) + 
-      xlab("time (min)") +
-      stat_bin(binwidth = 5, alpha = 0.3, 
-               col = I("white"), position = "identity")
- 
-    plot(p)
-
-  })
-)
-))
+# Save for presentation
+write.csv(as.data.frame(events), file = "data/events.csv")
 ```
 
 ## Map
@@ -439,46 +413,7 @@ data <- coord %>%
 # Show and save plot
 p <- make_map(data)
 print(p)
-ggsave("figures/events.png", width = 10, height = 10, units = "in")
-```
-
-Interactive version.
-```{r}
-# Get background image
-img <- readPNG("data/minimap-mh.png")
-g <- rasterGrob(img, interpolate = TRUE, width = unit(1,"npc"), height = unit(1,"npc"))
-
-shinyUI(fluidPage(
-fluidRow(
-column(4, selectInput("eventType", "Type:", 
-                      c("All", unique(as.character(coord$eventType))), 
-                      selected = "CHAMPION_KILL")),
-column(4, selectInput("team", "Win:", 
-                      c("All", "Blue", "Red")))
-),
-fluidRow(
-renderPlot({
-
-      data <- coord
-      
-      if (input$eventType != "All") {
-        data <- dplyr::filter(data, eventType == input$eventType)
-      }
-  
-      if (input$team == "Blue") {
-        data <- dplyr::filter(data, (teamId == 100 & winner == TRUE) | 
-                                    (teamId == 200 & winner == FALSE))
-      } else if (input$team == "Red") {
-        data <- dplyr::filter(data, (teamId == 100 & winner == FALSE) | 
-                                    (teamId == 200 & winner == TRUE))
-      }
-
-      p <- make_map(data)
-      print(p)
-
-  })
-)
-))
+ggsave("figures/events.png", width = 10, height = 10, units = "in", bg = "transparent")
 ```
 
 ## Timeline
@@ -626,7 +561,7 @@ p <- p +
         legend.position = "none")
 
 print(p)
-ggsave("figures/timeline.png", width = 8, height = 4.5, units = "in")
+ggsave("figures/timeline.png", width = 8, height = 4.5, units = "in", bg = "transparent")
 ```
 
 ## Scatter plot
@@ -865,8 +800,9 @@ st <- c(CM.count["Predict Red","Win Red"] /
          (CM.count["Predict Blue","Win Blue"] + CM.count["Predict Red","Win Blue"]))
 
 # heat map with red and blue
-ggplot(melt(CM.count), aes(predict, true, fill = true)) + 
+p <- ggplot(melt(CM.count), aes(predict, true, fill = true)) + 
   geom_tile(aes(alpha = value)) +
+  scale_y_discrete(labels = c("Win Red" = "Win Red\n65%","Win Blue" = "Win Blue\n75%")) +
   geom_text(aes(fill = true, label = value)) +
   scale_fill_manual(values = c('blue','red')) 
   
@@ -886,6 +822,7 @@ p <- p +
         plot.background = element_blank())
 
 plot(p)
+ggsave("figures/predict.png", width = 4, height = 4, units = "in", bg = "transparent")
 
 # CM.percent <- round(CM.count/length(testing$winner) * 100)
 # CM.percent[1,1] <- paste(as.character(CM.percent[1,1]), "%")
@@ -893,8 +830,8 @@ plot(p)
 # CM.percent[2,1] <- paste(as.character(CM.percent[2,1]), "%")
 # CM.percent[2,2] <- paste(as.character(CM.percent[2,2]), "%")
 
-png("figures/predict.png", bg = "transparent", res = 300, width = 1600, height = 900)
-grid.newpage()
-grid.table(CM.percent)
-dev.off()
+# png("figures/predict.png", bg = "transparent", res = 300, width = 1600, height = 900)
+# grid.newpage()
+# grid.table(CM.percent)
+# dev.off()
 ```
