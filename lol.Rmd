@@ -307,16 +307,53 @@ events <- match.events %>%
          teamId = as.factor(teamId))
 ```
   
-Plot activity per few minutes
+Plot activity per few minutes normalized per match.
+```{r}
+binwidth <- 5
+
+# Divide events in bins
+bin.events <- events %>%
+  # dplyr::filter(eventType == "CHAMPION_KILL")
+  dplyr::filter(eventType == "ELITE_MONSTER_KILL") %>%
+  mutate(bin = timestamp %/% binwidth) %>%
+  group_by(winner, bin) %>%
+  summarise(count = n())
+
+# Divide matches in bins -- count in last full bin
+bin.match <- match.duration %>% 
+  mutate(bin = matchDuration %/% binwidth) %>%
+  group_by(bin) %>%
+  summarise(match = n())
+
+bin <- merge(bin.events, bin.match, all.x = TRUE) %>%
+  mutate(match = ifelse(is.na(match), 0, match)) %>%
+  mutate(remain = sum(match) - cumsum(match)) %>%
+  mutate(countPerMatch = ifelse(remain == 0, NA, count / remain)) %>%
+  select(bin, countPerMatch, winner)
+
+ggplot(bin, aes(bin-0.5, countPerMatch, group = winner, fill = winner)) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous(breaks = seq(0, max(bin$bin), 2), 
+                   labels = seq(0, binwidth*max(bin$bin), 2*binwidth)) +
+  coord_cartesian(xlim = c(0, max(bin$bin)), expand = TRUE) +
+  ylab("events per match") +
+  xlab("minutes")
+```
+
+Plot activity per few minutes.
 ```{r}
 p <- events %>%
   # dplyr::filter(eventType == "CHAMPION_KILL") %>%
-  dplyr::filter(eventType == "ELITE_MONSTER_KILL") %>%
-  ggplot(aes(timestamp, y = ..count.., 
-                      group = winner, fill = winner)) + 
+  dplyr::filter(eventType == "ELITE_MONSTER_KILL") %>% 
+  ggplot(aes(timestamp, y = ..count.., group = winner, fill = winner)) + 
   xlab("minutes") +
-  stat_bin(binwidth = 5, alpha = 0.7, 
-           col = I("white"), position = "identity")
+  stat_bin(binwidth = 5, alpha = 0.7, col = I("white"), position = "identity")
+
+# p <- ggplot(data, aes(timestamp, 
+#                       y = (..count..)/sum(..count..), group = winner, fill = winner)) + 
+#   xlab("minutes") +
+#   ylab("proportion for each team") +
+#   stat_bin(binwidth = 5, col = I("white"), position = "fill")
 
 plot(p)
 ggsave("figures/activity.png", width = 8, height = 4.5, units = "in", bg = "transparent")
