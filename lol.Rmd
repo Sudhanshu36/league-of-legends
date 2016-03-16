@@ -8,16 +8,18 @@ output: html_document
 
 Loading packages.
 ```{r}
-library(ggplot2)
-library(rattle)
 library(gridExtra)
 library(png)
 library(grid)
+library(ggplot2)
+library(rattle)
 library(shiny)
 
 library(prob)
 library(caret)
 library(pROC)
+
+library(stringr)
 
 # https://cran.r-project.org/web/packages/tidyjson/vignettes/introduction-to-tidyjson.html
 # https://github.com/sailthru/tidyjson
@@ -28,7 +30,18 @@ library(plyr)
 library(magrittr)
 library(tidyr)
 library(dplyr)
-library(stringr)
+```
+
+```{r}
+# Extract gg color
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length=n+1)
+  hcl(h=hues, l=65, c=100)[1:n]
+}
+
+gg_blue <- gg_color_hue(4)[3] # blue: #00BFC4
+gg_red  <- gg_color_hue(4)[1] # red: F8766D
+gg_purple <- gg_color_hue(4)[4]
 ```
 
 ```{r}
@@ -216,8 +229,10 @@ p <- ggplot(first, aes(eventType, probs, fill = color)) +
   # expand_limits(y = c(50,100)) +
   geom_bar(stat = "identity") +
   scale_fill_discrete(guide = 'none') +
+  coord_cartesian(ylim = c(50, 85), expand = TRUE) +
   xlab("") +
-  ylab("Probability of winning given ...")
+  ylab("Probability of winning given ...") +
+  geom_hline(yintercept = 50, color = gg_purple)
   # geom_vline(xintercept = 4.5)
   # geom_vline(xintercept = (which(first$eventType == 'First Herald') + which(first$eventType == 'First Baron'))/2)
 
@@ -358,18 +373,6 @@ coord <- events %>%
 
 # Save for presentation
 write.csv(as.data.frame(coord), file = "data/map.csv")
-```
-
-```{r}
-# Extract gg color
-gg_color_hue <- function(n) {
-  hues = seq(15, 375, length=n+1)
-  hcl(h=hues, l=65, c=100)[1:n]
-}
-
-gg_blue <- gg_color_hue(4)[3] # blue: #00BFC4
-gg_red  <- gg_color_hue(4)[1] # red: F8766D
-gg_purple <- gg_color_hue(4)[4]
 ```
 
 We plot the events of a match over the map.
