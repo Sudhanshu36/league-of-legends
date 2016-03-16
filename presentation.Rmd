@@ -61,6 +61,16 @@ img <- readPNG("data/minimap-mh.png")
 g <- rasterGrob(img, interpolate = TRUE, width = unit(1,"npc"), height = unit(1,"npc"))
 coord <- read.csv("data/map.csv")
 
+# Extract gg color
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length=n+1)
+  hcl(h=hues, l=65, c=100)[1:n]
+}
+
+gg_blue <- gg_color_hue(4)[3] # blue: #00BFC4
+gg_red  <- gg_color_hue(4)[1] # red: F8766D
+gg_purple <- gg_color_hue(4)[4]
+
 make_map <- function(data, density = TRUE) {
   
   # Get background image
@@ -70,7 +80,7 @@ make_map <- function(data, density = TRUE) {
   # Scatter plot with background
   p <- data %>%
     ggplot(aes(X, Y, color = factor(teamId), group = factor(teamId))) + 
-    scale_color_manual(na.value = "black", values = c("blue","red")) +
+    scale_color_manual(na.value = "black", values = c(gg_blue, gg_red)) +
     annotation_custom(g, xmin = 0, xmax = 512, ymin = 0, ymax = 512) +
     expand_limits(x = c(0,512), y = c(0,512))
   
@@ -79,7 +89,7 @@ make_map <- function(data, density = TRUE) {
   # p <- p + stat_density2d(aes(alpha = ..level..))
   
   if (density == TRUE) {
-    p <- p + stat_density2d()
+    p <- p + stat_density2d(size = 0.5)
   } else {
     p <- p + geom_point(alpha = 0.1, size = 1) 
   }
