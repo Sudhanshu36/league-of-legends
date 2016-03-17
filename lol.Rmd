@@ -305,6 +305,9 @@ events <- match.events %>%
   merge(match.winner, all.x = TRUE) %>%
   mutate(eventType = as.factor(eventType),
          teamId = as.factor(teamId))
+
+# Save for presentation
+write.csv(as.data.frame(events), file = "data/events.csv")
 ```
   
 Plot activity per few minutes normalized per match.
@@ -313,8 +316,8 @@ binwidth <- 5
 
 # Divide events in bins
 bin.events <- events %>%
-  # dplyr::filter(eventType == "CHAMPION_KILL") %>%
-  dplyr::filter(eventType == "ELITE_MONSTER_KILL") %>%
+  dplyr::filter(eventType == "CHAMPION_KILL") %>%
+  # dplyr::filter(eventType == "ELITE_MONSTER_KILL") %>%
   mutate(bin = timestamp %/% binwidth) %>%
   group_by(winner, bin) %>%
   summarise(count = n())
@@ -340,21 +343,22 @@ bin.lost <- bin %>%
   filter(winner == FALSE) %>%
   select(-winner)
 
-# Choice of position: dodge, identity, stack
-p <- ggplot(bin, aes(bin-0.5, countPerMatch, group = winner, fill = winner)) +
+# Choice of position: dodge, identity, stack, fill, jitter
+p <- ggplot(bin, aes(bin+0.5, countPerMatch, group = winner, fill = winner)) +
   geom_bar(alpha = 0.5, stat = "identity", position = "identity") +
   scale_x_continuous(breaks = seq(0, max(bin$bin), 2), 
                    labels = seq(0, binwidth*max(bin$bin), 2*binwidth)) +
-  coord_cartesian(xlim = c(0, max(bin$bin)), expand = TRUE) +
+  # coord_cartesian(xlim = c(0, max(bin$bin)+1), expand = TRUE) +
   ylab("events per match") +
   xlab("minutes")
 
 plot(p)
+ggsave("figures/activity.png", width = 8, height = 4.5, units = "in", bg = "transparent")
 ```
 
 Plot activity per few minutes.
 ```{r}
-# Choice of position: dodge, identity, stack
+# Choice of position: dodge, identity, stack, fill, jitter
 p <- events %>%
   # dplyr::filter(eventType == "CHAMPION_KILL") %>%
   dplyr::filter(eventType == "ELITE_MONSTER_KILL") %>% 
@@ -369,10 +373,7 @@ p <- events %>%
 #   stat_bin(binwidth = 5, col = I("white"), position = "fill")
 
 plot(p)
-ggsave("figures/activity.png", width = 8, height = 4.5, units = "in", bg = "transparent")
-
-# Save for presentation
-write.csv(as.data.frame(events), file = "data/events.csv")
+# ggsave("figures/activity.png", width = 8, height = 4.5, units = "in", bg = "transparent")
 ```
 
 ## Map
