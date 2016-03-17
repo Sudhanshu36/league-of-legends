@@ -752,7 +752,7 @@ nrow(training)/ncol(training)
 
 We create dummy variables for categorical variables.
 ```{r}
-# dummies <- dummyVars(~ ., data = training, sep = "__", drop2nd = TRUE)
+# dummies <- dummyVars(~ ., data = training, sep = "__", fullRank = TRUE)
 # training <- data.frame(predict(dummies, training))
 # testing <- data.frame(predict(dummies, testing))
 # 
