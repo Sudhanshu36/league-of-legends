@@ -325,23 +325,45 @@ bin.match <- match.duration %>%
   group_by(bin) %>%
   summarise(match = n())
 
-bin <- merge(bin.events, bin.match, all.x = TRUE) %>%
-  mutate(match = ifelse(is.na(match), 0, match)) %>%
-  mutate(remain = sum(match) - cumsum(match)) %>%
-  mutate(countPerMatch = ifelse(remain == 0, NA, count / remain)) %>%
-  select(bin, countPerMatch, winner)
+bin.match <- rbind(data.frame(bin = c(0, 1), match = c(0, 0)), bin.match) %>%
+  mutate(remain = sum(match) - cumsum(match))
 
-ggplot(bin, aes(bin-0.5, countPerMatch, group = winner, fill = winner)) +
-  geom_bar(stat = "identity") +
+bin <- merge(bin.events, bin.match, all.x = TRUE) %>%
+  mutate(countPerMatch = ifelse(remain == 0, NA, count / remain)) %>%
+  select(bin, countPerMatch, winner) %>%
+  na.omit()
+
+bin.win <- bin %>%
+  filter(winner == TRUE) %>%
+  select(-winner)
+bin.lost <- bin %>%
+  filter(winner == FALSE) %>%
+  select(-winner)
+
+# p <- ggplot() +
+#   geom_bar(data = bin.win, aes(bin-0.5, countPerMatch), alpha = 0.5, fill = gg_red, stat = "identity") +
+#   geom_bar(data = bin.lost, aes(bin-0.5, countPerMatch), alpha = 0.5, fill = gg_blue, stat = "identity") +
+#   scale_x_continuous(breaks = seq(0, max(bin$bin), 2), 
+#                    labels = seq(0, binwidth*max(bin$bin), 2*binwidth)) +
+#   coord_cartesian(xlim = c(0, max(bin$bin)), expand = TRUE) +
+#   ylab("events per match") +
+#   xlab("minutes")
+
+# Choice of position: dodge, identity, stack
+p <- ggplot(bin, aes(bin-0.5, countPerMatch, group = winner, fill = winner)) +
+  geom_bar(alpha = 0.5, stat = "identity", position = "identity") +
   scale_x_continuous(breaks = seq(0, max(bin$bin), 2), 
                    labels = seq(0, binwidth*max(bin$bin), 2*binwidth)) +
   coord_cartesian(xlim = c(0, max(bin$bin)), expand = TRUE) +
   ylab("events per match") +
   xlab("minutes")
+
+plot(p)
 ```
 
 Plot activity per few minutes.
 ```{r}
+# Choice of position: dodge, identity, stack
 p <- events %>%
   # dplyr::filter(eventType == "CHAMPION_KILL") %>%
   dplyr::filter(eventType == "ELITE_MONSTER_KILL") %>% 
