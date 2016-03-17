@@ -313,7 +313,7 @@ binwidth <- 5
 
 # Divide events in bins
 bin.events <- events %>%
-  # dplyr::filter(eventType == "CHAMPION_KILL")
+  # dplyr::filter(eventType == "CHAMPION_KILL") %>%
   dplyr::filter(eventType == "ELITE_MONSTER_KILL") %>%
   mutate(bin = timestamp %/% binwidth) %>%
   group_by(winner, bin) %>%
