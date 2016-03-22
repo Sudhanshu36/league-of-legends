@@ -47,7 +47,17 @@ http://www.inquisitr.com/1847992/league-of-legends-continues-streak-as-most-play
 ## Activity on map
 
 <p align="center"><img src="figures/events.png" alt="Summoner's Rift" style="width: 400px;"/></p>
-<p align="right">Questions?</p>
+<!--<p align="right">Questions?</p>-->
+<p align="right">Questions? GitHub.com/<strong>VincentQB</strong></p>
+
+<!-- 
+## Questions?
+<p align="center"><img src="figures/logo-github.png" alt="GitHub" style="width: 100px;"/> vincentqb</p>-->
+<div>
+  <img style="vertical-align:middle width:100px" src="figures/logo-github.png">
+  <span style="">vincentqb</span>
+</div>
+-->
 
 ## Activity on map {.flexbox .vcenter}
 
