@@ -487,6 +487,19 @@ print(p)
 ggsave("figures/events.png", width = 10, height = 10, units = "in", bg = "transparent")
 ```
 
+Pick time slice.
+```{r}
+timeslice <- c(0, 20)
+
+data <- coord %>%
+  dplyr::filter(timeslice[1] < timestamp & timestamp < timeslice[2]) %>%
+  # dplyr::filter((teamId == 100 & winner == TRUE) | (teamId == 200 & winner == FALSE))
+  dplyr::filter((teamId == 100 & winner == FALSE) | (teamId == 200 & winner == TRUE))
+
+p <- make_map(data)
+print(p)
+```
+
 ## Timeline
 
 When are certain objectives achieved for the time in a match?
