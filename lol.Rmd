@@ -849,9 +849,27 @@ modelPredict <- predict(modelTune,
 #   mutate(class = as.factor(class))
 
 par(mfrow = c(1,1))
-plot(modelPredict)
+qplot(modelPredict)
+```
 
-confusionMatrix(modelPredict, testing$winner, positive = "200")
+Look at confusion matrix.
+```{r}
+CM <- confusionMatrix(modelPredict, testing$winner, positive = "200")
+
+# Turn accuracy information into data frame
+CM.df <- data.frame(t(CM$overall))
+CM.df
+(CM.df$AccuracyUpper - CM.df$AccuracyLower)/2
+
+# Plot Accuracy with error bars
+ggplot(CM.df, aes("", Accuracy)) +
+  geom_bar(stat = "identity", position = "stack") + 
+  expand_limits(y = c(0,1)) +
+  geom_errorbar(aes(ymin = AccuracyLower, ymax = AccuracyUpper), width=0.25) +
+  # geom_hline(yintercept = 0.5, color = gg_purple) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
 
 # Show confusion matrix as table
 CM.count <- table(predict = modelPredict, true = testing$winner)
