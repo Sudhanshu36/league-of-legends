@@ -133,20 +133,20 @@ make_map <- function(data, density = TRUE) {
           plot.background = element_blank())
 }
 
-shinyUI(fluidPage(
-fluidRow(
-column(6, selectInput("eventTypeMap", NULL, 
-                      c("All",
-                        str_replace_all(unique(as.character(coord$eventType)), "_", " ")), 
-                      selected = "CHAMPION KILL")),
-column(4, selectInput("team", NULL, 
-                      c("All", "BLUE WINS", "RED WINS"),
-                      selected = "RED WINS"))
+shinyUI(pageWithSidebar(
+headerPanel("Parameters"),
+sidebarPanel(
+selectInput("eventTypeMap", NULL, 
+            c("All", str_replace_all(unique(as.character(coord$eventType)), "_", " ")), 
+            selected = "CHAMPION KILL"),
+selectInput("team", NULL, 
+            c("All", "BLUE WINS", "RED WINS"),
+            selected = "RED WINS"),
+sliderInput("timeRange", label = "Time", 
+            min = 0, max = maxTime, step = 5, value = c(0, 5),
+            animate = animationOptions(interval = 5000, loop = T))
 ),
-column(4, sliderInput("timeRange", label = "Time", 
-                      min = 0, max = maxTime, value = c(0, 20))
-),
-fluidRow(
+mainPanel(
 renderPlot({
 
       data <- coord
