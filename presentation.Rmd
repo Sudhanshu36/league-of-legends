@@ -32,6 +32,10 @@ http://www.inquisitr.com/1847992/league-of-legends-continues-streak-as-most-play
 <iframe width="450" height="250" src="https://www.youtube.com/embed/dFgB286-QVQ?t=2s" frameborder="0" allowfullscreen></iframe>
 <br>QuarterFinal of 2015 League of Legends World Championship
 
+## API
+
+
+
 ## Event progression in typical game {.flexbox .vcenter}
 
 <img src="figures/timeline.png" alt="Timeline" style="width: 750px;"/>
@@ -75,6 +79,7 @@ library(shiny)
 img <- readPNG("data/minimap-mh.png")
 g <- rasterGrob(img, interpolate = TRUE, width = unit(1,"npc"), height = unit(1,"npc"))
 coord <- read.csv("data/map.csv")
+maxTime <- floor(max(coord$timestamp))
 
 # Extract gg color
 gg_color_hue <- function(n) {
@@ -138,6 +143,9 @@ column(4, selectInput("team", NULL,
                       c("All", "BLUE WINS", "RED WINS"),
                       selected = "RED WINS"))
 ),
+column(4, sliderInput("timeRange", label = "Time", 
+                      min = 0, max = maxTime, value = c(0, 20))
+),
 fluidRow(
 renderPlot({
 
@@ -155,7 +163,11 @@ renderPlot({
         data <- dplyr::filter(data, (teamId == 100 & winner == FALSE) | 
                                     (teamId == 200 & winner == TRUE))
       }
-
+      
+      
+      timeslice <- input$timeRange
+      data <- dplyr::filter(data, timeslice[1] < timestamp & timestamp < timeslice[2])
+      
       p <- make_map(data, !(input$eventTypeMap == "ELITE MONSTER KILL"))
       print(p)
 
