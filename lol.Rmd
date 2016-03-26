@@ -135,11 +135,13 @@ match.events <- data.match %>%
                   buildingType = jstring("buildingType")) %>%
     mutate(timestamp = timestamp/1000/60) 
 
-# Beware: pick up only the ones with positions available
-match.events <- match.events %>%
+# Beware: going deeper picks only the ones with positions available
+match.coord <- match.events %>%
     enter_object("position") %>%
     spread_values(X = jnumber("x"),
                   Y = jnumber("y"))
+
+match.events <- merge(match.events, match.coord, all.x = TRUE)
 ```
 
 ## Conditional Probabilities
