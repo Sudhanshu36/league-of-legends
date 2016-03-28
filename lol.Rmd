@@ -757,6 +757,29 @@ print(p)
 ggsave("figures/scatter.png", width = 10, height = 5, units = "in", bg = "transparent")
 ```
 
+We look at the number of wards.
+```{r}
+data <- events %>% 
+  filter(timestamp < 20) %>%
+  filter(eventType == "WARD_PLACED" | eventType == "WARD_KILL") %>%
+  group_by(matchId, eventType, winner) %>%
+  summarise(count = n()) %>%
+  spread(eventType, count)
+
+p <- ggplot(data, aes(WARD_KILL, WARD_PLACED, 
+                              color = factor(winner), group = factor(winner))) + 
+  geom_point(alpha = 0.2, size = 1) +
+  geom_density2d(alpha = 1) +
+  # stat_density2d() +
+  # stat_density2d(aes(alpha = ..density..), geom = "raster", contour = FALSE)
+  # geom_bin2d(aes(color = ..count..), binwidth = 5, alpha = 0.5) +
+  # stat_bin2d(binwidth = 5, alpha = 0.5) +
+  xlab("Number of ward destroyed in first 20 min") +
+  ylab("Number of ward placed in first 20 min")
+
+print(p)
+```
+
 ## Prediction
 
 We prepare the data frame with each row being one match and goal to predict winning team.
