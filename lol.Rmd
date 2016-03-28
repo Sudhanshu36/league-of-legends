@@ -11,6 +11,7 @@ Loading packages.
 library(gridExtra)
 library(png)
 library(grid)
+library(animation)
 library(ggplot2)
 library(rattle)
 library(shiny)
@@ -448,6 +449,9 @@ make_map <- function(data) {
   # p <- p + stat_density2d(aes(fill = ..level..), geom = "polygon", alpha = 0.2)
   # p <- p + stat_density2d(aes(alpha = ..level..))
   p <- p + stat_density2d(size = 1)
+  # p <- p + geom_bin2d(stat = "contour")
+  # p <- p + geom_bin2d(aes(size = ..count..), stat = "contour")
+  # p <- p + stat_contour(na.rm = TRUE)
   
   # Remove padding and decorations
   p <- p +
@@ -487,17 +491,31 @@ print(p)
 ggsave("figures/events.png", width = 10, height = 10, units = "in", bg = "transparent")
 ```
 
-Pick time slice.
+Make animated GIF.
 ```{r}
-timeslice <- c(0, 20)
+map.draw <- function(to, tf) {
+  timeslice <- c(to, tf)
 
-data <- coord %>%
-  dplyr::filter(timeslice[1] < timestamp & timestamp < timeslice[2]) %>%
-  # dplyr::filter((teamId == 100 & winner == TRUE) | (teamId == 200 & winner == FALSE))
-  dplyr::filter((teamId == 100 & winner == FALSE) | (teamId == 200 & winner == TRUE))
+  p <- coord %>%
+    dplyr::filter(timeslice[1] < timestamp & timestamp < timeslice[2]) %>%
+    # dplyr::filter((teamId == 100 & winner == TRUE) | (teamId == 200 & winner == FALSE)) %>%
+    dplyr::filter((teamId == 100 & winner == FALSE) | (teamId == 200 & winner == TRUE)) %>%
+    make_map
 
-p <- make_map(data)
-print(p)
+  print(p)
+}
+
+# Show the first 20 minutes.
+map.draw(0,20)
+
+map.animate <- function() {
+  d <- 5
+  lapply(seq(0, 45, d), function(i) {
+    map.draw(i, i+d)
+  })
+}
+
+saveGIF(map.animate(), interval = .65, movie.name = "map.gif")
 ```
 
 ## Timeline
@@ -880,10 +898,13 @@ ggplot(CM.df, aes("", Accuracy)) +
   expand_limits(y = c(0,1)) +
   geom_errorbar(aes(ymin = AccuracyLower, ymax = AccuracyUpper), width=0.25) +
   # geom_hline(yintercept = 0.5, color = gg_purple) +
-  theme(axis.text.x = element_blank(),
+  theme(axis.text.y = element_blank(),
         axis.ticks.x = element_blank(),
         axis.title.x = element_blank())
+```
 
+Plot confusion matrix.
+```{r}
 # Show confusion matrix as table
 CM.count <- table(predict = modelPredict, true = testing$winner)
 attr(CM.count, "dimnames")$predict <- attr(CM.count, "dimnames")$predict %>%
@@ -898,7 +919,7 @@ attr(CM.count, "dimnames")$true <- attr(CM.count, "dimnames")$true %>%
 #        CM.count["Predict Blue","Win Blue"] / 
 #          (CM.count["Predict Blue","Win Blue"] + CM.count["Predict Red","Win Blue"]))
 
-# heat map with red and blue
+# heat map with red and blue NOTE update numbers manually
 p <- ggplot(melt(CM.count), aes(predict, true, fill = true)) + 
   geom_tile(aes(alpha = value)) +
   scale_y_discrete(labels = c("Win Red" = "Win Red\n65%","Win Blue" = "Win Blue\n75%")) +
@@ -907,8 +928,6 @@ p <- ggplot(melt(CM.count), aes(predict, true, fill = true)) +
   # scale_fill_manual(values = c('blue','red')) 
   
 print(p)
-
-# facet_grid(st ~ .)
 
 # Remove padding and decorations
 p <- p +
