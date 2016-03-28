@@ -515,6 +515,7 @@ map.animate <- function() {
   })
 }
 
+# Make an animation from time slices
 saveGIF(map.animate(), interval = .65, movie.name = "map.gif")
 ```
 
@@ -865,6 +866,26 @@ rocCurve$sensitivity
 
 # Plot ROC curve
 plot(rocCurve, print.thres = "best")
+```
+
+Make a ggplot ROC curve.
+```{r}
+rocCurve.data <- data.frame(FPR = 1-rocCurve$specificities, TPR = rocCurve$sensitivities)
+rocCurve.best <- as.data.frame(t(coords(rocCurve, "best", 
+                                        ret=c("sensitivity", "specificity"))))
+
+p <- rocCurve.data %>%
+  ggplot(aes(x = FPR, y = TPR)) + 
+  geom_point(color = gg_purple) +
+  # geom_line(color = gg_purple) +
+  geom_smooth(color = gg_purple, se = FALSE, alpha = 0.25) +
+  geom_point(data = rocCurve.best, aes(x = 1-specificity, y = sensitivity), 
+             color = gg_purple, size = 3) +
+  xlab("False Positive Rate") +
+  ylab("True Positive Rate") +
+  geom_abline(intercept = 0, slope = 1, alpha = 0.5, color = gg_red)
+
+print(p)
 ```
 
 We now predict on the test set.
