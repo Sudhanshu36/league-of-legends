@@ -500,7 +500,7 @@ map.draw <- function(to, tf) {
     dplyr::filter(timeslice[1] < timestamp & timestamp < timeslice[2]) %>%
     # dplyr::filter((teamId == 100 & winner == TRUE) | (teamId == 200 & winner == FALSE)) %>%
     dplyr::filter((teamId == 100 & winner == FALSE) | (teamId == 200 & winner == TRUE)) %>%
-    make_map
+    make_map + annotate("text", x = 500, y = 10, label = as.character(to))
 
   print(p)
 }
