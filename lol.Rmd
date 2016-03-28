@@ -857,8 +857,7 @@ rocCurve   <- roc(response = training$winner,
                       levels = rev(levels(training$winner)))
 
 names(rocCurve)
-rocCurve$thresholds
-rocCurve$sensitivity
+rocCurve$auc
 
 # Choose threshold according to sensitivity or specificity
 # qplot(x = rocCurve$thresholds, y = rocCurve$sensit)
@@ -870,20 +869,23 @@ plot(rocCurve, print.thres = "best")
 
 Make a ggplot ROC curve.
 ```{r}
+# Plot true positive rate (sensitivity) versus false positive rate (1-specificity)
 rocCurve.data <- data.frame(FPR = 1-rocCurve$specificities, TPR = rocCurve$sensitivities)
 rocCurve.best <- as.data.frame(t(coords(rocCurve, "best", 
                                         ret=c("sensitivity", "specificity"))))
 
+roccol <- gg_red
+
 p <- rocCurve.data %>%
   ggplot(aes(x = FPR, y = TPR)) + 
-  geom_point(color = gg_purple) +
-  # geom_line(color = gg_purple) +
-  geom_smooth(color = gg_purple, se = FALSE, alpha = 0.25) +
+  geom_point(color = roccol) +
+  # geom_line(color = roccol) +
+  geom_smooth(color = roccol, se = FALSE, alpha = 0.25) +
   geom_point(data = rocCurve.best, aes(x = 1-specificity, y = sensitivity), 
-             color = gg_purple, size = 3) +
+             color = roccol, size = 3) +
   xlab("False Positive Rate") +
   ylab("True Positive Rate") +
-  geom_abline(intercept = 0, slope = 1, alpha = 0.5, color = gg_red)
+  geom_abline(intercept = 0, slope = 1, alpha = 0.5, color = gg_purple)
 
 print(p)
 ```
