@@ -22,6 +22,12 @@ concurrent players peak at 7.5M.
 http://www.inquisitr.com/1847992/league-of-legends-continues-streak-as-most-played-pc-game/
 -->
 
+<!--
+## Even cheating!
+
+http://www.usatoday.com/story/tech/gaming/2016/03/27/harvard-team-caught-cheating-heroes-dorm-event/82320786/
+-->
+
 ## Multiplayer Online Battle Arena {.flexbox .vcenter}
 
 <img src="figures/game_example.jpg" alt="Gameplay" style="width: 750px;"/>
