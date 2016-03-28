@@ -69,6 +69,9 @@ data.match <- data.json %>%
   spread_values(matchId = jnumber("matchId")) %>%
   select(matchId) 
 
+match.num <- data.match %>%
+  summarise(count = n())
+
 # Print general match information
 data.match %>%
   spread_values(mapId = jnumber("mapId"),
