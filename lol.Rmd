@@ -145,6 +145,16 @@ match.coord <- match.events %>%
 match.events <- merge(match.events, match.coord, all.x = TRUE)
 ```
 
+```{r}
+# Show how to access information about participants in a frame.
+data.match %>%
+  enter_object("timeline") %>%
+  enter_object("frames") %>% 
+  gather_array("frames.index") %>% 
+  enter_object("participantFrames") %>% 
+  enter_object("3")
+```
+
 ## Conditional Probabilities
 
 We make the table of winner per match.
