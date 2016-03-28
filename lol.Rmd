@@ -40,8 +40,9 @@ gg_color_hue <- function(n) {
   hcl(h=hues, l=65, c=100)[1:n]
 }
 
-gg_blue <- gg_color_hue(4)[3] # blue: #00BFC4
 gg_red  <- gg_color_hue(4)[1] # red: F8766D
+gg_green <- gg_color_hue(4)[2]
+gg_blue <- gg_color_hue(4)[3] # blue: #00BFC4
 gg_purple <- gg_color_hue(4)[4]
 ```
 
@@ -915,15 +916,16 @@ CM.df <- data.frame(t(CM$overall))
 CM.df
 (CM.df$AccuracyUpper - CM.df$AccuracyLower)/2
 
-# Plot Accuracy with error bars
+# Plot accuracy with error bars
 ggplot(CM.df, aes("", Accuracy)) +
-  geom_bar(stat = "identity", position = "stack") + 
+  geom_bar(stat = "identity", position = "stack", fill = gg_blue) + 
   expand_limits(y = c(0,1)) +
-  geom_errorbar(aes(ymin = AccuracyLower, ymax = AccuracyUpper), width=0.25) +
+  geom_errorbar(aes(ymin = AccuracyLower, ymax = AccuracyUpper), 
+                width=0.25, color = gg_purple) +
   # geom_hline(yintercept = 0.5, color = gg_purple) +
-  theme(axis.text.y = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
+  xlab("Accuracy") +
+  theme(axis.title.y = element_blank(),
+        axis.ticks.x = element_blank())
 ```
 
 Plot confusion matrix.
