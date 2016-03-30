@@ -863,7 +863,7 @@ nrow(training)/ncol(training)
 
 We create dummy variables for categorical variables.
 ```{r}
-# dummies <- dummyVars(~ ., data = training, sep = "__", fullRank = TRUE)
+# dummies <- dummyVars(~ ., data = training, sep = ".", fullRank = TRUE)
 # training <- data.frame(predict(dummies, training))
 # testing <- data.frame(predict(dummies, testing))
 # 
@@ -875,9 +875,9 @@ We cross-validate.
 ```{r}
 # Select method
 # method <- "rf"
-method <- "rpart"
+# method <- "rpart"
 # method <- "glmnet"
-# method <- "svmLinear"
+method <- "svmLinear"
 # method <- "svmRadial"
 
 if (method == "rf") {
@@ -955,7 +955,7 @@ roccol <- gg_red
 
 p <- rocCurve.data %>%
   ggplot(aes(x = FPR, y = TPR)) + 
-  geom_point(color = roccol) +
+  geom_point(color = roccol, size = 0.5) +
   geom_line(color = roccol, alpha = 0.5) +
   # geom_smooth(color = roccol, se = FALSE, alpha = 0.25) +
   geom_point(data = rocCurve.best, aes(x = 1-specificity, y = sensitivity), 
