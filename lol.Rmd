@@ -803,6 +803,27 @@ p <- ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas,
 print(p)
 ```
 
+We prepare data frame for number of events per type per minute.
+```{r}
+tf <- 20
+data <- events %>% 
+  filter(timestamp < tf) %>% 
+  mutate(teamId = as.numeric(as.character(teamId))) %>%
+  mutate(winner = as.factor(ifelse(winner, teamId, 300-teamId))) %>% 
+  group_by(matchId, teamId, eventType, winner) %>%
+  summarise(count = n()/tf) %>%
+  mutate(count = sign(teamId - 150) * count) %>%
+  spread(eventType, count, fill = 0) %>%
+  group_by(matchId, winner) %>%
+  summarise_each(funs(sum)) %>%
+  as.data.frame() %>%
+  select(-teamId, -matchId) 
+# %>%
+  # select(-ITEM_DESTROYED, -ITEM_SOLD, -ITEM_UNDO)
+
+data %>% head
+```
+
 ## Prediction
 
 We prepare the data frame with each row being one match and goal to predict winning team.
