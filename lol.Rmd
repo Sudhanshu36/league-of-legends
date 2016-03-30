@@ -690,33 +690,29 @@ participants.timeline <- data.match %>%
                 teamId = jnumber("teamId")) %>%
   enter_object("timeline")
 
-participants.creeps <- participants.timeline %>% 
-  enter_object("creepsPerMinDeltas") %>%
-  gather_keys("ParticipantTimelineData") %>%
-  append_values_number("creepsPerMinDeltas")
+participantTimelineData <- function(x) {
+  participants.timeline %>% 
+    enter_object(x) %>%
+    gather_keys("ParticipantTimelineData") %>%
+    append_values_number(x)
+}
 
-participants.gold <- participants.timeline %>% 
-  enter_object("goldPerMinDeltas") %>%
-  gather_keys("ParticipantTimelineData") %>%
-  append_values_number("goldPerMinDeltas")
-
-# participants.wards <- participants.timeline %>% 
-#   enter_object("wardsPerMinDeltas") %>%
-#   gather_keys("ParticipantTimelineData") %>%
-#   append_values_number("ParticipantTimelineValue")
-
-participants.xp <- participants.timeline %>% 
-  enter_object("xpPerMinDeltas") %>%
-  gather_keys("ParticipantTimelineData") %>%
-  append_values_number("xpPerMinDeltas")
-
-# participants.kills <- participants.timeline %>% 
-#   enter_object("assistedLaneKillsPerMinDeltas") %>%
-#   gather_keys("ParticipantTimelineData") %>%
-#   append_values_number("assistedLaneKillsPerMinDeltas")
+participants.creeps <- participantTimelineData("creepsPerMinDeltas")
+participants.gold <- participantTimelineData("goldPerMinDeltas")
+# participants.wards <- participantTimelineData("wardsPerMinDeltas")
+participants.xp <- participantTimelineData("xpPerMinDeltas")
+# participants.kills <- participantTimelineData("assistedLaneKillsPerMinDeltas")
+# participants.golem <- participantTimelineData("ancientGolemKillsPerMinCounts")
+# participants.baron <- participantTimelineData("baronKillsPerMinCounts")
+# participants.dragon <- participantTimelineData("dragonKillsPerMinCounts")
+# participants.lizard <- participantTimelineData("elderLizardKillsPerMinCounts")
+# participants.inhibitor <- participantTimelineData("inhibitorKillsPerMinCounts")
+# participants.tower <- participantTimelineData("towerKillsPerMinCounts")
+participants.damageTaken <- participantTimelineData("damageTakenPerMinDeltas")
 
 participants <- merge(participants.creeps, participants.gold)
 participants <- merge(participants, participants.xp)
+participants <- merge(participants, participants.damageTaken)
 
 participants <- merge(participants, match.winner) %>%
   select(matchId, teamId, ParticipantTimelineData, creepsPerMinDeltas, goldPerMinDeltas, xpPerMinDeltas, winner) %>%
