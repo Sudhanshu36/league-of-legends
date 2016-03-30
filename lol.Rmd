@@ -803,28 +803,29 @@ p <- ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas,
 print(p)
 ```
 
+## Data for prediction
+
 We prepare data frame for number of events per type per minute.
 ```{r}
 tf <- 20
 data <- events %>% 
   filter(timestamp < tf) %>% 
   mutate(teamId = as.numeric(as.character(teamId))) %>%
-  mutate(winner = as.factor(ifelse(winner, teamId, 300-teamId))) %>% 
+  mutate(winner = factor(ifelse(winner, teamId, 300-teamId))) %>% 
+  # mutate(winner = factor(ifelse(winner == 100, "blue", "red"))) %>% 
   group_by(matchId, teamId, eventType, winner) %>%
   summarise(count = n()/tf) %>%
-  mutate(count = sign(teamId - 150) * count) %>%
+  mutate(count = ifelse(teamId == 100, -1, 1) * count) %>%
+  # mutate(count = ifelse(teamId == "blue", -1, 1) * count) %>%
   spread(eventType, count, fill = 0) %>%
   group_by(matchId, winner) %>%
   summarise_each(funs(sum)) %>%
   as.data.frame() %>%
-  select(-teamId, -matchId) 
-# %>%
-  # select(-ITEM_DESTROYED, -ITEM_SOLD, -ITEM_UNDO)
+  select(-teamId, -matchId) %>%
+  select(-ITEM_DESTROYED, -ITEM_SOLD, -ITEM_UNDO)
 
 data %>% head
 ```
-
-## Prediction
 
 We prepare the data frame with each row being one match and goal to predict winning team.
 ```{r}
@@ -847,6 +848,14 @@ data <- data.team %>%
          firstDragon,
          firstTower,
          firstRiftHerald)
+```
+
+## Prediction
+
+We first rename categories to predict.
+```{r}
+data <- data %>%
+  mutate(winner, winner = factor(ifelse(winner == 100, "blue", "red")))
 ```
 
 We divide the dataset into train and test.
@@ -874,11 +883,14 @@ We create dummy variables for categorical variables.
 We cross-validate.
 ```{r}
 # Select method
+# List supported by Caret https://topepo.github.io/caret/modelList.html
+
 # method <- "rf"
-# method <- "rpart"
+method <- "rpart"
 # method <- "glmnet"
-method <- "svmLinear"
+# method <- "svmLinear"
 # method <- "svmRadial"
+# method <- "xgbLinear"
 
 if (method == "rf") {
   modelGrid <- expand.grid(mtry = seq(0, 5, by = 1))
@@ -891,10 +903,13 @@ if (method == "rf") {
   modelGrid <- expand.grid(C = seq(0.5, 5, by = 0.5))
 } else if (method == "svmRadial") {
   modelGrid <- expand.grid(C = seq(0.5, 5, by = 0.5), sigma = seq(0.1, 0.5, by = 0.1))
+} else if (method == "xgbLinear") {
+  modelGrid <- expand.grid(nrounds = seq(2, 10, by = 2), lambda = seq(2, 5, by = 0.25), 
+                           alpha = seq(1, 6, by = 0.5))
 }
 
 # Cross-validation parameters
-ctrl <- trainControl(method = "cv", number = 10, verboseIter = T)
+ctrl <- trainControl(method = "cv", number = 10, verboseIter = T, classProbs = TRUE)
 
 # We can try different methods: svmLinear glmnet rpart svmRadial
 modelTune <- train(winner ~ .,
@@ -902,9 +917,9 @@ modelTune <- train(winner ~ .,
                    tuneGrid = modelGrid,
                    trControl = ctrl,
                    method = method,
+                   # preProc = c("center", "scale"),
                    # summaryFunction = twoClassSummary,
                    # metric = "ROC",
-                   # classProbs = TRUE,
                    # importance = TRUE,
                    # scale = FALSE,
                    na.action = na.pass)
@@ -916,9 +931,9 @@ plot(modelTune)
 modelTune$bestTune
 plot(modelTune$results)
 
+# Plot tree
 par(mfrow = c(1,1))
-plot(modelTune$finalModel)
-
+# plot(modelTune$finalModel)
 fancyRpartPlot(modelTune$finalModel)
 ```
 
@@ -930,8 +945,8 @@ probsTrain <- predict(modelTune,
                       na.action = na.pass)
 
 rocCurve   <- roc(response = training$winner,
-                      predictor = probsTrain$"200",
-                      levels = rev(levels(training$winner)))
+                  predictor = probsTrain$"red",
+                  levels = rev(levels(training$winner)))
 
 names(rocCurve)
 rocCurve$auc
@@ -976,7 +991,7 @@ modelPredict <- predict(modelTune,
 
 # thresold <- 0.7
 # modelPredict <- modelPredict %>%
-#   mutate(class = ifelse("200" > thresold, "200", "100")) %>%
+#   mutate(class = ifelse("red" > thresold, "red", "blue")) %>%
 #   mutate(class = as.factor(class))
 
 par(mfrow = c(1,1))
@@ -985,7 +1000,7 @@ qplot(modelPredict)
 
 Look at confusion matrix.
 ```{r}
-CM <- confusionMatrix(modelPredict, testing$winner, positive = "200")
+CM <- confusionMatrix(modelPredict, testing$winner, positive = "red")
 
 # Turn accuracy information into data frame
 CM.df <- data.frame(t(CM$overall))
@@ -1028,7 +1043,6 @@ p <- ggplot(melt(CM.count), aes(predict, true, fill = true)) +
   # scale_y_discrete(labels = c("Win Red" = "Win Red\n65%","Win Blue" = "Win Blue\n75%")) +
   geom_text(aes(fill = true, label = value)) +
   scale_fill_manual(values = c(gg_blue, gg_red)) 
-  # scale_fill_manual(values = c('blue','red')) 
 
 print(p)
 
