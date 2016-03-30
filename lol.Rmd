@@ -956,8 +956,8 @@ roccol <- gg_red
 p <- rocCurve.data %>%
   ggplot(aes(x = FPR, y = TPR)) + 
   geom_point(color = roccol) +
-  # geom_line(color = roccol) +
-  geom_smooth(color = roccol, se = FALSE, alpha = 0.25) +
+  geom_line(color = roccol, alpha = 0.5) +
+  # geom_smooth(color = roccol, se = FALSE, alpha = 0.25) +
   geom_point(data = rocCurve.best, aes(x = 1-specificity, y = sensitivity), 
              color = roccol, size = 3) +
   xlab("False Positive Rate") +
@@ -998,7 +998,8 @@ ggplot(CM.df, aes("", Accuracy)) +
   expand_limits(y = c(0,1)) +
   geom_errorbar(aes(ymin = AccuracyLower, ymax = AccuracyUpper), 
                 width=0.25, color = gg_purple) +
-  # geom_hline(yintercept = 0.5, color = gg_purple) +
+  geom_hline(yintercept = 0.5, color = gg_purple) +
+  coord_cartesian(ylim = c(0.5, 1), expand = TRUE) +
   xlab("Accuracy") +
   theme(axis.title.y = element_blank(),
         axis.ticks.x = element_blank())
@@ -1023,11 +1024,12 @@ attr(CM.count, "dimnames")$true <- attr(CM.count, "dimnames")$true %>%
 # heat map with red and blue NOTE update numbers manually
 p <- ggplot(melt(CM.count), aes(predict, true, fill = true)) + 
   geom_tile(aes(alpha = value)) +
-  scale_y_discrete(labels = c("Win Red" = "Win Red\n65%","Win Blue" = "Win Blue\n75%")) +
+  scale_y_discrete(labels = c("Win Red" = "Win Red","Win Blue" = "Win Blue")) +
+  # scale_y_discrete(labels = c("Win Red" = "Win Red\n65%","Win Blue" = "Win Blue\n75%")) +
   geom_text(aes(fill = true, label = value)) +
   scale_fill_manual(values = c(gg_blue, gg_red)) 
   # scale_fill_manual(values = c('blue','red')) 
-  
+
 print(p)
 
 # Remove padding and decorations
@@ -1043,7 +1045,7 @@ p <- p +
         panel.grid.minor = element_blank(),
         plot.background = element_blank())
 
-plot(p)
+print(p)
 ggsave("figures/predict.png", width = 4, height = 4, units = "in", bg = "transparent")
 
 # CM.percent <- round(CM.count/length(testing$winner) * 100)
