@@ -808,7 +808,7 @@ print(p)
 We prepare data frame for number of events per type per minute.
 ```{r}
 tf <- 20
-data <- events %>% 
+df.events <- events %>% 
   filter(timestamp < tf) %>% 
   mutate(teamId = as.numeric(as.character(teamId))) %>%
   mutate(winner = factor(ifelse(winner, teamId, 300-teamId))) %>% 
@@ -819,15 +819,16 @@ data <- events %>%
   group_by(matchId, winner) %>%
   summarise_each(funs(sum)) %>%
   as.data.frame() %>%
-  select(-teamId, -matchId) %>%
+  select(-teamId) %>%
   select(-ITEM_DESTROYED, -ITEM_SOLD, -ITEM_UNDO)
+  # select(-matchId) %>%
 
 data %>% head
 ```
 
 We prepare the data frame with each row being one match and goal to predict winning team.
 ```{r}
-data <- data.team %>%
+df.team <- data.team %>%
   mutate(winner = winner * teamId,
          firstBaron = firstBaron * teamId,
          firstBlood = firstBlood * teamId,
@@ -840,6 +841,7 @@ data <- data.team %>%
   select(-teamId) %>%
   mutate_each(funs(factor)) %>%
   select(winner,
+         matchId,
          # firstBaron,
          # firstInhibitor,
          firstBlood,
@@ -852,6 +854,12 @@ data <- data.team %>%
 
 We first rename categories to predict.
 ```{r}
+data <- df.events
+# data <- df.team
+
+# data <- merge(df.events, df.team) %>%
+#   select(-matchId)
+
 data <- data %>%
   mutate(winner, winner = factor(ifelse(winner == 100, "blue", "red")))
 ```
