@@ -1201,14 +1201,22 @@ method.roc <- rocCurve.data %>%
 
 for (i in 1:length(method.all)) {
   method <- method.all[i]
+  
   tP <- trainPredict(method)
   CM.df <- tP[1]
   rocCurve.data <- tP[2]
-  method.acc <- rbind(method.acc, as.data.frame(CM.df))
-  method.roc <- rbind(method.roc, as.data.frame(rocCurve.data))
+  
+  CM.df <- as.data.frame(CM.df)
+  rocCurve.data <- as.data.frame(rocCurve.data)
+  
+  if (i == 1) {
+    method.acc <- CM.df
+    method.roc <- rocCurve.data
+  } else {
+    method.acc <- rbind(method.acc, CM.df)
+    method.roc <- rbind(method.roc, rocCurve.data)
+  }
 }
-
-method.acc <- method.acc[-2,]
 ```
 
 ```{r}
