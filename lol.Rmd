@@ -853,12 +853,12 @@ df.team <- data.team %>%
 ## Prediction
 
 We first rename categories to predict.
-```{r}
 data <- df.events
+```{r}
 # data <- df.team
 
-# data <- merge(df.events, df.team) %>%
-#   select(-matchId)
+data <- merge(df.events, df.team) %>%
+  select(-matchId)
 
 data <- data %>%
   mutate(winner, winner = factor(ifelse(winner == 100, "blue", "red")))
@@ -892,14 +892,14 @@ We cross-validate.
 # List supported by Caret https://topepo.github.io/caret/modelList.html
 
 # method <- "rf"
-method <- "rpart"
-# method <- "glmnet"
+# method <- "rpart"
+method <- "glmnet"
 # method <- "svmLinear"
 # method <- "svmRadial"
 # method <- "xgbLinear"
 
 if (method == "rf") {
-  modelGrid <- expand.grid(mtry = seq(0, 5, by = 1))
+  modelGrid <- expand.grid(mtry = seq(1, 5, by = 1))
 } else if (method == "rpart") {
   modelGrid <- expand.grid(cp = seq(0.01, 0.1, by = 0.01))
 } else if (method == "glmnet") {
@@ -910,8 +910,9 @@ if (method == "rf") {
 } else if (method == "svmRadial") {
   modelGrid <- expand.grid(C = seq(0.5, 5, by = 0.5), sigma = seq(0.1, 0.5, by = 0.1))
 } else if (method == "xgbLinear") {
-  modelGrid <- expand.grid(nrounds = seq(2, 10, by = 2), lambda = seq(2, 5, by = 0.25), 
-                           alpha = seq(1, 6, by = 0.5))
+  modelGrid <- expand.grid(nrounds = seq(10, 310, by = 50), 
+                           lambda = seq(0.1, 3, by = 0.5), 
+                           alpha = seq(0.01, 2, by = 0.5))
 }
 
 # Cross-validation parameters
@@ -951,85 +952,110 @@ probsTrain <- predict(modelTune,
                       na.action = na.pass)
 
 rocCurve   <- roc(response = training$winner,
-                  predictor = probsTrain$"red",
+                  predictor = probsTrain$red,
                   levels = rev(levels(training$winner)))
 
-names(rocCurve)
-rocCurve$auc
+# names(rocCurve)
 
 # Choose threshold according to sensitivity or specificity
 # qplot(x = rocCurve$thresholds, y = rocCurve$sensit)
 # qplot(x = rocCurve$thresholds, y = rocCurve$spec)
 
 # Plot ROC curve
-plot(rocCurve, print.thres = "best")
-```
+# plot(rocCurve, print.thres = "best")
 
-Make a ggplot ROC curve.
-```{r}
 # Plot true positive rate (sensitivity) versus false positive rate (1-specificity)
 rocCurve.data <- data.frame(FPR = 1-rocCurve$specificities, TPR = rocCurve$sensitivities)
-rocCurve.best <- as.data.frame(t(coords(rocCurve, "best", 
-                                        ret=c("sensitivity", "specificity"))))
+rocCurve.best <- rocCurve %>%
+  coords("best", ret = c("sensitivity", "specificity", "threshold")) %>%
+  t() %>%
+  as.data.frame()
 
 roccol <- gg_red
 
 p <- rocCurve.data %>%
   ggplot(aes(x = FPR, y = TPR)) + 
   geom_point(color = roccol, size = 0.5) +
-  geom_line(color = roccol, alpha = 0.5) +
+  geom_line(color = roccol, alpha = 0.5, size = 0.5) +
   # geom_smooth(color = roccol, se = FALSE, alpha = 0.25) +
   geom_point(data = rocCurve.best, aes(x = 1-specificity, y = sensitivity), 
-             color = roccol, size = 3) +
+             color = gg_purple, size = 3) +
+  geom_text(data = rocCurve.best, aes(x = 1-specificity, y = sensitivity, 
+                                      label = round(threshold, 3)), hjust = 1, vjust = -1) +
   xlab("False Positive Rate") +
   ylab("True Positive Rate") +
-  geom_abline(intercept = 0, slope = 1, alpha = 0.5, color = gg_purple)
+  # geom_abline(intercept = 0, slope = 1, alpha = 0.5, color = gg_purple)
+  geom_segment(x = 0, y = 0, xend = 1, yend = 1, color = gg_purple, alpha = 0.5, size = 0.25)
 
 print(p)
+
+# Set thresold for division between the two categories
+rocCurve.thresold <- rocCurve.best$threshold
+modelTrain <- probsTrain %>%
+  mutate(winner = ifelse(red > rocCurve.thresold, "red", "blue")) %>%
+  mutate(winner = as.factor(winner))
+
+# Check AUC
+rocCurve.auc <- rocCurve$auc
+rocCurve.auc
 ```
 
 We now predict on the test set.
 ```{r}
-modelPredict <- predict(modelTune,
+probsPredict <- predict(modelTune,
                         newdata = testing,
-                        # type = "prob",
+                        type = "prob",
                         na.action = na.pass)
 
-# thresold <- 0.7
-# modelPredict <- modelPredict %>%
-#   mutate(class = ifelse("red" > thresold, "red", "blue")) %>%
-#   mutate(class = as.factor(class))
+# Use thresold for division between the two categories
+modelPredict <- probsPredict %>%
+  mutate(winner = ifelse(red > rocCurve.thresold, "red", "blue")) %>%
+  mutate(winner = as.factor(winner))
 
 par(mfrow = c(1,1))
-qplot(modelPredict)
+qplot(modelPredict$winner)
+
+# Check AUC
+rocCurve   <- roc(response = testing$winner,
+                  predictor = modelPredict$red,
+                  levels = rev(levels(testing$winner)))
+rocCurve.auc <- as.numeric(rocCurve.auc)
+rocCurve.auc
 ```
 
 Look at confusion matrix.
 ```{r}
-CM <- confusionMatrix(modelPredict, testing$winner, positive = "red")
+CM <- confusionMatrix(modelPredict$winner, testing$winner, positive = "red")
 
 # Turn accuracy information into data frame
-CM.df <- data.frame(t(CM$overall))
+CM.df <- data.frame(t(CM$overall)) %>%
+  mutate(AccuracyRange = (AccuracyUpper - AccuracyLower)/2,
+         Method = method,
+         AUC = rocCurve.auc)
 CM.df
-(CM.df$AccuracyUpper - CM.df$AccuracyLower)/2
+
+# method.acc <- CM.df
+method.acc <- rbind(method.acc, CM.df)
 
 # Plot accuracy with error bars
-ggplot(CM.df, aes("", Accuracy)) +
+ggplot(method.acc, aes(x = method, Accuracy)) +
   geom_bar(stat = "identity", position = "stack", fill = gg_blue) + 
   expand_limits(y = c(0,1)) +
   geom_errorbar(aes(ymin = AccuracyLower, ymax = AccuracyUpper), 
-                width=0.25, color = gg_purple) +
+                width = 0.25, color = gg_purple) +
   geom_hline(yintercept = 0.5, color = gg_purple) +
   coord_cartesian(ylim = c(0.5, 1), expand = TRUE) +
-  xlab("Accuracy") +
+  ylab("Accuracy") +
   theme(axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
         axis.ticks.x = element_blank())
 ```
 
 Plot confusion matrix.
 ```{r}
 # Show confusion matrix as table
-CM.count <- table(predict = modelPredict, true = testing$winner)
+CM.count <- table(predict = modelPredict$winner, true = testing$winner)
+
 attr(CM.count, "dimnames")$predict <- attr(CM.count, "dimnames")$predict %>%
   str_replace("red", "Predict Red") %>%
   str_replace("blue", "Predict Blue")
