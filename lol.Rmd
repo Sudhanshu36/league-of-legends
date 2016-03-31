@@ -1106,6 +1106,7 @@ ggsave("figures/predict.png", width = 4, height = 4, units = "in", bg = "transpa
 # dev.off()
 ```
 
+## Compare methods together
 
 ```{r}
 trainPredict <- function(method) {
