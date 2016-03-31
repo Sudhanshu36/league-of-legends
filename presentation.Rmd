@@ -49,26 +49,31 @@ http://www.usatoday.com/story/tech/gaming/2016/03/27/harvard-team-caught-cheatin
 
 <img src="figures/methods_acc.png" alt="Prediction" style="width: 750px;"/>
 
-## Activity on map
+## Activity on map {.flexbox .vcenter}
 
-<p align="center"><img src="figures/map_twenty.png" alt="Summoner's Rift" style="width: 400px;"/></p>
+<img src="figures/map_twenty.png" alt="Summoner's Rift" style="width: 400px;"/>
+<br>First twenty minutes.
 
-## Activity on map
+## Activity on map {.flexbox .vcenter}
 
-<p align="center"><img src="figures/map.gif" alt="Summoner's Rift" style="width: 400px;"/></p>
+<img src="figures/map.gif" alt="Summoner's Rift" style="width: 400px;"/>
+<br>5-min time slices.
 
 <!--<p align="right">Questions?</p>
 <p align="right">Questions? GitHub.com/<strong>VincentQB</strong></p> -->
 
 ## Questions?
-<p></p>
-<p></p>
-<p align="right">GitHub.com/<strong>VincentQB</strong></p>
+
+<p style="position:absolute;bottom:5%;right:15%;width:200px;">GitHub.com/<strong>VincentQB</strong></p>
 
 ## World Championship Highlight
 
 <iframe width="450" height="250" src="https://www.youtube.com/embed/dFgB286-QVQ?t=2s" frameborder="0" allowfullscreen></iframe>
 <br>Quarter final 2015: Baron and Pentakill
+
+## Experience and Gold {.flexbox .vcenter}
+
+<img src="figures/scatter.png" alt="Experience vs Gold" style="width: 750px;"/>
 
 ## Predictions based on objectives {.flexbox .vcenter}
 
@@ -221,7 +226,3 @@ renderPlot({
 )
 ))
 ```
-
-## Experience and Gold {.flexbox .vcenter}
-
-<img src="figures/scatter.png" alt="Experience vs Gold" style="width: 750px;"/>
