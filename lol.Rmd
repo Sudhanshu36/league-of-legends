@@ -498,25 +498,30 @@ data <- coord %>%
 # Show and save plot
 p <- make_map(data)
 print(p)
-ggsave("figures/events.png", width = 10, height = 10, units = "in", bg = "transparent")
+ggsave("figures/map.png", width = 10, height = 10, units = "in", bg = "transparent")
 ```
 
 Make animated GIF.
 ```{r}
-map.draw <- function(to, tf) {
+map.draw <- function(to, tf, print.label = TRUE) {
   timeslice <- c(to, tf)
 
   p <- coord %>%
     dplyr::filter(timeslice[1] < timestamp & timestamp < timeslice[2]) %>%
     # dplyr::filter((teamId == 100 & winner == TRUE) | (teamId == 200 & winner == FALSE)) %>%
     dplyr::filter((teamId == 100 & winner == FALSE) | (teamId == 200 & winner == TRUE)) %>%
-    make_map + annotate("text", x = 500, y = 10, label = as.character(to))
+    make_map 
+  
+  if (print.label == TRUE) {
+    p <- p + annotate("text", x = 500, y = 10, label = as.character(to))
+  }
 
   print(p)
 }
 
 # Show the first 20 minutes.
-map.draw(0,20)
+map.draw(0, 20, print.label = FALSE)
+ggsave("figures/map_twenty.png", width = 10, height = 10, units = "in", bg = "transparent")
 
 map.animate <- function() {
   d <- 5
