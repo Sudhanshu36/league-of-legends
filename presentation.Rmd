@@ -33,11 +33,6 @@ http://www.usatoday.com/story/tech/gaming/2016/03/27/harvard-team-caught-cheatin
 <img src="figures/game_example.jpg" alt="Gameplay" style="width: 750px;"/>
 <br>Teams compete to destroy each other's castle.
 
-## Baron and Pentakill Darius
-
-<iframe width="450" height="250" src="https://www.youtube.com/embed/dFgB286-QVQ?t=2s" frameborder="0" allowfullscreen></iframe>
-<br>QuarterFinal of 2015 League of Legends World Championship
-
 ## API
 
 
@@ -52,22 +47,27 @@ http://www.usatoday.com/story/tech/gaming/2016/03/27/harvard-team-caught-cheatin
 
 ## Predictions based on objectives {.flexbox .vcenter}
 
-<img src="figures/predict.png" alt="Prediction" style="width: 500px;"/>
+<img src="figures/methods-acc.png" alt="Prediction" style="width: 500px;"/>
 
 ## Activity on map
 
 <p align="center"><img src="figures/events.png" alt="Summoner's Rift" style="width: 400px;"/></p>
-<!--<p align="right">Questions?</p>-->
-<p align="right">Questions? GitHub.com/<strong>VincentQB</strong></p>
+<!--<p align="right">Questions?</p>
+<p align="right">Questions? GitHub.com/<strong>VincentQB</strong></p> -->
 
-<!-- 
 ## Questions?
-<p align="center"><img src="figures/logo-github.png" alt="GitHub" style="width: 100px;"/> vincentqb</p>-->
-<div>
-  <img style="vertical-align:middle width:100px" src="figures/logo-github.png">
-  <span style="">vincentqb</span>
-</div>
--->
+<p></p>
+<p></p>
+<p align="right">GitHub.com/<strong>VincentQB</strong></p>
+
+## World Championship Highlight
+
+<iframe width="450" height="250" src="https://www.youtube.com/embed/dFgB286-QVQ?t=2s" frameborder="0" allowfullscreen></iframe>
+<br>Quarter final 2015: Baron and Pentakill
+
+## Predictions based on objectives {.flexbox .vcenter}
+
+<img src="figures/methods-roc.png" alt="Prediction" style="width: 500px;"/>
 
 ## Activity on map {.flexbox .vcenter}
 
