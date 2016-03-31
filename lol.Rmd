@@ -1237,7 +1237,7 @@ ggsave("figures/methods-acc.png", width = 8, height = 4.5, units = "in", bg = "t
 ```
 
 ```{r}
-p <- method.roc %>%
+method.roc %>%
   ggplot(aes(x = FPR, y = TPR)) + 
   geom_point(aes(color = Method), size = 0.5) +
   # geom_line(aes(color = Method), alpha = 0.5, size = 0.5) +
@@ -1247,6 +1247,5 @@ p <- method.roc %>%
   # geom_abline(intercept = 0, slope = 1, alpha = 0.5, color = gg_purple)
   geom_segment(x = 0, y = 0, xend = 1, yend = 1, color = gg_purple, alpha = 0.5, size = 0.25)
 
-print(p)
 ggsave("figures/methods-roc.png", width = 8, height = 4.5, units = "in", bg = "transparent")
 ```
