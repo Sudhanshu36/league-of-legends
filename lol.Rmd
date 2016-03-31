@@ -1234,7 +1234,7 @@ ggplot(method.acc, aes(x = Method, Accuracy)) +
         axis.title.x = element_blank(),
         axis.ticks.x = element_blank())
 
-ggsave("figures/methods-acc.png", width = 8, height = 4.5, units = "in", bg = "transparent")
+ggsave("figures/methods_acc.png", width = 8, height = 4.5, units = "in", bg = "transparent")
 ```
 
 ```{r}
@@ -1248,5 +1248,5 @@ method.roc %>%
   # geom_abline(intercept = 0, slope = 1, alpha = 0.5, color = gg_purple)
   geom_segment(x = 0, y = 0, xend = 1, yend = 1, color = gg_purple, alpha = 0.5, size = 0.25)
 
-ggsave("figures/methods-roc.png", width = 8, height = 4.5, units = "in", bg = "transparent")
+ggsave("figures/methods_roc.png", width = 8, height = 4.5, units = "in", bg = "transparent")
 ```
