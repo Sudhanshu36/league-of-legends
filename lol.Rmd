@@ -212,6 +212,16 @@ Prob(team.probspace, event = winner == TRUE, given = teamId == 100)
 # [1] 0.508
 ```
 
+Proporitions having various events.
+```{r}
+data.team %>%
+  filter(winner == TRUE) %>%
+  select(-winner) %>%
+  gather(eventType, WinHave, -matchId, -teamId) %>%
+  ggplot(aes(x = eventType, fill = WinHave)) +
+  geom_bar()
+```
+
 Conditional probabilities on various objectives
 ```{r}
 first.blood <- data.frame(eventType = "First Champion", 
