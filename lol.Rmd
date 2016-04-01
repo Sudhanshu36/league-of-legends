@@ -757,6 +757,31 @@ ggplot(participants, aes(goldPerMinDeltas, xpPerMinDeltas,
 ggsave("figures/scatter.png", width = 10, height = 5, units = "in", bg = "transparent")
 ```
 
+We look at number of kills versus creeps.
+```{r}
+tf <- 20
+
+data <- participants %>%
+  mutate(teamId = as.numeric(as.character(teamId))) %>%
+  mutate(creepsPerMinDeltas = ifelse(teamId == 100, -1, 1) * creepsPerMinDeltas,
+         goldPerMinDeltas = ifelse(teamId == 100, -1, 1) * goldPerMinDeltas,
+         xpPerMinDeltas = ifelse(teamId == 100, -1, 1) * xpPerMinDeltas,
+         winner = ifelse(winner, teamId, 300-teamId)) %>%
+  group_by(matchId, winner) %>%
+  summarise_each(funs(sum))
+
+ggplot(data, aes(goldPerMinDeltas, xpPerMinDeltas, 
+                 color = factor(winner), group = factor(winner))) + 
+  geom_point(alpha = 0.2, size = 1) +
+  geom_density2d(alpha = 1) +
+  # stat_density2d() +
+  # stat_density2d(aes(alpha = ..density..), geom = "raster", contour = FALSE)
+  # geom_bin2d(aes(color = ..count..), binwidth = 5, alpha = 0.5) +
+  # stat_bin2d(binwidth = 5, alpha = 0.5) +
+  xlab("Gold per min in first 20 min") +
+  ylab("Experience per min in first 20 min")
+```
+
 We look at the number of wards.
 ```{r}
 tf <- 20
@@ -789,6 +814,37 @@ data <- events %>%
   group_by(matchId, winner) %>%
   summarise(CHAMPION_KILL = n()/tf) %>%
   merge(participants)
+
+ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas, 
+                 color = factor(winner), group = factor(winner))) + 
+  geom_point(alpha = 0.2, size = 1) +
+  geom_density2d(alpha = 1) +
+  # stat_density2d() +
+  # stat_density2d(aes(alpha = ..density..), geom = "raster", contour = FALSE)
+  # geom_bin2d(aes(color = ..count..), binwidth = 5, alpha = 0.5) +
+  # stat_bin2d(binwidth = 5, alpha = 0.5) +
+  xlab("Champion killed per min in first 20 min") +
+  ylab("Creeps killed per min in first 20 min")
+```
+
+We look at number of kills versus creeps.
+```{r}
+tf <- 20
+
+data <- events %>% 
+  filter(timestamp < tf) %>%
+  filter(eventType == "CHAMPION_KILL") %>%
+  group_by(matchId, winner) %>%
+  summarise(CHAMPION_KILL = n()/tf) %>%
+  merge(participants) %>%
+  mutate(teamId = as.numeric(as.character(teamId))) %>%
+  mutate(CHAMPION_KILL = ifelse(as.numeric(as.character(teamId)) == 100, -1, 1) * CHAMPION_KILL,
+         creepsPerMinDeltas = ifelse(teamId == 100, -1, 1) * creepsPerMinDeltas,
+         goldPerMinDeltas = ifelse(teamId == 100, -1, 1) * goldPerMinDeltas,
+         xpPerMinDeltas = ifelse(teamId == 100, -1, 1) * xpPerMinDeltas,
+         winner = ifelse(winner, teamId, 300-teamId)) %>%
+  group_by(matchId, winner) %>%
+  summarise_each(funs(sum))
 
 ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas, 
                  color = factor(winner), group = factor(winner))) + 
