@@ -763,13 +763,12 @@ tf <- 20
 
 data <- events %>% 
   filter(timestamp < tf) %>%
-  filter(eventType == "WARD_PLACED" | eventType == "WARD_KILL") %>%
   group_by(matchId, eventType, winner) %>%
   summarise(count = n()/tf) %>%
   spread(eventType, count)
 
-p <- ggplot(data, aes(WARD_KILL, WARD_PLACED, 
-                              color = factor(winner), group = factor(winner))) + 
+ggplot(data, aes(WARD_KILL, WARD_PLACED, 
+                 color = factor(winner), group = factor(winner))) + 
   geom_point(alpha = 0.2, size = 1) +
   geom_density2d(alpha = 1) +
   # stat_density2d() +
@@ -778,8 +777,6 @@ p <- ggplot(data, aes(WARD_KILL, WARD_PLACED,
   # stat_bin2d(binwidth = 5, alpha = 0.5) +
   xlab("Wards destroyed per min in first 20 min") +
   ylab("Wards placed per min in first 20 min")
-
-print(p)
 ```
 
 We look at number of kills versus creeps.
@@ -793,8 +790,8 @@ data <- events %>%
   summarise(CHAMPION_KILL = n()/tf) %>%
   merge(participants)
 
-p <- ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas, 
-                              color = factor(winner), group = factor(winner))) + 
+ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas, 
+                 color = factor(winner), group = factor(winner))) + 
   geom_point(alpha = 0.2, size = 1) +
   geom_density2d(alpha = 1) +
   # stat_density2d() +
@@ -803,8 +800,6 @@ p <- ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas,
   # stat_bin2d(binwidth = 5, alpha = 0.5) +
   xlab("Champion killed per min in first 20 min") +
   ylab("Creeps killed per min in first 20 min")
-
-print(p)
 ```
 
 ## Data for prediction
@@ -857,8 +852,8 @@ df.team <- data.team %>%
 ## Prediction
 
 We first rename categories to predict.
-data <- df.events
 ```{r}
+# data <- df.events
 # data <- df.team
 
 data <- merge(df.events, df.team) %>%
