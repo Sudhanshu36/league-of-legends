@@ -276,6 +276,30 @@ v <- venneuler(c(Win = win - winANDherald,
 plot(v, col = c(gg_blue, gg_red))
 ```
 
+We reformat the data with each row being one match and goal to predict winning team.
+```{r} 
+permatch.team <- data.team %>%
+  mutate(winner = winner * teamId,
+         firstBaron = firstBaron * teamId,
+         firstBlood = firstBlood * teamId,
+         firstDragon = firstDragon * teamId,
+         firstInhibitor = firstInhibitor * teamId,
+         firstTower = firstTower * teamId,
+         firstRiftHerald = firstRiftHerald * teamId) %>%
+  group_by(matchId) %>%
+  summarise_each(funs(sum)) %>%
+  select(-teamId) %>%
+  mutate_each(funs(factor)) %>%
+  select(winner,
+         matchId,
+         # firstBaron,
+         # firstInhibitor,
+         firstBlood,
+         firstDragon,
+         firstTower,
+         firstRiftHerald)
+```
+
 ## Surrender 
 
 Proportion of matches that ends in surrender. A team who lost and still had at least one Nexus tower surrendered. We assume all surrenders are as such.
@@ -767,21 +791,22 @@ ggplot(participants, aes(goldPerMinDeltas, xpPerMinDeltas,
 ggsave("figures/scatter.png", width = 10, height = 5, units = "in", bg = "transparent")
 ```
 
-We look at number of kills versus creeps.
+We prepare data per match for farming per type per minute.
 ```{r}
-tf <- 20
-
-data <- participants %>%
-  mutate(teamId = as.numeric(as.character(teamId))) %>%
+permatch.participants <- participants %>%
+  as.data.frame() %>%
   mutate(creepsPerMinDeltas = ifelse(teamId == 100, -1, 1) * creepsPerMinDeltas,
          goldPerMinDeltas = ifelse(teamId == 100, -1, 1) * goldPerMinDeltas,
-         xpPerMinDeltas = ifelse(teamId == 100, -1, 1) * xpPerMinDeltas,
-         winner = ifelse(winner, teamId, 300-teamId)) %>%
+         xpPerMinDeltas = ifelse(teamId == 100, -1, 1) * xpPerMinDeltas) %>%
+  mutate(teamId = as.numeric(as.character(teamId))) %>%
+  mutate(winner = factor(ifelse(winner, teamId, 300-teamId))) %>% 
+  select(-teamId) %>%
   group_by(matchId, winner) %>%
   summarise_each(funs(sum))
 
-ggplot(data, aes(goldPerMinDeltas, xpPerMinDeltas, 
-                 color = factor(winner), group = factor(winner))) + 
+permatch.participants %>%
+  ggplot(aes(goldPerMinDeltas, xpPerMinDeltas, 
+             color = factor(winner), group = factor(winner))) + 
   geom_point(alpha = 0.2, size = 1) +
   geom_density2d(alpha = 1) +
   # stat_density2d() +
@@ -790,6 +815,38 @@ ggplot(data, aes(goldPerMinDeltas, xpPerMinDeltas,
   # stat_bin2d(binwidth = 5, alpha = 0.5) +
   xlab("Gold per min in first 20 min") +
   ylab("Experience per min in first 20 min")
+```
+
+We prepare data frame for number of events per type per minute.
+```{r}
+tf <- 20
+
+permatch.events <- events %>% 
+  filter(timestamp < tf) %>% 
+  mutate(teamId = as.numeric(as.character(teamId))) %>%
+  mutate(winner = factor(ifelse(winner, teamId, 300-teamId))) %>% 
+  group_by(matchId, teamId, eventType, winner) %>%
+  summarise(count = n()/tf) %>%
+  mutate(count = ifelse(teamId == 100, -1, 1) * count) %>%
+  spread(eventType, count, fill = 0) %>%
+  group_by(matchId, winner) %>%
+  summarise_each(funs(sum)) %>%
+  as.data.frame() %>%
+  select(-teamId) %>%
+  select(-ITEM_DESTROYED, -ITEM_SOLD, -ITEM_UNDO)
+
+# Plot number of wards.
+permatch.events %>%
+  ggplot(aes(WARD_KILL, WARD_PLACED, 
+             color = factor(winner), group = factor(winner))) + 
+  geom_point(alpha = 0.2, size = 1) +
+  geom_density2d(alpha = 1) +
+  # stat_density2d() +
+  # stat_density2d(aes(alpha = ..density..), geom = "raster", contour = FALSE)
+  # geom_bin2d(aes(color = ..count..), binwidth = 5, alpha = 0.5) +
+  # stat_bin2d(binwidth = 5, alpha = 0.5) +
+  xlab("Wards destroyed difference per min in first 20 min") +
+  ylab("Wards placed difference per min in first 20 min")
 ```
 
 We look at the number of wards.
@@ -839,22 +896,7 @@ ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas,
 
 We look at number of kills versus creeps.
 ```{r}
-tf <- 20
-
-data <- events %>% 
-  filter(timestamp < tf) %>%
-  filter(eventType == "CHAMPION_KILL") %>%
-  group_by(matchId, winner) %>%
-  summarise(CHAMPION_KILL = n()/tf) %>%
-  merge(participants) %>%
-  mutate(teamId = as.numeric(as.character(teamId))) %>%
-  mutate(CHAMPION_KILL = ifelse(as.numeric(as.character(teamId)) == 100, -1, 1) * CHAMPION_KILL,
-         creepsPerMinDeltas = ifelse(teamId == 100, -1, 1) * creepsPerMinDeltas,
-         goldPerMinDeltas = ifelse(teamId == 100, -1, 1) * goldPerMinDeltas,
-         xpPerMinDeltas = ifelse(teamId == 100, -1, 1) * xpPerMinDeltas,
-         winner = ifelse(winner, teamId, 300-teamId)) %>%
-  group_by(matchId, winner) %>%
-  summarise_each(funs(sum))
+data <- merge(permatch.events, permatch.participants)
 
 ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas, 
                  color = factor(winner), group = factor(winner))) + 
@@ -866,67 +908,6 @@ ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas,
   # stat_bin2d(binwidth = 5, alpha = 0.5) +
   xlab("Champion killed per min in first 20 min") +
   ylab("Creeps killed per min in first 20 min")
-```
-
-## Data for prediction
-
-We prepare data frame for farming per type per minute.
-```{r}
-df.participants <- participants %>%
-  as.data.frame() %>%
-  mutate(creepsPerMinDeltas = ifelse(teamId == 100, -1, 1) * creepsPerMinDeltas,
-         goldPerMinDeltas = ifelse(teamId == 100, -1, 1) * goldPerMinDeltas,
-         xpPerMinDeltas = ifelse(teamId == 100, -1, 1) * xpPerMinDeltas) %>%
-  mutate(teamId = as.numeric(as.character(teamId))) %>%
-  mutate(winner = factor(ifelse(winner, teamId, 300-teamId))) %>% 
-  select(-teamId) %>%
-  group_by(matchId, winner) %>%
-  summarise_each(funs(sum))
-```
-
-We prepare data frame for number of events per type per minute.
-```{r}
-tf <- 20
-df.events <- events %>% 
-  filter(timestamp < tf) %>% 
-  mutate(teamId = as.numeric(as.character(teamId))) %>%
-  mutate(winner = factor(ifelse(winner, teamId, 300-teamId))) %>% 
-  group_by(matchId, teamId, eventType, winner) %>%
-  summarise(count = n()/tf) %>%
-  mutate(count = ifelse(teamId == 100, -1, 1) * count) %>%
-  spread(eventType, count, fill = 0) %>%
-  group_by(matchId, winner) %>%
-  summarise_each(funs(sum)) %>%
-  as.data.frame() %>%
-  select(-teamId) %>%
-  select(-ITEM_DESTROYED, -ITEM_SOLD, -ITEM_UNDO)
-  # select(-matchId) %>%
-
-data %>% head
-```
-
-We prepare the data frame with each row being one match and goal to predict winning team.
-```{r}
-df.team <- data.team %>%
-  mutate(winner = winner * teamId,
-         firstBaron = firstBaron * teamId,
-         firstBlood = firstBlood * teamId,
-         firstDragon = firstDragon * teamId,
-         firstInhibitor = firstInhibitor * teamId,
-         firstTower = firstTower * teamId,
-         firstRiftHerald = firstRiftHerald * teamId) %>%
-  group_by(matchId) %>%
-  summarise_each(funs(sum)) %>%
-  select(-teamId) %>%
-  mutate_each(funs(factor)) %>%
-  select(winner,
-         matchId,
-         # firstBaron,
-         # firstInhibitor,
-         firstBlood,
-         firstDragon,
-         firstTower,
-         firstRiftHerald)
 ```
 
 ## Prediction
