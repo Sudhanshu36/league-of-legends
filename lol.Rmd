@@ -987,7 +987,7 @@ rocCurve.best <- rocCurve %>%
 
 roccol <- gg_red
 
-p <- rocCurve.data %>%
+rocCurve.data %>%
   ggplot(aes(x = FPR, y = TPR)) + 
   geom_point(color = roccol, size = 0.5) +
   geom_line(color = roccol, alpha = 0.5, size = 0.5) +
@@ -1000,8 +1000,6 @@ p <- rocCurve.data %>%
   ylab("True Positive Rate") +
   # geom_abline(intercept = 0, slope = 1, alpha = 0.5, color = gg_purple)
   geom_segment(x = 0, y = 0, xend = 1, yend = 1, color = gg_purple, alpha = 0.5, size = 0.25)
-
-print(p)
 
 # Set thresold for division between the two categories
 rocCurve.thresold <- rocCurve.best$threshold
