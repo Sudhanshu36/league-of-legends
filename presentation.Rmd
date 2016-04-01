@@ -41,14 +41,6 @@ http://www.usatoday.com/story/tech/gaming/2016/03/27/harvard-team-caught-cheatin
 
 <img src="figures/timeline.png" alt="Timeline" style="width: 750px;"/>
 
-## Strategy? {.flexbox .vcenter}
-
-<img src="figures/conditional.png" alt="Conditional" style="width: 750px;"/>
-
-## Predictions based on objectives {.flexbox .vcenter}
-
-<img src="figures/methods_acc.png" alt="Prediction" style="width: 750px;"/>
-
 ## Activity on map {.flexbox .vcenter}
 
 <img src="figures/map_twenty.png" alt="Summoner's Rift" style="width: 400px;"/>
@@ -58,6 +50,14 @@ http://www.usatoday.com/story/tech/gaming/2016/03/27/harvard-team-caught-cheatin
 
 <img src="figures/map.gif" alt="Summoner's Rift" style="width: 400px;"/>
 <br>5-min time slices.
+
+## Strategy? {.flexbox .vcenter}
+
+<img src="figures/conditional.png" alt="Conditional" style="width: 750px;"/>
+
+## Predictions based on objectives {.flexbox .vcenter}
+
+<img src="figures/methods_acc.png" alt="Prediction" style="width: 750px;"/>
 
 <!--<p align="right">Questions?</p>
 <p align="right">Questions? GitHub.com/<strong>VincentQB</strong></p> -->
