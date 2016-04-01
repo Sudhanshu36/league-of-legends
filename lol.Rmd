@@ -804,6 +804,20 @@ ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas,
 
 ## Data for prediction
 
+We prepare data frame for farming per type per minute.
+```{r}
+df.participants <- participants %>%
+  as.data.frame() %>%
+  mutate(creepsPerMinDeltas = ifelse(teamId == 100, -1, 1) * creepsPerMinDeltas,
+         goldPerMinDeltas = ifelse(teamId == 100, -1, 1) * goldPerMinDeltas,
+         xpPerMinDeltas = ifelse(teamId == 100, -1, 1) * xpPerMinDeltas) %>%
+  mutate(teamId = as.numeric(as.character(teamId))) %>%
+  mutate(winner = factor(ifelse(winner, teamId, 300-teamId))) %>% 
+  select(-teamId) %>%
+  group_by(matchId, winner) %>%
+  summarise_each(funs(sum))
+```
+
 We prepare data frame for number of events per type per minute.
 ```{r}
 tf <- 20
@@ -857,6 +871,7 @@ We first rename categories to predict.
 # data <- df.team
 
 data <- merge(df.events, df.team) %>%
+  merge(df.participants) %>%
   select(-matchId)
 
 data <- data %>%
