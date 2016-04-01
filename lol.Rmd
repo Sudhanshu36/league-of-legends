@@ -743,8 +743,8 @@ participants <- merge(participants, match.winner) %>%
 # 10 2054994354    200   TRUE               3.41           299.32         378.73
 # ..        ...    ...    ...                ...              ...            ...
 
-p <- ggplot(participants, aes(goldPerMinDeltas, xpPerMinDeltas, 
-                              color = factor(winner), group = factor(winner))) + 
+ggplot(participants, aes(goldPerMinDeltas, xpPerMinDeltas, 
+                         color = factor(winner), group = factor(winner))) + 
   geom_point(alpha = 0.2, size = 1) +
   geom_density2d(alpha = 1) +
   # stat_density2d() +
@@ -754,7 +754,6 @@ p <- ggplot(participants, aes(goldPerMinDeltas, xpPerMinDeltas,
   xlab("Gold per min in first 20 min") +
   ylab("Experience per min in first 20 min")
 
-print(p)
 ggsave("figures/scatter.png", width = 10, height = 5, units = "in", bg = "transparent")
 ```
 
@@ -1026,6 +1025,36 @@ rocCurve   <- roc(response = testing$winner,
                   levels = rev(levels(testing$winner)))
 rocCurve.auc <- as.numeric(rocCurve.auc)
 rocCurve.auc
+```
+
+We look at misclassified.
+```{r}
+# Identify misclassified examples
+# modelPredict <- modelPredict %>%
+#   cbind(data.frame(true = testing$winner)) %>%
+#   mutate(misclassified = winner != true)
+
+testing.misclassified <- testing %>%
+  cbind(data.frame(misclassified = modelPredict$winner != testing$winner))
+
+ggplot(testing.misclassified, aes(CHAMPION_KILL, ELITE_MONSTER_KILL, 
+                         color = winner, group = winner)) +
+                         # color = misclassified, group = misclassified)) + 
+  # geom_point(size = 2) +
+  # geom_point(aes(size = misclassified), alpha = 0.5) +
+  # geom_point(aes(shape = misclassified), alpha = 0.5, size = 3) +
+  geom_point(aes(alpha = misclassified), size = 3) +
+  scale_color_manual(values = c(gg_blue, gg_red)) +
+  # geom_density2d(alpha = 1) +
+  xlab("Champion killed per min in first 20 min") +
+  ylab("Elite monster killed per min in first 20 min")
+
+# ggplot(testing.misclassified, aes(firstBlood, firstDragon, 
+#                          color = misclassified, group = misclassified)) + 
+#   geom_point(size = 2, position = "jitter") +
+#   scale_color_manual(values = c(gg_blue, gg_red)) +
+#   xlab("First blood") +
+#   ylab("First Champion kill")
 ```
 
 Look at confusion matrix.
