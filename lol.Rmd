@@ -1261,13 +1261,13 @@ method.acc$Method <-
            method.acc$Method[order(method.acc$Accuracy)])
 
 # Plot accuracy with error bars
-ggplot(method.acc, aes(x = Method, Accuracy)) +
+ggplot(method.acc, aes(x = Method, y = 100*Accuracy)) +
   geom_bar(stat = "identity", position = "stack", fill = gg_blue) + 
-  expand_limits(y = c(0,1)) +
-  geom_errorbar(aes(ymin = AccuracyLower, ymax = AccuracyUpper), 
+  geom_errorbar(aes(ymin = 100*AccuracyLower, ymax = 100*AccuracyUpper), 
                 width = 0.25, color = gg_purple) +
-  geom_hline(yintercept = 0.5, color = gg_purple) +
-  coord_cartesian(ylim = c(0.5, .9), expand = TRUE) +
+  geom_hline(yintercept = 50, color = gg_purple) +
+  expand_limits(y = c(0,100)) +
+  coord_cartesian(ylim = c(50, 90), expand = TRUE) +
   ylab("Accuracy") +
   theme(axis.title.y = element_blank(),
         axis.title.x = element_blank(),
@@ -1283,14 +1283,14 @@ method.roc$Method <-
            method.acc$Method[order(method.acc$Accuracy)])
 
 method.roc %>%
-  ggplot(aes(x = FPR, y = TPR)) + 
+  ggplot(aes(x = 100*FPR, y = 100*TPR)) + 
   geom_point(aes(color = Method), size = 0.5) +
   # geom_line(aes(color = Method), alpha = 0.5, size = 0.5) +
   # geom_smooth(color = roccol, se = FALSE, alpha = 0.25) +
   xlab("False Positive Rate") +
   ylab("True Positive Rate") +
   # geom_abline(intercept = 0, slope = 1, alpha = 0.5, color = gg_purple)
-  geom_segment(x = 0, y = 0, xend = 1, yend = 1, color = gg_purple, 
+  geom_segment(x = 0, y = 0, xend = 100, yend = 100, color = gg_purple, 
                alpha = 0.5, size = 0.25)
 
 ggsave("figures/methods_roc.png", width = 8, height = 4.5, units = "in", bg = "transparent")
