@@ -572,21 +572,17 @@ saveGIF(map.animate(), interval = .65, movie.name = "map.gif")
 
 When are certain objectives achieved for the time in a match?
 ```{r}
-# BARON_NASHOR, BLUE_GOLEM, DRAGON, RED_LIZARD, RIFTHERALD, VILEMAW
-match.events %>%
-  dplyr::filter(monsterType == "DRAGON") %>%
-  select(matchId, timestamp) %>%
-  group_by(matchId) %>%
-  mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
-  dplyr::filter(rank == 1) %>%
-  select(-rank)
-
 # Length of games
+match.duration %>%
+  select(matchDuration) %>%
+  summary
 timeline.end <- match.duration %>%
   summarise(timestamp = median(matchDuration)) %>%
   mutate(eventType = "END")
+```
 
-# Compute median time when first tower is destroyed
+Compute median time when first tower is destroyed
+```{r}
 timeline.tower <- match.events %>% 
   dplyr::filter(eventType == "BUILDING_KILL") %>%
   select(matchId, timestamp) %>%
@@ -594,11 +590,17 @@ timeline.tower <- match.events %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
   dplyr::filter(rank == 1) %>%
   as.data.frame() %>%
-  select(timestamp) %>%
+  select(timestamp)
+
+summary(timeline.tower)
+
+timeline.tower <- timeline.tower %>%
   summarise_each(funs(median)) %>%
   mutate(eventType = "TOWER DESTRUCTION")
+```
 
-# Compute median time when first tower is destroyed
+Compute median time when first tower is destroyed
+```{r}
 timeline.inhibitor <- match.events %>% 
   dplyr::filter(buildingType == "INHIBITOR_BUILDING") %>%
   select(matchId, timestamp) %>%
@@ -606,18 +608,31 @@ timeline.inhibitor <- match.events %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
   dplyr::filter(rank == 1) %>%
   as.data.frame() %>%
-  select(timestamp) %>%
+  select(timestamp)
+
+summary(timeline.inhibitor)
+
+timeline.inhibitor <- timeline.inhibitor %>%
   summarise_each(funs(median)) %>%
   mutate(eventType = "INHIBITOR DESTRUCTION")
+```
 
-# Compute median time when first elite monster is killed
+Compute median time when first elite monster is killed
+```{r}
 timeline.monster <- match.events %>%
   dplyr::filter(eventType == "ELITE_MONSTER_KILL") %>%
   select(matchId, timestamp, monsterType) %>%
   group_by(matchId, monsterType) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
   dplyr::filter(rank == 1) %>%
-  as.data.frame() %>%
+  as.data.frame() 
+
+timeline.monster %>%
+  spread(monsterType, timestamp) %>% 
+  select(-matchId, -rank) %>% 
+  summary
+
+timeline.monster <- timeline.monster %>%
   select(timestamp, monsterType) %>%
   group_by(monsterType) %>%
   summarise_each(funs(median)) %>%
@@ -626,19 +641,29 @@ timeline.monster <- match.events %>%
   mutate(eventType = str_replace(eventType, "DRAGON", "DRAGON KILL"),
          eventType = str_replace(eventType, "BARON_NASHOR", "BARON KILL"),
          eventType = str_replace(eventType, "RIFTHERALD", "HERALD KILL"))
+```
 
-# Compute the median time to draw first blood
+Compute the median time to draw first blood
+```{r}
 timeline.kill <- match.events %>%
   dplyr::filter(eventType == "CHAMPION_KILL") %>% 
   select(matchId, timestamp) %>%
   group_by(matchId) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
   dplyr::filter(rank == 1) %>%
-  as.data.frame() %>%
+  as.data.frame() 
+
+timeline.kill %>% 
+  select(timestamp) %>%
+  summary
+
+timeline.kill <- timeline.kill %>%
   summarise(timestamp = median(timestamp)) %>%
   mutate(eventType = "CHAMPION KILL")
+```
 
-# Compute the median time to reach level 18
+Compute the median time to reach level 18
+```{r}
 timeline.maxlvl <- match.events %>%
   dplyr::filter(eventType == "SKILL_LEVEL_UP") %>%
   mutate(teamId = ifelse(participantId <= 5, 100, 200)) %>%
@@ -646,6 +671,11 @@ timeline.maxlvl <- match.events %>%
   group_by(matchId, teamId) %>%
   mutate(rank = rank(timestamp, na.last = TRUE, ties.method = "first")) %>%
   dplyr::filter(rank == 5*18)
+
+timeline.maxlvl %>%
+  as.data.frame %>%
+  select(timestamp) %>%
+  summary
 
 # Print proporitions of game reaching level 18
 x <- length(unique(timeline.maxlvl$matchId))
@@ -673,7 +703,10 @@ match.events %>%
 
 #   rank
 # 1 15.5
+```
 
+Plot timeline events.
+```{r}
 timeline <- rbind(timeline.monster, timeline.kill, timeline.maxlvl, timeline.surrender, timeline.tower)
             # timeline.inhibitor
 timeline <- timeline[order(timeline$timestamp),]
