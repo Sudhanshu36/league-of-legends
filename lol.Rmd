@@ -917,8 +917,8 @@ We first rename categories to predict.
 # data <- df.events
 # data <- df.team
 
-data <- merge(df.events, df.team) %>%
-  merge(df.participants) %>%
+data <- merge(permatch.events, permatch.team) %>%
+  merge(permatch.participants) %>%
   select(-matchId)
 
 data <- data %>%
