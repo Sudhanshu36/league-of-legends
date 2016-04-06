@@ -1055,7 +1055,7 @@ modelTrain <- probsTrain %>%
   mutate(winner = as.factor(winner))
 
 # Check AUC
-rocCurve.auc <- rocCurve$auc
+rocCurve.auc <- as.numeric(rocCurve$auc)
 rocCurve.auc
 ```
 
@@ -1104,7 +1104,7 @@ qplot(modelPredict$winner)
 rocCurve   <- roc(response = testing$winner,
                   predictor = modelPredict$red,
                   levels = rev(levels(testing$winner)))
-rocCurve.auc <- as.numeric(rocCurve.auc)
+rocCurve.auc <- as.numeric(rocCurve$auc)
 rocCurve.auc
 ```
 
@@ -1294,7 +1294,7 @@ modelPredict <- probsPredict %>%
 rocCurve   <- roc(response = testing$winner,
                   predictor = modelPredict$red,
                   levels = rev(levels(testing$winner)))
-rocCurve.auc <- rocCurve$auc
+rocCurve.auc <- as.numeric(rocCurve$auc)
 rocCurve.auc
 
 CM <- confusionMatrix(modelPredict$winner, testing$winner, positive = "red")
