@@ -996,8 +996,10 @@ method <- "ada"
 
 modelCV <- function(method) {
   
-preProc = NULL
+# List of methods in caret: http://topepo.github.io/caret/bytag.html
 method.all <- c("rf", "rpart", "glm", "glmnet", "svmLinear", "svmRadial", "xgbLinear", "ada")
+
+preProc = NULL
 if (method == "rf") {
   modelGrid <- expand.grid(mtry = seq(1, 5, by = 1))
 } else if (method == "rpart") {
