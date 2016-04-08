@@ -752,6 +752,11 @@ ggsave("figures/timeline.png", width = 8, height = 4.5, units = "in", bg = "tran
 ## Scatter plot
 
 ```{r}
+# tf <- 10
+tf <- 20
+```
+
+```{r}
 # Delta fields refer to values for the specified period (e.g., the gold per minute over the first 10 minutes of the game versus the second 20 minutes of the game) 
 # Diffs fields refer to the deltas versus the calculated lane opponent(s)
 
@@ -786,15 +791,30 @@ participants <- merge(participants.creeps, participants.gold)
 participants <- merge(participants, participants.xp)
 participants <- merge(participants, participants.damageTaken)
 
+if (tf == 10) {
 participants <- merge(participants, match.winner) %>%
-  select(matchId, teamId, ParticipantTimelineData, creepsPerMinDeltas, goldPerMinDeltas, xpPerMinDeltas, winner) %>%
+  select(matchId, teamId, ParticipantTimelineData, 
+         creepsPerMinDeltas, goldPerMinDeltas, xpPerMinDeltas, winner) %>%
   group_by(matchId, teamId, ParticipantTimelineData, winner) %>%
   summarise_each(funs(mean)) %>%
-  dplyr::filter(ParticipantTimelineData == "zeroToTen" | ParticipantTimelineData == "tenToTwenty") %>%
+  dplyr::filter(ParticipantTimelineData == "zeroToTen" | 
+                  ParticipantTimelineData == "tenToTwenty") %>%
   as.data.frame() %>%
   select(-ParticipantTimelineData) %>%
   group_by(matchId, teamId, winner) %>%
   summarise_each(funs(mean))
+} else if (tf == 20) {
+participants <- merge(participants, match.winner) %>%
+  select(matchId, teamId, ParticipantTimelineData, 
+         creepsPerMinDeltas, goldPerMinDeltas, xpPerMinDeltas, winner) %>%
+  group_by(matchId, teamId, ParticipantTimelineData, winner) %>%
+  summarise_each(funs(mean)) %>%
+  dplyr::filter(ParticipantTimelineData == "zeroToTen") %>%
+  as.data.frame() %>%
+  select(-ParticipantTimelineData) %>%
+  group_by(matchId, teamId, winner) %>%
+  summarise_each(funs(mean))
+}
 
 #       matchId teamId winner creepsPerMinDeltas goldPerMinDeltas xpPerMinDeltas
 #         (dbl)  (dbl)  (lgl)              (dbl)            (dbl)          (dbl)
@@ -852,8 +872,6 @@ permatch.participants %>%
 
 We prepare data frame for number of events per type per minute.
 ```{r}
-tf <- 20
-
 permatch.events <- events %>% 
   filter(timestamp < tf) %>% 
   mutate(teamId = as.numeric(as.character(teamId))) %>%
@@ -884,8 +902,6 @@ permatch.events %>%
 
 We look at the number of wards.
 ```{r}
-tf <- 20
-
 data <- events %>% 
   filter(timestamp < tf) %>%
   group_by(matchId, eventType, winner) %>%
@@ -906,8 +922,6 @@ ggplot(data, aes(WARD_KILL, WARD_PLACED,
 
 We look at number of kills versus creeps.
 ```{r}
-tf <- 20
-
 data <- events %>% 
   filter(timestamp < tf) %>%
   filter(eventType == "CHAMPION_KILL") %>%
@@ -928,9 +942,8 @@ ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas,
 ```
 
 We look at number of kills versus creeps.
-```{r}
 data <- merge(permatch.events, permatch.participants)
-
+```{r}
 ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas, 
                  color = factor(winner), group = factor(winner))) + 
   geom_point(alpha = 0.2, size = 1) +
@@ -947,14 +960,12 @@ ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas,
 
 We first rename categories to predict.
 ```{r}
-# data <- df.events
-# data <- df.team
+# data <- permatch.events
+# data <- permatch.team
+data <- merge(permatch.events, permatch.team) %>% merge(permatch.participants) 
 
-data <- merge(permatch.events, permatch.team) %>%
-  merge(permatch.participants) %>%
-  select(-matchId)
-
-data <- data %>%
+data <- data  %>%
+  select(-matchId) %>%
   mutate(winner, winner = factor(ifelse(winner == 100, "blue", "red")))
 ```
 
