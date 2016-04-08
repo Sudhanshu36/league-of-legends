@@ -900,6 +900,24 @@ permatch.events %>%
   ylab("Wards placed difference per min in first 20 min")
 ```
 
+```{r}
+permatch.events.team <- events %>% 
+  filter(timestamp < tf) %>% 
+  filter(eventType == "CHAMPION_KILL" |
+           eventType == "BUILDING_KILL" |
+           eventType == "ELITE_MONSTER_KILL" |
+           eventType == "SKILL_LEVEL_UP" |
+           eventType == "WARD_PLACED" |
+           eventType == "ITEM_PURCHASED") %>%
+  mutate(teamId = as.numeric(as.character(teamId))) %>%
+  mutate(winner = factor(ifelse(winner, teamId, 300-teamId))) %>% 
+  group_by(matchId, teamId, eventType, winner) %>%
+  summarise(count = n()/tf) %>%
+  as.data.frame() %>%
+  unite(eventType.teamId, c(eventType, teamId), sep = ".") %>%
+  spread(eventType.teamId, count, fill = 0)
+```
+
 We look at the number of wards.
 ```{r}
 data <- events %>% 
@@ -960,9 +978,12 @@ ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas,
 
 We first rename categories to predict.
 ```{r}
-# data <- permatch.events
+data <- permatch.events
+# data <- permatch.events.team
 # data <- permatch.team
-data <- merge(permatch.events, permatch.team) %>% merge(permatch.participants) 
+# data <- merge(permatch.events, permatch.team) %>% merge(permatch.participants) 
+
+# data <- permatch.events.team
 
 data <- data  %>%
   select(-matchId) %>%
