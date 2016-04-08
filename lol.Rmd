@@ -999,11 +999,11 @@ We cross-validate.
 # method <- "rf"
 # method <- "rpart"
 # method <- "glm"
-# method <- "glmnet"
+method <- "glmnet"
 # method <- "svmLinear"
 # method <- "svmRadial"
 # method <- "xgbLinear"
-method <- "ada"
+# method <- "ada"
 
 modelCV <- function(method) {
   
@@ -1212,11 +1212,8 @@ CM.df <- data.frame(t(CM$overall)) %>%
          AUC = rocCurve.auc)
 CM.df
 
-# method.acc <- CM.df
-method.acc <- rbind(method.acc, CM.df)
-
 # Plot accuracy with error bars
-ggplot(method.acc, aes(x = method, Accuracy)) +
+ggplot(CM.df, aes(x = method, Accuracy)) +
   geom_bar(stat = "identity", position = "stack", fill = gg_blue) + 
   expand_limits(y = c(0,1)) +
   geom_errorbar(aes(ymin = AccuracyLower, ymax = AccuracyUpper), 
