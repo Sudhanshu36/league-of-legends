@@ -791,7 +791,18 @@ participants <- merge(participants.creeps, participants.gold)
 participants <- merge(participants, participants.xp)
 participants <- merge(participants, participants.damageTaken)
 
-if (tf == 20) {
+if (tf <= 10) {
+participants <- merge(participants, match.winner) %>%
+  select(matchId, teamId, ParticipantTimelineData, 
+         creepsPerMinDeltas, goldPerMinDeltas, xpPerMinDeltas, winner) %>%
+  group_by(matchId, teamId, ParticipantTimelineData, winner) %>%
+  summarise_each(funs(mean)) %>%
+  dplyr::filter(ParticipantTimelineData == "zeroToTen") %>%
+  as.data.frame() %>%
+  select(-ParticipantTimelineData) %>%
+  group_by(matchId, teamId, winner) %>%
+  summarise_each(funs(mean))
+} else if (tf <= 20) {
 participants <- merge(participants, match.winner) %>%
   select(matchId, teamId, ParticipantTimelineData, 
          creepsPerMinDeltas, goldPerMinDeltas, xpPerMinDeltas, winner) %>%
@@ -803,13 +814,24 @@ participants <- merge(participants, match.winner) %>%
   select(-ParticipantTimelineData) %>%
   group_by(matchId, teamId, winner) %>%
   summarise_each(funs(mean))
-} else if (tf == 10) {
+} else if (tf <= 30) {
 participants <- merge(participants, match.winner) %>%
   select(matchId, teamId, ParticipantTimelineData, 
          creepsPerMinDeltas, goldPerMinDeltas, xpPerMinDeltas, winner) %>%
   group_by(matchId, teamId, ParticipantTimelineData, winner) %>%
   summarise_each(funs(mean)) %>%
-  dplyr::filter(ParticipantTimelineData == "zeroToTen") %>%
+  dplyr::filter(ParticipantTimelineData == "zeroToTen" | 
+                  ParticipantTimelineData == "tenToTwenty") %>%
+  as.data.frame() %>%
+  select(-ParticipantTimelineData) %>%
+  group_by(matchId, teamId, winner) %>%
+  summarise_each(funs(mean))
+} else {
+participants <- merge(participants, match.winner) %>%
+  select(matchId, teamId, ParticipantTimelineData, 
+         creepsPerMinDeltas, goldPerMinDeltas, xpPerMinDeltas, winner) %>%
+  group_by(matchId, teamId, ParticipantTimelineData, winner) %>%
+  summarise_each(funs(mean)) %>%
   as.data.frame() %>%
   select(-ParticipantTimelineData) %>%
   group_by(matchId, teamId, winner) %>%
