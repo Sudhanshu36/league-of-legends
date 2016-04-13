@@ -791,7 +791,7 @@ participants <- merge(participants.creeps, participants.gold)
 participants <- merge(participants, participants.xp)
 participants <- merge(participants, participants.damageTaken)
 
-if (tf == 10) {
+if (tf == 20) {
 participants <- merge(participants, match.winner) %>%
   select(matchId, teamId, ParticipantTimelineData, 
          creepsPerMinDeltas, goldPerMinDeltas, xpPerMinDeltas, winner) %>%
@@ -803,7 +803,7 @@ participants <- merge(participants, match.winner) %>%
   select(-ParticipantTimelineData) %>%
   group_by(matchId, teamId, winner) %>%
   summarise_each(funs(mean))
-} else if (tf == 20) {
+} else if (tf == 10) {
 participants <- merge(participants, match.winner) %>%
   select(matchId, teamId, ParticipantTimelineData, 
          creepsPerMinDeltas, goldPerMinDeltas, xpPerMinDeltas, winner) %>%
