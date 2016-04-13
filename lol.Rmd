@@ -1047,11 +1047,11 @@ method <- "glmnet"
 # method <- "svmRadial"
 # method <- "xgbLinear"
 # method <- "ada"
-
-modelCV <- function(method) {
   
 # List of methods in caret: http://topepo.github.io/caret/bytag.html
 method.all <- c("rf", "rpart", "glm", "glmnet", "svmLinear", "svmRadial", "xgbLinear", "ada")
+
+modelCV <- function(method) {
 
 preProc = NULL
 if (method == "rf") {
