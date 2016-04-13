@@ -838,8 +838,8 @@ ggplot(participants, aes(goldPerMinDeltas, xpPerMinDeltas,
   # stat_density2d(aes(alpha = ..density..), geom = "raster", contour = FALSE)
   # geom_bin2d(aes(color = ..count..), binwidth = 5, alpha = 0.5) +
   # stat_bin2d(binwidth = 5, alpha = 0.5) +
-  xlab("Gold per min in first 20 min") +
-  ylab("Experience per min in first 20 min")
+  xlab(paste("Gold per min in first", tf, "min")) +
+  ylab(paste("Experience per min in first", tf, "min"))
 
 ggsave("figures/scatter.png", width = 10, height = 5, units = "in", bg = "transparent")
 ```
@@ -866,8 +866,8 @@ permatch.participants %>%
   # stat_density2d(aes(alpha = ..density..), geom = "raster", contour = FALSE)
   # geom_bin2d(aes(color = ..count..), binwidth = 5, alpha = 0.5) +
   # stat_bin2d(binwidth = 5, alpha = 0.5) +
-  xlab("Gold per min in first 20 min") +
-  ylab("Experience per min in first 20 min")
+  xlab(paste("Gold per min in first", tf, "min")) +
+  ylab(paste("Experience per min in first", tf, "min"))
 ```
 
 We prepare data frame for number of events per type per minute.
@@ -896,8 +896,8 @@ permatch.events %>%
   # stat_density2d(aes(alpha = ..density..), geom = "raster", contour = FALSE)
   # geom_bin2d(aes(color = ..count..), binwidth = 5, alpha = 0.5) +
   # stat_bin2d(binwidth = 5, alpha = 0.5) +
-  xlab("Wards destroyed difference per min in first 20 min") +
-  ylab("Wards placed difference per min in first 20 min")
+  xlab(paste("Wards destroyed difference per min in first", tf, "min")) +
+  ylab(paste("Wards placed difference per min in first", tf, "min"))
 ```
 
 ```{r}
@@ -934,8 +934,8 @@ ggplot(data, aes(WARD_KILL, WARD_PLACED,
   # stat_density2d(aes(alpha = ..density..), geom = "raster", contour = FALSE)
   # geom_bin2d(aes(color = ..count..), binwidth = 5, alpha = 0.5) +
   # stat_bin2d(binwidth = 5, alpha = 0.5) +
-  xlab("Wards destroyed per min in first 20 min") +
-  ylab("Wards placed per min in first 20 min")
+  xlab(paste("Wards destroyed per min in first", tf, "min")) +
+  ylab(paste("Wards placed per min in first", tf, "min"))
 ```
 
 We look at number of kills versus creeps.
@@ -955,8 +955,8 @@ ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas,
   # stat_density2d(aes(alpha = ..density..), geom = "raster", contour = FALSE)
   # geom_bin2d(aes(color = ..count..), binwidth = 5, alpha = 0.5) +
   # stat_bin2d(binwidth = 5, alpha = 0.5) +
-  xlab("Champion killed per min in first 20 min") +
-  ylab("Creeps killed per min in first 20 min")
+  xlab(paste("Champion killed per min in first", tf, "min")) +
+  ylab(paste("Creeps killed per min in first", tf, "min"))
 ```
 
 We look at number of kills versus creeps.
@@ -970,8 +970,8 @@ ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas,
   # stat_density2d(aes(alpha = ..density..), geom = "raster", contour = FALSE)
   # geom_bin2d(aes(color = ..count..), binwidth = 5, alpha = 0.5) +
   # stat_bin2d(binwidth = 5, alpha = 0.5) +
-  xlab("Champion killed per min in first 20 min") +
-  ylab("Creeps killed per min in first 20 min")
+  xlab(paste("Champion killed per min in first", tf, "min")) +
+  ylab(paste("Creeps killed per min in first", tf, "min"))
 ```
 
 ## Prediction
@@ -1158,8 +1158,8 @@ ggplot(training.misclassified, aes(CHAMPION_KILL, ELITE_MONSTER_KILL,
   geom_point(size = 2) +
   scale_color_manual(values = c(gg_blue, gg_red)) +
   # geom_density2d(alpha = 1) +
-  xlab("Champion killed per min in first 20 min") +
-  ylab("Elite monster killed per min in first 20 min")
+  xlab(paste("Champion killed per min in first", tf, "min")) +
+  ylab(paste("Elite monster killed per min in first", tf, "min"))
 
 # ggplot(testing.misclassified, aes(firstBlood, firstDragon, 
 #                          color = misclassified, group = misclassified)) + 
@@ -1211,8 +1211,8 @@ ggplot(testing.misclassified, aes(CHAMPION_KILL, ELITE_MONSTER_KILL,
   geom_point(aes(alpha = misclassified), size = 3) +
   scale_color_manual(values = c(gg_blue, gg_red)) +
   # geom_density2d(alpha = 1) +
-  xlab("Champion killed per min in first 20 min") +
-  ylab("Elite monster killed per min in first 20 min")
+  xlab(paste("Champion killed per min in first", tf, "min")) +
+  ylab(paste("Elite monster killed per min in first", tf, "min"))
 
 # ggplot(testing.misclassified, aes(firstBlood, firstDragon, 
 #                          color = misclassified, group = misclassified)) + 
