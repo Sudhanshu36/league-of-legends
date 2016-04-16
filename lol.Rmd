@@ -117,7 +117,7 @@ match.duration %>%
 
 We make a data frame for events.
 ```{r}
-match.events <- data.match %>%
+events.all <- data.match %>%
     enter_object("timeline") %>%
     enter_object("frames") %>%
     gather_array("frames.index") %>%
@@ -137,12 +137,12 @@ match.events <- data.match %>%
     mutate(timestamp = timestamp/1000/60) 
 
 # Beware: going deeper picks only the ones with positions available
-match.coord <- match.events %>%
+events.coord <- events.all %>%
     enter_object("position") %>%
     spread_values(X = jnumber("x"),
                   Y = jnumber("y"))
 
-match.events <- merge(match.events, match.coord, all.x = TRUE)
+events.all <- merge(events.all, events.coord, all.x = TRUE)
 ```
 
 ```{r}
@@ -305,7 +305,7 @@ permatch.team <- data.team %>%
 Proportion of matches that ends in surrender. A team who lost and still had at least one Nexus tower surrendered. We assume all surrenders are as such.
 ```{r}
 # Extract tower information to infer whether losing team surrendered
-match.turret <- match.events %>%
+match.turret <- events.all %>%
   dplyr::filter(towerType == "NEXUS_TURRET") %>%
   mutate(NEXUS_TURRET = 1) %>%
   select(matchId, teamId, NEXUS_TURRET)
@@ -335,7 +335,7 @@ print(sum(x) / length(x) * 100)
 ## Activity versus time
 
 ```{r}
-events <- match.events %>%
+events <- events.all %>%
   mutate(participantId = ifelse(participantId <= 5, 100, 200),
          creatorId = ifelse(creatorId <= 5, 100, 200),
          victimId = ifelse(victimId <= 5, 200, 100),   # associate non-victim team!
@@ -583,7 +583,7 @@ timeline.end <- match.duration %>%
 
 Compute median time when first tower is destroyed
 ```{r}
-timeline.tower <- match.events %>% 
+timeline.tower <- events.all %>% 
   dplyr::filter(eventType == "BUILDING_KILL") %>%
   select(matchId, timestamp) %>%
   group_by(matchId) %>%
@@ -601,7 +601,7 @@ timeline.tower <- timeline.tower %>%
 
 Compute median time when first tower is destroyed
 ```{r}
-timeline.inhibitor <- match.events %>% 
+timeline.inhibitor <- events.all %>% 
   dplyr::filter(buildingType == "INHIBITOR_BUILDING") %>%
   select(matchId, timestamp) %>%
   group_by(matchId) %>%
@@ -619,7 +619,7 @@ timeline.inhibitor <- timeline.inhibitor %>%
 
 Compute median time when first elite monster is killed
 ```{r}
-timeline.monster <- match.events %>%
+timeline.monster <- events.all %>%
   dplyr::filter(eventType == "ELITE_MONSTER_KILL") %>%
   select(matchId, timestamp, monsterType) %>%
   group_by(matchId, monsterType) %>%
@@ -645,7 +645,7 @@ timeline.monster <- timeline.monster %>%
 
 Compute the median time to draw first blood
 ```{r}
-timeline.kill <- match.events %>%
+timeline.kill <- events.all %>%
   dplyr::filter(eventType == "CHAMPION_KILL") %>% 
   select(matchId, timestamp) %>%
   group_by(matchId) %>%
@@ -664,7 +664,7 @@ timeline.kill <- timeline.kill %>%
 
 Compute the median time to reach level 18
 ```{r}
-timeline.maxlvl <- match.events %>%
+timeline.maxlvl <- events.all %>%
   dplyr::filter(eventType == "SKILL_LEVEL_UP") %>%
   mutate(teamId = ifelse(participantId <= 5, 100, 200)) %>%
   select(matchId, timestamp, teamId) %>%
@@ -690,7 +690,7 @@ timeline.maxlvl <- timeline.maxlvl %>%
   mutate(eventType = "MAX LEVEL")
 
 # Compute the median level reached
-match.events %>%
+events.all %>%
   dplyr::filter(eventType == "SKILL_LEVEL_UP") %>%
   mutate(teamId = ifelse(participantId <= 5, 100, 200)) %>%
   select(matchId, timestamp, teamId) %>%
