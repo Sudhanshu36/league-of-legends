@@ -160,7 +160,7 @@ data.match %>%
 We make the table of winner per match.
 ```{r}
 # Extract per team information
-data.team <- data.match %>%
+data.first <- data.match %>%
   enter_object("teams") %>%
   gather_array("teams.index") %>% 
   spread_values(
@@ -175,7 +175,7 @@ data.team <- data.match %>%
   select(-teams.index)
 
 # Show a little more stat
-data.team %>%
+data.first %>%
   spread_values(
     towerKills = jnumber("towerKills"), 
     riftHeraldKills = jnumber("riftHeraldKills"), 
@@ -200,10 +200,10 @@ data.team %>%
 # 5            0              0           2          0
 # 6            1              1           2          0
 
-match.winner <- data.team %>%
+match.winner <- data.first %>%
   select(matchId, teamId, winner)
 
-team.probspace <- probspace(data.team)
+team.probspace <- probspace(data.first)
 
 Prob(team.probspace, event = winner == TRUE, given = teamId == 200)
 Prob(team.probspace, event = winner == TRUE, given = teamId == 100)
@@ -214,7 +214,7 @@ Prob(team.probspace, event = winner == TRUE, given = teamId == 100)
 
 Proporitions having various events.
 ```{r}
-data.team %>%
+data.first %>%
   filter(winner == TRUE) %>%
   select(-winner) %>%
   gather(eventType, WinHave, -matchId, -teamId) %>%
@@ -278,7 +278,7 @@ plot(v, col = c(gg_blue, gg_red))
 
 We reformat the data with each row being one match and goal to predict winning team.
 ```{r} 
-permatch.team <- data.team %>%
+match.first <- data.first %>%
   mutate(winner = winner * teamId,
          firstBaron = firstBaron * teamId,
          firstBlood = firstBlood * teamId,
@@ -335,7 +335,7 @@ print(sum(x) / length(x) * 100)
 ## Activity versus time
 
 ```{r}
-events <- events.all %>%
+events.team <- events.all %>%
   mutate(participantId = ifelse(participantId <= 5, 100, 200),
          creatorId = ifelse(creatorId <= 5, 100, 200),
          victimId = ifelse(victimId <= 5, 200, 100),   # associate non-victim team!
@@ -354,7 +354,7 @@ events <- events.all %>%
          teamId = as.factor(teamId))
 
 # Save for presentation
-write.csv(as.data.frame(events), file = "data/events.csv")
+write.csv(as.data.frame(events.team), file = "data/events.csv")
 ```
   
 Plot activity per few minutes normalized per match.
@@ -362,7 +362,7 @@ Plot activity per few minutes normalized per match.
 binwidth <- 5
 
 # Divide events in bins
-bin.events <- events %>%
+bin.events <- events.team %>%
   dplyr::filter(eventType == "CHAMPION_KILL") %>%
   # dplyr::filter(eventType == "ELITE_MONSTER_KILL") %>%
   mutate(bin = timestamp %/% binwidth) %>%
@@ -406,7 +406,7 @@ ggsave("figures/activity.png", width = 8, height = 4.5, units = "in", bg = "tran
 Plot activity per few minutes.
 ```{r}
 # Choice of position: dodge, identity, stack, fill, jitter
-p <- events %>%
+p <- events.team %>%
   # dplyr::filter(eventType == "CHAMPION_KILL") %>%
   dplyr::filter(eventType == "ELITE_MONSTER_KILL") %>% 
   ggplot(aes(timestamp, y = ..count.., group = winner, fill = winner)) + 
@@ -466,7 +466,7 @@ f.y <- function(y) {
 
 # Extract the positions of all events in a given match
 # ... and apply transformation to find corresponding pixel on image
-coord <- events %>% 
+coord <- events.team %>% 
   mutate(X = f.x(X), Y = f.y(Y))
 
 # Save for presentation
@@ -868,7 +868,7 @@ ggsave("figures/scatter.png", width = 10, height = 5, units = "in", bg = "transp
 
 We prepare data per match for farming per type per minute.
 ```{r}
-permatch.participants <- participants %>%
+match.participants <- participants %>%
   as.data.frame() %>%
   mutate(creepsPerMinDeltas = ifelse(teamId == 100, -1, 1) * creepsPerMinDeltas,
          goldPerMinDeltas = ifelse(teamId == 100, -1, 1) * goldPerMinDeltas,
@@ -879,7 +879,7 @@ permatch.participants <- participants %>%
   group_by(matchId, winner) %>%
   summarise_each(funs(sum))
 
-permatch.participants %>%
+match.participants %>%
   ggplot(aes(goldPerMinDeltas, xpPerMinDeltas, 
              color = factor(winner), group = factor(winner))) + 
   geom_point(alpha = 0.2, size = 1) +
@@ -894,7 +894,7 @@ permatch.participants %>%
 
 We prepare data frame for number of events per type per minute.
 ```{r}
-permatch.events <- events %>% 
+match.events <- events.team %>% 
   filter(timestamp < tf) %>% 
   mutate(teamId = as.numeric(as.character(teamId))) %>%
   mutate(winner = factor(ifelse(winner, teamId, 300-teamId))) %>% 
@@ -908,7 +908,7 @@ permatch.events <- events %>%
   select(-teamId) %>%
   select(-ITEM_DESTROYED, -ITEM_SOLD, -ITEM_UNDO)
 
-# events %>% 
+# events.team %>% 
 #   filter(timestamp < tf) %>% 
 #   mutate(teamId = as.numeric(as.character(teamId))) %>%
 #   mutate(winner = factor(ifelse(winner, teamId, 300-teamId))) %>% 
@@ -923,7 +923,7 @@ permatch.events <- events %>%
 #   select(-teamId)
 
 # Plot number of wards.
-permatch.events %>%
+match.events %>%
   ggplot(aes(WARD_KILL, WARD_PLACED, 
              color = factor(winner), group = factor(winner))) + 
   geom_point(alpha = 0.2, size = 1) +
@@ -937,7 +937,7 @@ permatch.events %>%
 ```
 
 ```{r}
-permatch.events.team <- events %>% 
+match.events.team <- events.team %>% 
   filter(timestamp < tf) %>% 
   filter(eventType == "CHAMPION_KILL" |
            eventType == "BUILDING_KILL" |
@@ -953,7 +953,7 @@ permatch.events.team <- events %>%
   unite(eventType.teamId, c(eventType, teamId), sep = ".") %>%
   spread(eventType.teamId, count, fill = 0)
 
-events %>% 
+match.monster <- events.team %>% 
   filter(timestamp < tf) %>% 
   mutate(teamId = as.numeric(as.character(teamId))) %>%
   mutate(winner = factor(ifelse(winner, teamId, 300-teamId))) %>% 
@@ -963,11 +963,15 @@ events %>%
   as.data.frame() %>%
   unite(monsterType.teamId, c(monsterType, teamId), sep = ".") %>%
   spread(monsterType.teamId, count, fill = 0)
+
+match.events.team %>%
+  select(-ELITE_MONSTER_KILL.100, -ELITE_MONSTER_KILL.200) %>%
+  merge(match.monster)
 ```
 
 We look at the number of wards.
 ```{r}
-data <- events %>% 
+data <- events.team %>% 
   filter(timestamp < tf) %>%
   group_by(matchId, eventType, winner) %>%
   summarise(count = n()/tf) %>%
@@ -987,7 +991,7 @@ ggplot(data, aes(WARD_KILL, WARD_PLACED,
 
 We look at number of kills versus creeps.
 ```{r}
-data <- events %>% 
+data <- events.team %>% 
   filter(timestamp < tf) %>%
   filter(eventType == "CHAMPION_KILL") %>%
   group_by(matchId, winner) %>%
@@ -1007,7 +1011,7 @@ ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas,
 ```
 
 We look at number of kills versus creeps.
-data <- merge(permatch.events, permatch.participants)
+data <- merge(match.events, match.participants)
 ```{r}
 ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas, 
                  color = factor(winner), group = factor(winner))) + 
@@ -1025,12 +1029,12 @@ ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas,
 
 We first rename categories to predict.
 ```{r}
-data <- permatch.events
-# data <- permatch.events.team
-# data <- permatch.team
-# data <- merge(permatch.events, permatch.team) %>% merge(permatch.participants) 
+data <- match.events
+# data <- match.events.team
+# data <- match.first
+# data <- merge(match.events, match.first) %>% merge(match.participants) 
 
-# data <- permatch.events.team
+# data <- match.events.team
 
 data <- data  %>%
   select(-matchId) %>%
