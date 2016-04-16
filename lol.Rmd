@@ -908,6 +908,20 @@ permatch.events <- events %>%
   select(-teamId) %>%
   select(-ITEM_DESTROYED, -ITEM_SOLD, -ITEM_UNDO)
 
+# events %>% 
+#   filter(timestamp < tf) %>% 
+#   mutate(teamId = as.numeric(as.character(teamId))) %>%
+#   mutate(winner = factor(ifelse(winner, teamId, 300-teamId))) %>% 
+#   group_by(matchId, teamId, monsterType, winner) %>%
+#   summarise(count = n()/tf) %>%
+#   mutate(count = ifelse(teamId == 100, -1, 1) * count) %>%
+#   na.omit %>%
+#   spread(monsterType, count, fill = 0) %>%
+#   group_by(matchId, winner) %>%
+#   summarise_each(funs(sum)) %>%
+#   as.data.frame() %>%
+#   select(-teamId)
+
 # Plot number of wards.
 permatch.events %>%
   ggplot(aes(WARD_KILL, WARD_PLACED, 
@@ -938,6 +952,32 @@ permatch.events.team <- events %>%
   as.data.frame() %>%
   unite(eventType.teamId, c(eventType, teamId), sep = ".") %>%
   spread(eventType.teamId, count, fill = 0)
+
+
+events %>% 
+  filter(timestamp < tf) %>% 
+  mutate(teamId = as.numeric(as.character(teamId))) %>%
+  mutate(winner = factor(ifelse(winner, teamId, 300-teamId))) %>% 
+  group_by(matchId, teamId, monsterType, winner) %>%
+  summarise(count = n()/tf) %>%
+  mutate(count = ifelse(teamId == 100, -1, 1) * count) %>%
+  na.omit %>%
+  spread(monsterType, count, fill = 0) %>%
+  group_by(matchId, winner) %>%
+  summarise_each(funs(sum)) %>%
+  as.data.frame() %>%
+  select(-teamId)
+
+events %>% 
+  filter(timestamp < tf) %>% 
+  mutate(teamId = as.numeric(as.character(teamId))) %>%
+  mutate(winner = factor(ifelse(winner, teamId, 300-teamId))) %>% 
+  group_by(matchId, teamId, monsterType, winner) %>%
+  summarise(count = n()/tf) %>%
+  na.omit() %>%
+  as.data.frame() %>%
+  unite(monsterType.teamId, c(monsterType, teamId), sep = ".") %>%
+  spread(monsterType.teamId, count, fill = 0)
 ```
 
 We look at the number of wards.
