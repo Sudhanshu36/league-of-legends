@@ -136,7 +136,7 @@ events.all <- data.match %>%
                   buildingType = jstring("buildingType")) %>%
     mutate(timestamp = timestamp/1000/60) 
 
-# Beware: going deeper picks only the ones with positions available
+# Beware: going deeper picks only the rows with positions available
 events.coord <- events.all %>%
     enter_object("position") %>%
     spread_values(X = jnumber("x"),
