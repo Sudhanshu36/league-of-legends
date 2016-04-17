@@ -20,11 +20,8 @@ http://www.esportsearnings.com/tournaments/15149-lol-2015-world-championship
 concurrent players peak at 7.5M.
 67 million players play the game every month.
 http://www.inquisitr.com/1847992/league-of-legends-continues-streak-as-most-played-pc-game/
--->
 
-<!--
-## Even cheating!
-
+Harvard cheating in similar game...
 http://www.usatoday.com/story/tech/gaming/2016/03/27/harvard-team-caught-cheating-heroes-dorm-event/82320786/
 -->
 
@@ -59,12 +56,15 @@ http://www.usatoday.com/story/tech/gaming/2016/03/27/harvard-team-caught-cheatin
 
 <img src="figures/methods_acc.png" alt="Prediction" style="width: 750px;"/>
 
-<!--<p align="right">Questions?</p>
-<p align="right">Questions? GitHub.com/<strong>VincentQB</strong></p> -->
-
 ## Questions?
 
 <p style="position:absolute;bottom:5%;right:15%;width:200px;">GitHub.com/<strong>VincentQB</strong></p>
+
+<!--
+Applications
+-- Betting
+-- Balancing team levels
+-->
 
 ## World Championship Highlight
 
