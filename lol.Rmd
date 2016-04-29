@@ -225,17 +225,23 @@ data.first %>%
 Conditional probabilities on various objectives
 ```{r}
 first.blood <- data.frame(eventType = "First Champion", 
-                          probs = 100 * Prob(team.probspace, event = winner == TRUE, given = firstBlood == TRUE))
+                          probs = Prob(team.probspace, event = winner == TRUE, 
+                                       given = firstBlood == TRUE))
 first.dragon <- data.frame(eventType = "First Dragon", 
-                           probs = 100 * Prob(team.probspace, event = winner == TRUE, given = firstDragon == TRUE))
+                           probs = Prob(team.probspace, event = winner == TRUE, 
+                                        given = firstDragon == TRUE))
 first.tower <- data.frame(eventType = "First Tower", 
-                          probs = 100 * Prob(team.probspace, event = winner == TRUE, given = firstTower == TRUE))
+                          probs = Prob(team.probspace, event = winner == TRUE, 
+                                       given = firstTower == TRUE))
 first.herald <- data.frame(eventType = "First Herald", 
-                           probs = 100 * Prob(team.probspace, event = winner == TRUE, given = firstRiftHerald == TRUE))
+                           probs = Prob(team.probspace, event = winner == TRUE, 
+                                        given = firstRiftHerald == TRUE))
 first.baron <- data.frame(eventType = "First Baron", 
-                          probs = 100 * Prob(team.probspace, event = winner == TRUE, given = firstBaron == TRUE))
+                          probs = Prob(team.probspace, event = winner == TRUE, 
+                                       given = firstBaron == TRUE))
 first.inhibitor <- data.frame(eventType = "First Inhibitor", 
-                              probs = 100 * Prob(team.probspace, event = winner == TRUE, given = firstInhibitor == TRUE))
+                              probs = Prob(team.probspace, event = winner == TRUE, 
+                                           given = firstInhibitor == TRUE))
 
 first <- rbind(first.blood, first.tower, first.dragon, first.herald, first.baron) # , first.inhibitor)
 first <- transform(first, eventType = reorder(eventType, probs))
@@ -249,13 +255,13 @@ first$color <- c(TRUE, TRUE, TRUE, TRUE, FALSE)
 # 5  First Baron 82.53425 FALSE
 
 p <- ggplot(first, aes(eventType, probs, fill = color)) +
-  # expand_limits(y = c(50,100)) +
+  # expand_limits(y = c(.5,1)) +
   geom_bar(stat = "identity") +
   scale_fill_discrete(guide = 'none') +
-  coord_cartesian(ylim = c(50, 85), expand = TRUE) +
+  coord_cartesian(ylim = c(.5, .85), expand = TRUE) +
   xlab("") +
   ylab("Probability of winning given ...") +
-  geom_hline(yintercept = 50, color = gg_purple)
+  geom_hline(yintercept = .5, color = gg_purple)
   # geom_vline(xintercept = 4.5)
   # geom_vline(xintercept = (which(first$eventType == 'First Herald') + which(first$eventType == 'First Baron'))/2)
 
@@ -269,11 +275,17 @@ win <- Prob(team.probspace, event = winner == TRUE)
 winANDherald <- Prob(team.probspace, event = winner == TRUE & firstRiftHerald == TRUE)
 herald <- Prob(team.probspace, event = firstRiftHerald == TRUE)
 
+win
+winANDherald
+herald
+
 require(venneuler)
 v <- venneuler(c(Win = win - winANDherald, 
                  Herald = herald - winANDherald, 
                  "Win&Herald" = winANDherald))
+
 plot(v, col = c(gg_blue, gg_red))
+# png("venn.png")
 ```
 
 We reformat the data with each row being one match and goal to predict winning team.
