@@ -1,0 +1,7 @@
+---
+title: "Report"
+author: "Vincent Quenneville-Bélair"
+date: "Data Science Bootcamp 2016"
+output: pdf_document
+---
+
