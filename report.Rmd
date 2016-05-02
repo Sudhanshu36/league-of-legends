@@ -41,11 +41,19 @@ We summarise the effect of the first objectives in the plot below.
 
 Since the 20 minutes mark is important, we focus on the events that happen in the first 20 minutes, namely the first kill or destruction of a champion, tower, dragon, or herald. Using these features, we can set up a prediction algorithm, and obtain almost 80% accuracy with an algorithm like glmnet.
 
-<img src="figures/methods_acc.png" alt="Prediction" style="width: 500px;"/>
+<img src="figures/methods_acc_20.png" alt="Prediction" style="width: 500px;"/>
 
-The ROC curves also give an idea of the quality of the prediction. For instance, we can see that xgbLinear is overfitting our training data by giving a very high AUC.
+The ROC curves also give an idea of the quality of the prediction. For instance, we can see that xgbLinear is overfitting our training data by giving a very high AUC for the accuracy it gives.
 
-<img src="figures/methods_roc.png" alt="Prediction" style="width: 500px;"/>
+<img src="figures/methods_roc_20.png" alt="Prediction" style="width: 500px;"/>
+
+We can try to push the prediction window down to 10 minutes. 
+
+<img src="figures/methods_acc_10.png" alt="Prediction" style="width: 500px;"/>
+
+We can also look at the ROC curves in this case. 
+
+<img src="figures/methods_roc_10.png" alt="Prediction" style="width: 500px;"/>
 
 For future development, we want to focus on earlier events, and even attempt to predict with features set before the match starts. This includes the choices of champions, and some estimation of the level of each player used internally by the game to match players in teams of similar levels. Given the popularity of the game, for any theory of what constitute a winning combination, there is a supporter available online. However, a less argued for feature appears to be the distribution of wards in a match. A ward allows a team to see parts of the map beyond the vision granted by its players. This would make for an interesting element to study.
 
