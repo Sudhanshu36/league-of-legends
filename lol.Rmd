@@ -285,7 +285,7 @@ v <- venneuler(c(Win = win - winANDherald,
                  "Win&Herald" = winANDherald))
 
 plot(v, col = c(gg_blue, gg_red))
-# png("venn.png")
+png("figures/venn.png")
 ```
 
 We reformat the data with each row being one match and goal to predict winning team.
