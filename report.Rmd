@@ -19,15 +19,15 @@ The data was obtained through an API provided by LoL's parent company. It is giv
 
 ## Timeline
 
-A typicalgame has a median length of 35 minutes, and unfolds as follows. Early in a match, a team will succeed in killing a champion from the other team. A kill means that the target champion will be removed from the match for a certain amount of time, and then returned. There are also three neutral objective that can be killed: the dragon, the herald, and the baron. Trying to take one of them puts the team at risk, but gives a bonus helping to gain the upper hand. 
+A typical game has a median length of 32 +/- 5 min, and unfolds as follows. Early in a match (around 3 +/- 1 min), a team will succeed in killing a champion from the other team. A kill means that the target champion will be removed from the match for a certain amount of time, and then returned. There are also three neutral objective that can be killed: the dragon, the herald, and the baron. Trying to take one of them puts the team at risk, but gives a bonus helping to gain the upper hand. 
 
-The first tower destruction usually happens very close to the killing of the dragon for the first time. A typical strategy is to push and destroy a tower, and then go for the dragon while the other team scrambles to defend itself. Another strategy is to secretly kill the dragon, and then use its bonus to push to a nearby tower.
+The first tower destruction usually happens very close to the killing of the dragon for the first time (both happen around 13 +/- 2 min). A typical strategy is to push and destroy a tower, and then go for the dragon while the other team scrambles to defend itself. Another strategy is to secretly kill the dragon, and then use its bonus to push to a nearby tower. The herald is done a little later, around 16 +/- 2 min, as it is harder to do than the dragon.
 
-The 20 minutes mark is important. First, the herald disappears and is replaced by the baron. Second, a team can now surrender.
+The 20 minutes mark is important. First, the herald disappears and is replaced by the baron. Second, a team can surrender from this point on. A team typically surrenders around 25 +/- 3 min.
 
-The baron gives a large bonus, and so is usually happening close to the final push to destroy the other castle. At that point the match is well advanced, and a team that would have felt unable to win would have surrendered. However, only in long matches do champions reach their maximal levels. Unfortunately, the API does not provide whether a match ended with a surrender. However, if a match ended without the two towers defending the castle as not destroyed, it is possible to conclude that the match must have ended by a team surrendering. This is how we flagged each match as ended in surrender or not.
+The baron gives a large bonus, and so is usually happening close to the final push to destroy the other castle, around 29 +/- 2 min. At that point the match is well advanced, and a team that would have felt unable to win would have surrendered. Unfortunately, the API does not provide whether a match ended with a surrender. However, if a match ended without the two towers defending the castle as not destroyed, it is possible to conclude that the match must have ended by a team surrendering. This is how we flagged each match as ended in surrender or not.
 
-The timeline below shows the median time for the first of each event discussed.
+A team usually manage to destroy the enemy's castle in about 33 +/- 5 min. Only in long matches do champions reach their maximal levels, as it usually takes about 45 +/- 3 min to happen. The timeline below shows the median time for the first of each event discussed.
 
 <img src="figures/timeline.png" alt="Timeline" style="width: 500px;"/>
 
