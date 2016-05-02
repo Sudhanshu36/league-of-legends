@@ -974,11 +974,10 @@ match.events <- events.team %>%
   mutate(winner = factor(ifelse(winner, teamId, 300-teamId))) %>% 
   group_by(matchId, teamId, eventType, winner) %>%
   summarise(count = n()/tf) %>%
-  spread(eventType, count, fill = 0) %>%
   mutate(count = ifelse(teamId == 100, -1, 1) * count) %>%
+  spread(eventType, count, fill = 0) %>%
   group_by(matchId, winner) %>%
   summarise_each(funs(sum)) %>%
-  as.data.frame() %>%
   select(-teamId) %>%
   select(-ITEM_DESTROYED, -ITEM_SOLD, -ITEM_UNDO)
 
