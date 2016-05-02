@@ -1272,6 +1272,11 @@ We look at misclassified.
 training.misclassified <- training %>%
   cbind(data.frame(misclassified = modelTrain$winner != training$winner))
 
+training.misclassified %>%
+  cbind(match.duration[training.index, "matchDuration"]) %>%
+  ggplot(aes(matchDuration, fill = misclassified)) + 
+  geom_histogram()
+
 ggplot(training.misclassified, aes(CHAMPION_KILL, ELITE_MONSTER_KILL, 
                          # color = winner, group = winner)) +
                          color = misclassified, group = misclassified)) + 
