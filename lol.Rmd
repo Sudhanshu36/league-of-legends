@@ -95,12 +95,12 @@ match.duration %>%
   summary
 
 #  matchDuration  
-#  Min.   :27.33  
-#  1st Qu.:31.83  
-#  Median :35.01  
-#  Mean   :35.99  
-#  3rd Qu.:38.62  
-#  Max.   :52.15  
+# Min.   :12.82  
+# 1st Qu.:26.93  
+# Median :32.25  
+# Mean   :32.59  
+# 3rd Qu.:37.33  
+# Max.   :59.62  
 ```
 
 ## Look into events
@@ -338,6 +338,34 @@ timeline.surrender <- merge(match.duration, match.surrender) %>%
   mutate(eventType = ifelse(surrender, "SURRENDER", "CASTLE DESTRUCTION"),
          timestamp = matchDuration) %>%
   select(timestamp, eventType)
+
+# End if surrender
+merge(match.duration, match.surrender) %>%
+  filter(surrender == TRUE) %>%
+  select(-surrender, -matchId) %>%
+  summary()
+
+# matchDuration  
+# Min.   :20.17  
+# 1st Qu.:21.43  
+# Median :25.48  
+# Mean   :26.99  
+# 3rd Qu.:30.55  
+# Max.   :51.12 
+
+# End if not surrender
+merge(match.duration, match.surrender) %>%
+  filter(surrender == FALSE) %>%
+  select(-surrender, -matchId) %>%
+  summary()
+
+# matchDuration  
+# Min.   :12.82  
+# 1st Qu.:29.20  
+# Median :33.42  
+# Mean   :34.01  
+# 3rd Qu.:38.38  
+# Max.   :59.62  
 
 # Percent of matches that ended in surrender?
 x <- match.surrender$surrender
@@ -588,6 +616,7 @@ When are certain objectives achieved for the time in a match?
 match.duration %>%
   select(matchDuration) %>%
   summary
+
 timeline.end <- match.duration %>%
   summarise(timestamp = median(matchDuration)) %>%
   mutate(eventType = "END")
@@ -605,6 +634,14 @@ timeline.tower <- events.all %>%
   select(timestamp)
 
 summary(timeline.tower)
+
+#   timestamp     
+# Min.   : 5.124  
+# 1st Qu.:11.097  
+# Median :12.712  
+# Mean   :12.868  
+# 3rd Qu.:14.563  
+# Max.   :22.169  
 
 timeline.tower <- timeline.tower %>%
   summarise_each(funs(median)) %>%
@@ -644,6 +681,15 @@ timeline.monster %>%
   select(-matchId, -rank) %>% 
   summary
 
+#  BARON_NASHOR       DRAGON         RIFTHERALD    
+# Min.   :20.20   Min.   : 4.879   Min.   : 4.534  
+# 1st Qu.:26.06   1st Qu.:10.862   1st Qu.:13.378  
+# Median :29.36   Median :12.929   Median :16.296  
+# Mean   :29.89   Mean   :13.256   Mean   :15.552  
+# 3rd Qu.:33.18   3rd Qu.:15.446   3rd Qu.:18.202  
+# Max.   :44.68   Max.   :25.135   Max.   :19.824  
+# NA's   :410     NA's   :1        NA's   :700  
+
 timeline.monster <- timeline.monster %>%
   select(timestamp, monsterType) %>%
   group_by(monsterType) %>%
@@ -669,6 +715,14 @@ timeline.kill %>%
   select(timestamp) %>%
   summary
 
+#   timestamp    
+# Min.   :0.707  
+# 1st Qu.:2.630  
+# Median :3.155  
+# Mean   :3.329  
+# 3rd Qu.:3.799  
+# Max.   :9.326  
+
 timeline.kill <- timeline.kill %>%
   summarise(timestamp = median(timestamp)) %>%
   mutate(eventType = "CHAMPION KILL")
@@ -688,6 +742,14 @@ timeline.maxlvl %>%
   as.data.frame %>%
   select(timestamp) %>%
   summary
+
+#   timestamp    
+# Min.   :37.60  
+# 1st Qu.:41.66  
+# Median :44.57  
+# Mean   :44.55  
+# 3rd Qu.:46.81  
+# Max.   :53.46  
 
 # Print proporitions of game reaching level 18
 x <- length(unique(timeline.maxlvl$matchId))
