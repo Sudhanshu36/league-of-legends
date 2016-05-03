@@ -27,7 +27,7 @@ The 20 minutes mark is important. First, the herald disappears and is replaced b
 
 The baron gives a large bonus, and so is usually happening close to the final push to destroy the other castle, around 29 &plusmn; 2 min. At that point the match is well advanced, and a team that would have felt unable to win would have surrendered. Unfortunately, the API does not provide whether a match ended with a surrender. However, if a match ended without the two towers defending the castle as not destroyed, it is possible to conclude that the match must have ended by a team surrendering. This is how we flagged each match as ended in surrender or not. About 20% of the games end as such.
 
-A team usually manage to destroy the enemy's castle in about 33 &plusmn; 5 min. Only in long matches do champions reach their maximal levels, as it usually takes about 45 &plusmn; 3 min to happen. The timeline below shows the median time for the first of each event discussed.
+A team usually manage to destroy the enemy's castle in about 33 &plusmn; 5 min. Only in very long matches do champions reach their maximal levels, as it usually takes about 45 &plusmn; 3 min to happen, and this happens in only about 6% of the matches. The timeline below shows the median time for the first of each event discussed.
 
 <img src="figures/timeline.png" alt="Timeline" style="width: 500px;"/>
 
