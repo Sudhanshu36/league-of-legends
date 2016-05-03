@@ -15,7 +15,7 @@ LoL is in the category of Multiplayer Online Battle Arena (MOBA) games, i.e. vid
 
 Below, we present an analysis of games played in order to understand features that enable prediction of the winning team while the game progresses. This can be applied to ensuring fairness of the two teams' composition and development. This can also be applied to betting as the game unfold.
 
-The data was obtained through an API provided by LoL's parent company. It is given in the form of deeply nested JSON format, which can be access through a package called tidyjson. Fortunately, some documentation is provided in order to help navigate the JSON. However, not all the information advertised is in fact available. The data is composed of a sample of 1000 matches played in early 2016.
+The data was obtained through an API provided by Riot, LoL's parent company. It is given in the form of deeply nested JSON format, which can be access through a package called tidyjson. Fortunately, some documentation is provided in order to help navigate the JSON. However, not all the information advertised is in fact available. The data is composed of a sample of 1000 matches played in early 2016.
 
 ## Timeline
 
