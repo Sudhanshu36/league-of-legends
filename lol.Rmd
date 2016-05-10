@@ -1037,9 +1037,13 @@ match.monster <- events.team %>%
   unite(monsterType.teamId, c(monsterType, teamId), sep = ".") %>%
   spread(monsterType.teamId, count, fill = 0)
 
-match.events.team %>%
+# Merge monster in place of elite monster kill
+match.events.team <- match.events.team %>%
   select(-ELITE_MONSTER_KILL.100, -ELITE_MONSTER_KILL.200) %>%
-  merge(match.monster)
+  merge(match.monster, all.x = TRUE)
+
+# Fill NAs by 0
+match.events.team[is.na(match.events.team)] <- 0
 ```
 
 We look at the number of wards.
