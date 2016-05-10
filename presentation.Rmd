@@ -40,8 +40,8 @@ http://www.usatoday.com/story/tech/gaming/2016/03/27/harvard-team-caught-cheatin
 
 ## Activity on map {.flexbox .vcenter}
 
-<img src="figures/map_twenty.png" alt="Summoner's Rift" style="width: 400px;"/>
-<br>First twenty minutes.
+<img src="figures/map_20.png" alt="Summoner's Rift" style="width: 400px;"/>
+<br>First 20 minutes.
 
 ## Activity on map {.flexbox .vcenter}
 

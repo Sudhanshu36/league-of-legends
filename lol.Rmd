@@ -595,7 +595,7 @@ map.draw <- function(to, tf, print.label = TRUE) {
 
 # Show the first 20 minutes.
 map.draw(0, 20, print.label = FALSE)
-ggsave("figures/map_twenty.png", width = 10, height = 10, units = "in", bg = "transparent")
+ggsave("figures/map_20.png", width = 10, height = 10, units = "in", bg = "transparent")
 
 map.animate <- function() {
   d <- 5
