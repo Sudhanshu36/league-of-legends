@@ -1343,7 +1343,8 @@ testing.misclassified %>%
   ggplot(aes(matchDuration, fill = misclassified)) + 
   geom_histogram(binwidth = 2) +
   xlab("Math duration") +
-  ylab("Count")
+  ylab("Count") +
+  labs(fill = "Misclassified")
 
 ggsave("figures/misclassified.png", width = 4, height = 4, units = "in", bg = "transparent")
 
