@@ -1102,15 +1102,14 @@ ggplot(data, aes(CHAMPION_KILL, creepsPerMinDeltas,
 
 We first rename categories to predict.
 ```{r}
-data <- match.events
-# data <- match.events.team
+# data <- match.events
+data <- match.events.team
 # data <- match.first
 # data <- merge(match.events, match.first) %>% merge(match.participants) 
 
 # data <- match.events.team
 
-data <- data  %>%
-  select(-matchId) %>%
+data <- data %>%
   mutate(winner, winner = factor(ifelse(winner == 100, "blue", "red")))
 ```
 
@@ -1122,8 +1121,11 @@ training.index <- createDataPartition(data$winner, p = .8, list = FALSE)
 training <- data[ training.index,]
 testing  <- data[-training.index,]
 
+training.noId <- select(training, -matchId)
+testing.noId <- select(testing, -matchId)
+
 # Enough features?
-nrow(training)/ncol(training)
+nrow(training)/ncol(training.noId)
 ```
 
 We create dummy variables for categorical variables.
@@ -1144,14 +1146,15 @@ We cross-validate.
 # method <- "rf"
 # method <- "rpart"
 # method <- "glm"
-method <- "glmnet"
+# method <- "glmnet"
 # method <- "svmLinear"
-# method <- "svmRadial"
+method <- "svmRadial"
 # method <- "xgbLinear"
 # method <- "ada"
   
 # List of methods in caret: http://topepo.github.io/caret/bytag.html
 method.all <- c("rf", "rpart", "glm", "glmnet", "svmLinear", "svmRadial", "xgbLinear", "ada")
+# method.all <- c("rf", "rpart", "glmnet", "svmLinear", "svmRadial", "xgbLinear")
 
 modelCV <- function(method) {
 
@@ -1186,7 +1189,7 @@ ctrl <- trainControl(method = "cv", number = 10, verboseIter = T, classProbs = T
 
 # We can try different methods: svmLinear glmnet rpart svmRadial
 modelTune <- train(winner ~ .,
-                   data = training,
+                   data = training.noId,
                    tuneGrid = modelGrid,
                    trControl = ctrl,
                    method = method,
@@ -1216,7 +1219,7 @@ fancyRpartPlot(modelTune$finalModel)
 We evaluate using the ROC curve.
 ```{r}
 probsTrain <- predict(modelTune,
-                      training,
+                      training.noId,
                       type = "prob",
                       na.action = na.pass)
 
@@ -1273,9 +1276,9 @@ training.misclassified <- training %>%
   cbind(data.frame(misclassified = modelTrain$winner != training$winner))
 
 training.misclassified %>%
-  cbind(match.duration[training.index, "matchDuration"]) %>%
+  merge(match.duration) %>%
   ggplot(aes(matchDuration, fill = misclassified)) + 
-  geom_histogram()
+  geom_histogram(binwidth = 2)
 
 ggplot(training.misclassified, aes(CHAMPION_KILL, ELITE_MONSTER_KILL, 
                          # color = winner, group = winner)) +
@@ -1301,7 +1304,7 @@ ggplot(training.misclassified, aes(CHAMPION_KILL, ELITE_MONSTER_KILL,
 We now predict on the test set.
 ```{r}
 probsPredict <- predict(modelTune,
-                        newdata = testing,
+                        newdata = testing.noId,
                         type = "prob",
                         na.action = na.pass)
 
@@ -1330,6 +1333,13 @@ We look at misclassified.
 
 testing.misclassified <- testing %>%
   cbind(data.frame(misclassified = modelPredict$winner != testing$winner))
+
+testing.misclassified %>%
+  merge(match.duration) %>%
+  ggplot(aes(matchDuration, fill = misclassified)) + 
+  geom_histogram(binwidth = 2)
+
+ggsave("figures/misclassified.png", width = 4, height = 4, units = "in", bg = "transparent")
 
 ggplot(testing.misclassified, aes(CHAMPION_KILL, ELITE_MONSTER_KILL, 
                          color = winner, group = winner)) +
