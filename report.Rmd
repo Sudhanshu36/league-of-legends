@@ -19,11 +19,11 @@ The data was obtained through an API provided by Riot, LoL's parent company. It 
 
 ## Summoner's Rift
 
-The game unfolds on a map called Summoner's Rift. The team in the lower left corner is the blue team, and the other is the red team. Each of the two teams start in their respective castle, and need to destroy the enemy's defense and reach the castle in the opposite corner before the enemy team does the same. There are three paths connecting the castles, and the zones in between are collectively called the jungle. Most of the early action happens outside of the jungle, as can be seen in the density map below.
+The game unfolds on a map called Summoner's Rift. The team in the lower left corner is the blue team, and the other is the red team. Each team tries to destroy the enemy's defenses and reach the castle in the opposite corner before the enemy team does the same. There are three paths connecting the castles, and the zones in between are collectively called the jungle. Most of the early action happens outside of the jungle, as can be seen in the density map below.
 
 <img src="figures/map_20.png" alt="Summoner's Rift" style="width: 500px;"/>
 
-The map shows the average density of actions happening in the first 20 minutes for a match in which the red team wins. The action is concentred close to the blue side first line of defense. We do note however that there is some action happening in the jungle near specific points, the dragon and the herald, which we discuss further below.
+This map shows the average density of actions happening in the first 20 minutes for a match in which the red team wins. The action is concentred close to the blue side first line of defense. We do observe however that there is some action happening in the jungle near specific points, the dragon between the middle and the bottom, and the herald between the middle and the top. The dragon and the herald are neutral objective that can be killed to gain an edge during a match.
 
 ## Timeline
 
