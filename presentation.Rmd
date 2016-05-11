@@ -32,7 +32,11 @@ http://www.usatoday.com/story/tech/gaming/2016/03/27/harvard-team-caught-cheatin
 
 ## API
 
-
+Deeply nested JSON format -- thanks tidyjson. 
+<!--
+Some documentation provided to navigate the JSON. 
+The data is composed of a sample of 1000 matches played in early 2016.
+-->
 
 ## Event progression in typical game {.flexbox .vcenter}
 
