@@ -70,6 +70,8 @@ In this case, random forest outperforms the other algorithms. For random forest,
 
 As expected, the proportion of missclassified matches increases with the duration of the match.
 
+We can also compute the importance of each feature in the decision process of random forest. As expected, the level reached by a team, the number of enemy defense destroyed, and the number of enemy champion killed, are the most important features.
+
 For future development, we want to focus on earlier events, and even attempt to predict with features set before the match starts. This includes the choices of champions, and some estimation of the level of each player used internally by the game to match players in teams of similar levels. Given the popularity of the game, for any theory of what constitute a winning combination, there is a supporter available online. However, a less argued for feature appears to be the distribution of wards in a match. A ward allows a team to see parts of the map beyond the vision granted by its players. This would make for an interesting element to study.
 
 The codes are available on [github](https://github.com/vincentqb/league-of-legends).
