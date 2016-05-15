@@ -7,11 +7,11 @@ output: html_document
 
 Competitive video games, known as eSports, are becoming big, and League of Legends (LoL) is a leading example. In 2015, the worldwide championship was watched by 36 million people -- and the winning team netted one million dollars. On a daily basis, the game has 27 million unique players with a concurrent players peak of over seven millions. eSport is big.
 
-<img src="figures/world_championship_2015.jpg" alt="League of Legends" style="width: 500px;"/>
+<img src="figures/world_championship_2015.jpg" alt="League of Legends" style="width: 350px;"/>
 
 LoL is in the category of Multiplayer Online Battle Arena (MOBA) games, i.e. video games played online and featuring teams fighting each other. In a match of LoL, two teams of five players compete to destroy each other's castle. Each player controls a character, called champion, with various abilities, while achieving high levels of experience and gaining gold allowing further development of the champion during a match. A team then hopes to develop more quickly to gain the upper hand to destroy the other team's defense and eventually castle.
 
-<img src="figures/game_example.jpg" alt="Gameplay" style="width: 500px;"/>
+<img src="figures/game_example.jpg" alt="Gameplay" style="width: 350px;"/>
 
 Below, we present an analysis of games played in order to understand features that enable prediction of the winning team while the game progresses. This can be applied to ensuring fairness of the two teams' composition and development. This can also be applied to betting as the game unfold.
 
@@ -21,7 +21,7 @@ The data was obtained through an API provided by Riot, LoL's parent company. It 
 
 The game unfolds on a map called Summoner's Rift. The team in the lower left corner is the blue team, and the other is the red team. Each team tries to destroy the enemy's defenses and reach the castle in the opposite corner before the enemy team does the same. There are three paths connecting the castles, and the zones in between are collectively called the jungle. Most of the early action happens outside of the jungle, as can be seen in the density map below.
 
-<img src="figures/map_20.png" alt="Summoner's Rift" style="width: 500px;"/>
+<img src="figures/map_20.png" alt="Summoner's Rift" style="width: 350px;"/>
 
 This map shows the average density of actions happening in the first 20 minutes for a match in which the red team wins. The action is concentred close to the blue side first line of defense. We do observe however that there is some action happening in the jungle near specific points, the dragon between the middle and the bottom, and the herald between the middle and the top. The dragon and the herald are neutral objective that can be killed to gain an edge during a match.
 
@@ -37,39 +37,39 @@ The baron gives a large bonus, and so is usually happening close to the final pu
 
 A team usually manage to destroy the enemy's castle in about 33 &plusmn; 5 min. Only in very long matches do champions reach their maximal levels, as it usually takes about 45 &plusmn; 3 min to happen, and this happens in only about 6% of the matches. The timeline below shows the median time for the first of each event discussed.
 
-<img src="figures/timeline.png" alt="Timeline" style="width: 500px;"/>
+<img src="figures/timeline.png" alt="Timeline" style="width: 350px;"/>
 
 Given that a team was the first to get a champion kill, the probability of winning are now above 60%. This is an important increase, since the match is probably still within the first five minutes. Being the first to get a tower or a dragon brings the probability near 70%. The first herald brings near 75%. These last events are all within the first 20 minutes of the match. Being the first to get the baron increases the chances to over 80%, but this usually happens late in the match, near 30 minutes as mentioned before.
 
 We summarise the effect of the first objectives in the plot below.
 
-<img src="figures/conditional.png" alt="Conditional" style="width: 500px;"/>
+<img src="figures/conditional.png" alt="Conditional" style="width: 350px;"/>
 
 ## Prediction
 
 Since the 20 minutes mark is important, we focus on the events that happen in the first 20 minutes, namely the first kill or destruction of a champion, tower, dragon, or herald. Using these features, we can set up a prediction algorithm, and obtain almost 80% accuracy with an algorithm like glmnet.
 
-<img src="figures/methods_acc_20.png" alt="Accuracy" style="width: 500px;"/>
+<img src="figures/methods_acc_20.png" alt="Accuracy" style="width: 350px;"/>
 
 The ROC curves also give an idea of the quality of the prediction. For instance, we can see that xgbLinear is overfitting our training data by giving a very high AUC for the accuracy it gives.
 
-<img src="figures/methods_roc_20.png" alt="ROC" style="width: 500px;"/>
+<img src="figures/methods_roc_20.png" alt="ROC" style="width: 350px;"/>
 
 SVM with radial basis functions performs well. We can look at which match the algorithm misclassifies in duration. As expected, the proportion of missclassified matches increases with the duration of the match.
 
-<img src="figures/misclassified_20.png" alt="Misclassified" style="width: 500px;"/>
+<img src="figures/misclassified_20.png" alt="Misclassified" style="width: 350px;"/>
 
 We can try to push the prediction window down to 10 minutes. 
 
-<img src="figures/methods_acc_10.png" alt="Accuracy" style="width: 500px;"/>
+<img src="figures/methods_acc_10.png" alt="Accuracy" style="width: 350px;"/>
 
 We can also look at the ROC curves in this case. 
 
-<img src="figures/methods_roc_10.png" alt="ROC" style="width: 500px;"/>
+<img src="figures/methods_roc_10.png" alt="ROC" style="width: 350px;"/>
 
 SVM with radial basis functions still performs well. Again, the proportion of missclassified matches increases with the duration of the match.
 
-<img src="figures/misclassified_10.png" alt="Misclassified" style="width: 500px;"/>
+<img src="figures/misclassified_10.png" alt="Misclassified" style="width: 350px;"/>
 
 For future development, we want to focus on earlier events, and even attempt to predict with features set before the match starts. This includes the choices of champions, and some estimation of the level of each player used internally by the game to match players in teams of similar levels. Given the popularity of the game, for any theory of what constitute a winning combination, there is a supporter available online. However, a less argued for feature appears to be the distribution of wards in a match. A ward allows a team to see parts of the map beyond the vision granted by its players. This would make for an interesting element to study.
 
