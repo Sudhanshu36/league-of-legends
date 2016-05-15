@@ -1314,7 +1314,9 @@ training.misclassified %>%
   merge(match.duration) %>%
   ggplot(aes(matchDuration, fill = misclassified)) + 
   geom_histogram(binwidth = 2)
+```
 
+```{r}
 ggplot(training.misclassified, aes(CHAMPION_KILL, ELITE_MONSTER_KILL, 
                          # color = winner, group = winner)) +
                          color = misclassified, group = misclassified)) + 
@@ -1378,7 +1380,9 @@ testing.misclassified %>%
   labs(fill = "Misclassified")
 
 ggsave("figures/misclassified.png", width = 4, height = 4, units = "in", bg = "transparent")
+```
 
+```{r}
 ggplot(testing.misclassified, aes(CHAMPION_KILL, ELITE_MONSTER_KILL, 
                          color = winner, group = winner)) +
                          # color = misclassified, group = misclassified)) + 
