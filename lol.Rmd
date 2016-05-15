@@ -826,7 +826,6 @@ ggsave("figures/timeline.png", width = 8, height = 4.5, units = "in", bg = "tran
 ## Scatter plot
 
 ```{r}
-# tf <- 10
 tf <- 20
 ```
 
@@ -1210,6 +1209,38 @@ modelTune
 
 varImp(modelTune)
 plot(modelTune)
+
+# RF with 10 min
+# SKILL_LEVEL_UP.200 100.0000
+# BUILDING_KILL.200   94.7361
+# SKILL_LEVEL_UP.100  90.6074
+# BUILDING_KILL.100   87.9419
+# CHAMPION_KILL.100   86.8206
+# CHAMPION_KILL.200   78.8555
+# ITEM_PURCHASED.100  54.3742
+# WARD_PLACED.100     52.3170
+# ITEM_PURCHASED.200  51.6448
+# WARD_PLACED.200     51.1540
+# DRAGON.200          30.4174
+# DRAGON.100          28.3539
+# RIFTHERALD.200       0.8256
+# RIFTHERALD.100       0.0000
+
+# Rf with 20 min
+# SKILL_LEVEL_UP.200 100.0000
+# BUILDING_KILL.200   94.7361
+# SKILL_LEVEL_UP.100  90.6074
+# BUILDING_KILL.100   87.9419
+# CHAMPION_KILL.100   86.8206
+# CHAMPION_KILL.200   78.8555
+# ITEM_PURCHASED.100  54.3742
+# WARD_PLACED.100     52.3170
+# ITEM_PURCHASED.200  51.6448
+# WARD_PLACED.200     51.1540
+# DRAGON.200          30.4174
+# DRAGON.100          28.3539
+# RIFTHERALD.200       0.8256
+# RIFTHERALD.100       0.0000
 
 modelTune$bestTune
 plot(modelTune$results)
