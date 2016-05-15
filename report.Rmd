@@ -55,10 +55,7 @@ The ROC curves also give an idea of the quality of the prediction. For instance,
 
 <img src="figures/methods_roc_20.png" alt="ROC" style="width: 350px;"/>
 
-SVM with radial basis functions performs well. We can look at which match the algorithm misclassifies in duration. As expected, the proportion of missclassified matches increases with the duration of the match.
-
-<img src="figures/misclassified_20.png" alt="Misclassified" style="width: 350px;"/>
-
+Most algorithms perform well in this case. 
 We can try to push the prediction window down to 10 minutes. 
 
 <img src="figures/methods_acc_10.png" alt="Accuracy" style="width: 350px;"/>
@@ -67,9 +64,12 @@ We can also look at the ROC curves in this case.
 
 <img src="figures/methods_roc_10.png" alt="ROC" style="width: 350px;"/>
 
-SVM with radial basis functions still performs well. Again, the proportion of missclassified matches increases with the duration of the match.
+In this case, random forest outperforms the other algorithms. For random forest, we can look at which match algorithm misclassifies when looking at both the 20 and 10 first minutes (on the left and right respectively).
 
-<img src="figures/misclassified_10.png" alt="Misclassified" style="width: 350px;"/>
+<img src="figures/misclassified_20.png" alt="Misclassified" style="width: 175px;"/> 
+<img src="figures/misclassified_10.png" alt="Misclassified" style="width: 175px;"/>
+
+As expected, the proportion of missclassified matches increases with the duration of the match.
 
 For future development, we want to focus on earlier events, and even attempt to predict with features set before the match starts. This includes the choices of champions, and some estimation of the level of each player used internally by the game to match players in teams of similar levels. Given the popularity of the game, for any theory of what constitute a winning combination, there is a supporter available online. However, a less argued for feature appears to be the distribution of wards in a match. A ward allows a team to see parts of the map beyond the vision granted by its players. This would make for an interesting element to study.
 
