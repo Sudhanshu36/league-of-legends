@@ -47,7 +47,7 @@ We summarise the effect of the first objectives in the plot below.
 
 ## Prediction
 
-Since the 20 minutes mark is important, we focus on the events that happen in the first 20 minutes, namely the first kill or destruction of a champion, tower, dragon, or herald. Using these features, we can set up a prediction algorithm, and obtain almost 80% accuracy with an algorithm like glmnet.
+Since the 20 minutes mark is important, we focus on the events that happen in the first 20 minutes, namely the first kill or destruction of a champion, tower, dragon, or herald. Using these features, we can set up a prediction algorithm, and most algorithms obtain a high level of accuracy -- almost 80% accuracy with glmnet.
 
 <img src="figures/methods_acc_20.png" alt="Accuracy" style="width: 350px;"/>
 
@@ -55,7 +55,6 @@ The ROC curves also give an idea of the quality of the prediction. For instance,
 
 <img src="figures/methods_roc_20.png" alt="ROC" style="width: 350px;"/>
 
-Most algorithms perform well in this case. 
 We can try to push the prediction window down to 10 minutes. 
 
 <img src="figures/methods_acc_10.png" alt="Accuracy" style="width: 350px;"/>
