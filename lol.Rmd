@@ -1342,7 +1342,7 @@ testing.misclassified %>%
   merge(match.duration) %>%
   ggplot(aes(matchDuration, fill = misclassified)) + 
   geom_histogram(binwidth = 2) +
-  xlab("Math duration") +
+  xlab("Duration") +
   ylab("Count") +
   labs(fill = "Misclassified")
 
