@@ -56,11 +56,11 @@ Using these features, we can set up a prediction algorithm, and most algorithms 
 
 <img src="figures/methods_acc_20.png" alt="Accuracy" style="width: 400px;"/>
 
-The ROC curves also give an idea of the quality of the prediction. For instance, we can see that xgbLinear is overfitting our training data by giving a very high AUC for the accuracy it gives.
+The ROC curves also give an idea of the quality of the prediction. 
 
 <img src="figures/methods_roc_20.png" alt="ROC" style="width: 400px;"/>
 
-We can try to push the prediction window down to 10 minutes. 
+We can try to push the prediction window down to 10 minutes instead of 20 minutes as we have been analyzing. 
 
 <img src="figures/methods_acc_10.png" alt="Accuracy" style="width: 400px;"/>
 
@@ -68,14 +68,14 @@ We can also look at the ROC curves in this case.
 
 <img src="figures/methods_roc_10.png" alt="ROC" style="width: 400px;"/>
 
-In this case, random forest outperforms the other algorithms. For random forest, we can look at which match algorithm misclassifies when looking at both the 20 and 10 first minutes (on the left and right respectively).
+In this case, random forest outperforms the other algorithms with its accuracy. For random forest, we can look at which matches the algorithm misclassifies when looking at both the 20 and 10 first minutes (on the left and right respectively).
 
 <img src="figures/misclassified_20.png" alt="Misclassified" style="width: 200px;"/> 
 <img src="figures/misclassified_10.png" alt="Misclassified" style="width: 200px;"/>
 
 As expected, the proportion of misclassified matches increases with the duration of the match.
 
-We can also compute the importance of each feature in the decision process of random forest. As expected, the most important features turn out to be the level reached by a team, the number of enemy defense destroyed, and the number of enemy champion killed. Surprisingly though, the number of ward placed is more important than the neutral objective taken into account.
+We can also compute the importance of each feature in the decision process of random forest. As expected, the most important features turn out to be the level reached by a team, the number of enemy defense destroyed, and the number of enemy champion killed. Surprisingly though, the number of wards placed is more important than the neutral objectives taken into account.
 
 For future development, we want to focus on earlier events, and even attempt to predict with features set before the match starts. This includes the choices of champions, and some estimation of the level of each player used internally by the game to match players in teams of similar levels. Given the popularity of the game, for any theory of what constitute a winning combination, there is a supporter available online. However, a less argued for feature appears to be the location of wards in a match. This would make for an interesting element to study.
 
