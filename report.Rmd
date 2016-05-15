@@ -45,9 +45,14 @@ We summarise the effect of the first objectives in the plot below.
 
 <img src="figures/conditional.png" alt="Conditional" style="width: 350px;"/>
 
+All of these actions contribute in increasing the level of each character, thus making it more powerful. The difference between the two teams in the level of their characters is an important factor in a match. These actions also contribute in purchasing more powerful item to equip on a character. 
+The ward is a particular item that plays does not make a character more powerful and yet plays an important role in a match. A ward allows a team to see parts of the map beyond the vision granted by its players.
+
 ## Prediction
 
-Since the 20 minutes mark is important, we focus on the events that happen in the first 20 minutes, namely the first kill or destruction of a champion, tower, dragon, or herald. Using these features, we can set up a prediction algorithm, and most algorithms obtain a high level of accuracy -- almost 80% accuracy with glmnet.
+Since the 20 minutes mark is important, we focus on the events that happen in that period. 
+In particular, we use as features the number of the number of kills or destructions of a champion, tower, dragon, or herald -- along with the number of item purchased and the number of wards placed. 
+Using these features, we can set up a prediction algorithm, and most algorithms obtain a high level of accuracy -- almost 80% accuracy with glmnet.
 
 <img src="figures/methods_acc_20.png" alt="Accuracy" style="width: 350px;"/>
 
@@ -70,8 +75,8 @@ In this case, random forest outperforms the other algorithms. For random forest,
 
 As expected, the proportion of missclassified matches increases with the duration of the match.
 
-We can also compute the importance of each feature in the decision process of random forest. As expected, the level reached by a team, the number of enemy defense destroyed, and the number of enemy champion killed, are the most important features.
+We can also compute the importance of each feature in the decision process of random forest. As expected, the most important features turn out to be the level reached by a team, the number of enemy defense destroyed, and the number of enemy champion killed. Surprisingly though, the number of ward placed is more important than the neutral objective taken into account.
 
-For future development, we want to focus on earlier events, and even attempt to predict with features set before the match starts. This includes the choices of champions, and some estimation of the level of each player used internally by the game to match players in teams of similar levels. Given the popularity of the game, for any theory of what constitute a winning combination, there is a supporter available online. However, a less argued for feature appears to be the distribution of wards in a match. A ward allows a team to see parts of the map beyond the vision granted by its players. This would make for an interesting element to study.
+For future development, we want to focus on earlier events, and even attempt to predict with features set before the match starts. This includes the choices of champions, and some estimation of the level of each player used internally by the game to match players in teams of similar levels. Given the popularity of the game, for any theory of what constitute a winning combination, there is a supporter available online. However, a less argued for feature appears to be the location of wards in a match. This would make for an interesting element to study.
 
 The codes are available on [github](https://github.com/vincentqb/league-of-legends).
