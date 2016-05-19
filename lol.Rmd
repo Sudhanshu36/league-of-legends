@@ -936,7 +936,7 @@ ggplot(participants, aes(goldPerMinDeltas, xpPerMinDeltas,
   xlab(paste("Gold per min in first", tf, "min")) +
   ylab(paste("Experience per min in first", tf, "min"))
 
-ggsave("figures/scatter.png", width = 10, height = 5, units = "in", bg = "transparent")
+ggsave("figures/scatter.png", width = 8, height = 4.5, units = "in", bg = "transparent")
 ```
 
 We prepare data per match for farming per type per minute.
@@ -1379,7 +1379,7 @@ testing.misclassified %>%
   ylab("Count") +
   labs(fill = "Misclassified")
 
-ggsave("figures/misclassified.png", width = 4, height = 4, units = "in", bg = "transparent")
+ggsave("figures/misclassified.png", width = 8, height = 4.5, units = "in", bg = "transparent")
 ```
 
 ```{r}
