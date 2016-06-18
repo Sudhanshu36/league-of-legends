@@ -2,7 +2,6 @@
 title: "League of Legends: Who will win?"
 author: "Vincent Quenneville-Bélair"
 date: "Data Science Bootcamp 2016"
-output: html_document
 ---
 
 Competitive video games, known as eSports, are becoming big, and League of Legends (LoL) is a leading example. In 2015, the worldwide championship was watched by 36 million people -- and the winning team netted one million dollars. On a daily basis, the game has 27 million unique players with a concurrent players peak of over seven millions. eSport is big.
