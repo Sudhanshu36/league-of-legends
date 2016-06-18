@@ -70,9 +70,13 @@ We can also look at the ROC curves in this case.
 
 In this case, random forest outperforms the other algorithms with its accuracy. For random forest, we can look at which matches the algorithm misclassifies when looking at both the 20 and 10 first minutes (the respective two figures below).
 
+<p>
 <img src="figures/misclassified_20.png" alt="Misclassified" style="width:100%"/> 
+</p>
 
+<p>
 <img src="figures/misclassified_10.png" alt="Misclassified" style="width:100%"/>
+</p>
 
 These figures show the number of match classified correctly/incorrectly stacked, against the total duration of the match. As expected, the proportion of misclassified matches increases with the duration of the match.
 
